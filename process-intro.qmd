@@ -5,14 +5,40 @@ subtitle: "Overview"
 
 ## What is a Family Process Matrix?
 
-A Family Process Matrix shows which process steps are used by each product family. It helps a team identify shared work, dedicated steps, branch points, bottlenecks, and opportunities to design a future-state value stream.
+A Family Process Matrix is a simple grid that compares the routes different products or services take through a workplace. Product families are listed in rows, and the steps, equipment, or work areas they use are listed in columns. Marking where a family uses a step makes similarities and differences visible at a glance.
 
-## Inputs and outputs
+The matrix is a conversation tool, not a performance scorecard. Build it with the people who do the work, and use it to agree on which flows should be studied next.
 
-Start with a list of product families and the process steps each family follows. The completed matrix provides a visual grouping of similar flows that can inform value stream mapping (VSM), process ownership, and improvement priorities.
+## Where it fits in Value Stream Mapping
+
+Value Stream Mapping (VSM) follows work from the request or incoming material through delivery to the customer. Before drawing one detailed current-state map, a team can use a Family Process Matrix to see which products follow similar routes. Families with a similar sequence can be mapped together; families with substantially different routes may need separate maps.
+
+This makes the matrix an early VSM decision point. It narrows a large set of products into one or more target value streams, while also highlighting shared resources, branch points, and likely constraints for later analysis.
+
+## Prepare the inputs
+
+Gather the following information before filling in the matrix:
+
+- a current list of products, services, sample types, or other items that should be compared;
+- a practical grouping of those items into product families;
+- the process steps or equipment areas used from intake through delivery;
+- the order of those steps, including rework loops, queues, inspections, and handoffs; and
+- notes about volume, timing, changeovers, defects, or known constraints when they are available.
+
+Use names that the people doing the work recognize. If the process is not yet well understood, mark uncertain steps for validation rather than guessing.
+
+## What the completed matrix provides
+
+A completed matrix can help the team:
+
+- identify families that share a potential target value stream;
+- distinguish common steps from dedicated or family-specific steps;
+- locate branches, stops, repeated work, and downstream bottlenecks to investigate;
+- decide where separate detailed current-state maps are needed; and
+- create a documented starting point for the next VSM workshop.
 
 ## Workflow
 
-1. Review the [worked example](process-example.qmd).
-2. Build and export a matrix in the [interactive workspace](process-primary.qmd).
-3. Use the [next steps](process-next.qmd) to turn the matrix into a process plan.
+1. Review the [worked example](./process-example.qmd) to see how a matrix can reveal shared and dedicated work.
+2. Build and export your own matrix in the [interactive workspace](./process-primary.qmd).
+3. Use the [next steps](./process-next.qmd) to select a target process for detailed value stream analysis.
