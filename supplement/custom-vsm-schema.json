@@ -1,0 +1,15 @@
+{
+  "title": "Custom VSM Data Box",
+  "fields": [
+    {
+      "key": "customer_requirement",
+      "label": "Customer Requirement",
+      "type": "text"
+    },
+    {
+      "key": "lead_time_days",
+      "label": "Lead Time (days)",
+      "type": "number"
+    }
+  ]
+}

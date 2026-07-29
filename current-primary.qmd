@@ -1,0 +1,652 @@
+---
+title: "Current State Map"
+subtitle: "Interactive workspace"
+page-layout: full
+format:
+  html:
+    code-copy: false
+---
+
+::: {.callout-note}
+## Build and document the current flow
+
+1. Start with the downstream process family selected in the Family Process Matrix and confirm the map boundary.
+2. Paste a simple `Step A -> Step B` script to create a starting diagram, or work directly in the embedded Draw.io editor.
+3. Select a process block in Draw.io, then enter or choose its matching label in the metadata panel. Save each observation to append it to the history.
+4. Export all diagram formats and the metadata CSV. Your browser will prompt for downloads; save or move them into `output/`.
+5. To define reusable fields, edit `supplement/custom-vsm-schema.json`, render the site again, and select **Custom JSON Schema**.
+:::
+
+<style>
+.current-map-workspace {
+  display: grid;
+  gap: 1rem;
+}
+.current-map-card {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .5rem;
+  padding: 1rem;
+}
+.current-map-card h2,
+.current-map-card h3 {
+  margin-top: 0;
+}
+.current-map-controls,
+.current-field-actions {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+}
+.current-map-controls label,
+.current-field-grid label {
+  font-weight: 600;
+}
+.current-map-workspace button,
+.current-map-workspace input,
+.current-map-workspace select,
+.current-map-workspace textarea {
+  border: 1px solid #65727a;
+  border-radius: .3rem;
+  padding: .45rem .65rem;
+}
+.current-map-workspace button {
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color, #222);
+  min-height: 2.35rem;
+}
+.current-map-workspace button:hover,
+.current-map-workspace button:focus {
+  box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2);
+}
+.current-script {
+  box-sizing: border-box;
+  display: block;
+  min-height: 7rem;
+  width: 100%;
+}
+.current-drawio-frame {
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  height: 680px;
+  margin-top: .75rem;
+  width: 100%;
+}
+.current-metadata-panel summary {
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.current-field-grid {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin: 1rem 0;
+}
+.current-field-grid label {
+  display: grid;
+  gap: .3rem;
+}
+.current-field-row {
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .35rem;
+  padding: .65rem;
+}
+.current-status {
+  min-height: 1.5rem;
+}
+.current-history {
+  display: block;
+  max-height: 16rem;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+@media (max-width: 700px) {
+  .current-drawio-frame {
+    height: 520px;
+  }
+}
+</style>
+
+```{ojs}
+//| echo: false
+
+viewof current_map_workspace = {
+  const current_drawio_origin = "https://embed.diagrams.net";
+  const current_empty_xml =
+    '<mxfile host="embed.diagrams.net"><diagram id="current-state" name="Page-1"><mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>';
+  const current_templates = {
+    basic: [
+      {key: "description", label: "Description", type: "text"},
+      {key: "owner", label: "Owner", type: "text"},
+      {key: "handoff", label: "Next Handoff", type: "text"}
+    ],
+    standard: [
+      {key: "cycle_time", label: "Cycle Time", type: "text"},
+      {key: "changeover_time", label: "Changeover Time", type: "text"},
+      {key: "uptime_oee", label: "Uptime / OEE (%)", type: "number"},
+      {key: "scrap_defect_rate", label: "Scrap / Defect Rate (%)", type: "number"},
+      {key: "batch_size", label: "Batch Size", type: "number"},
+      {key: "operators", label: "Operators", type: "number"}
+    ],
+    software: [
+      {key: "funding", label: "Funding", type: "text"},
+      {key: "code_errors", label: "Code Errors", type: "text"},
+      {key: "data_errors", label: "Data Errors", type: "text"},
+      {key: "security_permissions", label: "Security / Permissions", type: "text"},
+      {key: "approvals", label: "Approvals", type: "text"}
+    ]
+  };
+
+  const current_state = {
+    xml: current_empty_xml,
+    history: [],
+    history_fields: new Map(),
+    fields: structuredClone(current_templates.basic),
+    scripted_components: [],
+    export_queue: []
+  };
+
+  const current_workspace = document.createElement("div");
+  current_workspace.className = "current-map-workspace";
+
+  const current_script_card = document.createElement("section");
+  current_script_card.className = "current-map-card";
+  const current_script_heading = document.createElement("h2");
+  current_script_heading.textContent = "Option A: Create a diagram from text";
+  const current_script_help = document.createElement("p");
+  current_script_help.textContent =
+    "Enter doc2draw-style process text. Put one step per line or connect labels with ->. The generated flow opens in the editor below.";
+  const current_script = document.createElement("textarea");
+  current_script.className = "current-script";
+  current_script.setAttribute("aria-label", "Text-to-diagram process script");
+  current_script.value =
+    "Receive work -> Validate inputs -> Perform process -> Review output -> Deliver";
+  const current_create_diagram = current_button("Create diagram from text");
+  current_script_card.append(
+    current_script_heading,
+    current_script_help,
+    current_script,
+    current_create_diagram
+  );
+
+  const current_editor_card = document.createElement("section");
+  current_editor_card.className = "current-map-card";
+  const current_editor_heading = document.createElement("h2");
+  current_editor_heading.textContent = "Option B: Edit directly in Draw.io";
+  const current_editor_help = document.createElement("p");
+  current_editor_help.textContent =
+    "Use the full editor to add process blocks, decisions, queues, connectors, and annotations. Changes remain in this browser tab until exported.";
+  const current_export_controls = document.createElement("div");
+  current_export_controls.className = "current-map-controls";
+  const current_export_all = current_button("Export all diagram formats");
+  const current_export_help = document.createElement("span");
+  current_export_help.textContent =
+    "Downloads current_state.drawio, current_state.drawio.svg, and current_state.png. Place them in output/.";
+  current_export_controls.append(current_export_all, current_export_help);
+  const current_frame = document.createElement("iframe");
+  current_frame.className = "current-drawio-frame";
+  current_frame.title = "Draw.io Current State Map editor";
+  current_frame.src =
+    `${current_drawio_origin}/?embed=1&proto=json&spin=1&autosave=1&saveAndExit=0&noSaveBtn=1&libraries=1`;
+  current_editor_card.append(
+    current_editor_heading,
+    current_editor_help,
+    current_export_controls,
+    current_frame
+  );
+
+  const current_metadata_card = document.createElement("section");
+  current_metadata_card.className = "current-map-card";
+  const current_metadata_details = document.createElement("details");
+  current_metadata_details.className = "current-metadata-panel";
+  const current_metadata_summary = document.createElement("summary");
+  current_metadata_summary.textContent = "Process block metadata";
+  const current_metadata_help = document.createElement("p");
+  current_metadata_help.textContent =
+    "Select a block in Draw.io, then use the same block label here. Choosing a saved component restores its most recent values.";
+
+  const current_component_list = document.createElement("datalist");
+  current_component_list.id = "current-component-options";
+  const current_metadata_controls = document.createElement("div");
+  current_metadata_controls.className = "current-map-controls";
+  const current_component_label = document.createElement("label");
+  current_component_label.textContent = "Selected process block";
+  const current_component = document.createElement("input");
+  current_component.type = "text";
+  current_component.required = true;
+  current_component.setAttribute("list", current_component_list.id);
+  current_component.setAttribute("aria-label", "Selected process block");
+  current_component_label.append(document.createElement("br"), current_component);
+
+  const current_template_label = document.createElement("label");
+  current_template_label.textContent = "Metadata template";
+  const current_template = document.createElement("select");
+  [
+    ["basic", "Basic Flow"],
+    ["standard", "Standard VSM Data Box"],
+    ["software", "Software/Administrative VSM"],
+    ["custom", "Custom JSON Schema"]
+  ].forEach(([value, label]) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    current_template.append(option);
+  });
+  current_template_label.append(document.createElement("br"), current_template);
+  current_metadata_controls.append(
+    current_component_label,
+    current_template_label,
+    current_component_list
+  );
+
+  const current_field_grid = document.createElement("div");
+  current_field_grid.className = "current-field-grid";
+  const current_add_controls = document.createElement("div");
+  current_add_controls.className = "current-field-actions";
+  const current_new_label = document.createElement("input");
+  current_new_label.type = "text";
+  current_new_label.placeholder = "Additional field label";
+  current_new_label.setAttribute("aria-label", "Additional field label");
+  const current_new_type = document.createElement("select");
+  current_new_type.setAttribute("aria-label", "Additional field type");
+  [["text", "Text"], ["number", "Number"], ["date", "Date"]].forEach(([value, label]) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    current_new_type.append(option);
+  });
+  const current_add_field = current_button("Add field");
+  current_add_controls.append(current_new_label, current_new_type, current_add_field);
+
+  const current_record_controls = document.createElement("div");
+  current_record_controls.className = "current-map-controls";
+  const current_save_metadata = current_button("Append metadata record");
+  const current_export_metadata = current_button("Export Metadata to CSV");
+  current_record_controls.append(current_save_metadata, current_export_metadata);
+  const current_history = document.createElement("code");
+  current_history.className = "current-history";
+  current_history.textContent = "No metadata records saved yet.";
+
+  current_metadata_details.append(
+    current_metadata_summary,
+    current_metadata_help,
+    current_metadata_controls,
+    current_field_grid,
+    current_add_controls,
+    current_record_controls,
+    current_history
+  );
+  current_metadata_card.append(current_metadata_details);
+
+  const current_status = document.createElement("p");
+  current_status.className = "current-status";
+  current_status.setAttribute("role", "status");
+  current_status.setAttribute("aria-live", "polite");
+  current_workspace.append(
+    current_script_card,
+    current_editor_card,
+    current_metadata_card,
+    current_status
+  );
+
+  function current_button(label) {
+    const element = document.createElement("button");
+    element.type = "button";
+    element.textContent = label;
+    return element;
+  }
+
+  function current_notify(message) {
+    current_status.textContent = message;
+  }
+
+  function current_post(message) {
+    current_frame.contentWindow?.postMessage(
+      JSON.stringify(message),
+      current_drawio_origin
+    );
+  }
+
+  function current_escape_xml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&apos;");
+  }
+
+  function current_parse_script(script) {
+    const nodes = [];
+    const edges = [];
+    const node_index = new Map();
+    const add_node = (label) => {
+      const clean_label = label.trim();
+      if (!clean_label) return null;
+      if (!node_index.has(clean_label)) {
+        node_index.set(clean_label, nodes.length);
+        nodes.push(clean_label);
+      }
+      return node_index.get(clean_label);
+    };
+
+    script.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).forEach((line) => {
+      const labels = line.split(/\s*->\s*/).filter(Boolean);
+      labels.forEach(add_node);
+      for (let index = 0; index < labels.length - 1; index += 1) {
+        edges.push([add_node(labels[index]), add_node(labels[index + 1])]);
+      }
+    });
+    if (edges.length === 0) {
+      for (let index = 0; index < nodes.length - 1; index += 1) {
+        edges.push([index, index + 1]);
+      }
+    }
+    return {nodes, edges};
+  }
+
+  function current_xml_from_script(script) {
+    const parsed = current_parse_script(script);
+    if (parsed.nodes.length === 0) {
+      throw new Error("Enter at least one process step.");
+    }
+    const cells = parsed.nodes.map((label, index) => {
+      const x = 60 + (index % 4) * 240;
+      const y = 80 + Math.floor(index / 4) * 150;
+      return `<mxCell id="node-${index}" value="${current_escape_xml(label)}" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="${x}" y="${y}" width="160" height="60" as="geometry"/></mxCell>`;
+    });
+    parsed.edges.forEach(([source, target], index) => {
+      cells.push(`<mxCell id="edge-${index}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="node-${source}" target="node-${target}"><mxGeometry relative="1" as="geometry"/></mxCell>`);
+    });
+    current_state.scripted_components = parsed.nodes;
+    current_component_list.replaceChildren(
+      ...parsed.nodes.map((label) => {
+        const option = document.createElement("option");
+        option.value = label;
+        return option;
+      })
+    );
+    return `<mxfile host="embed.diagrams.net"><diagram id="current-state" name="Page-1"><mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827"><root><mxCell id="0"/><mxCell id="1" parent="0"/>${cells.join("")}</root></mxGraphModel></diagram></mxfile>`;
+  }
+
+  function current_download_url(url, filename) {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+  }
+
+  function current_download_blob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    current_download_url(url, filename);
+    URL.revokeObjectURL(url);
+  }
+
+  function current_request_next_export() {
+    const format = current_state.export_queue.shift();
+    if (!format) {
+      current_export_all.disabled = false;
+      current_notify("All diagram downloads are ready. Save or move them into output/.");
+      return;
+    }
+    current_state.active_export = format;
+    current_post({
+      action: "export",
+      format,
+      xml: current_state.xml,
+      spinKey: "export"
+    });
+  }
+
+  function current_handle_message(event) {
+    if (
+      event.origin !== current_drawio_origin ||
+      event.source !== current_frame.contentWindow
+    ) return;
+    let message;
+    try {
+      message = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+    } catch {
+      return;
+    }
+    if (message.event === "init") {
+      current_post({
+        action: "load",
+        autosave: 1,
+        modified: "unsavedChanges",
+        xml: current_state.xml,
+        title: "Current State Map"
+      });
+      current_notify("Draw.io editor ready.");
+    } else if (message.event === "autosave" || message.event === "save") {
+      if (message.xml) current_state.xml = message.xml;
+    } else if (message.event === "export" && message.data) {
+      const filename =
+        current_state.active_export === "xmlsvg"
+          ? "current_state.drawio.svg"
+          : "current_state.png";
+      current_download_url(message.data, filename);
+      current_request_next_export();
+    }
+  }
+  window.addEventListener("message", current_handle_message);
+
+  current_create_diagram.addEventListener("click", () => {
+    try {
+      current_state.xml = current_xml_from_script(current_script.value);
+      current_post({
+        action: "load",
+        autosave: 1,
+        modified: "unsavedChanges",
+        xml: current_state.xml,
+        title: "Current State Map"
+      });
+      current_notify("Created a starting diagram from the process script.");
+    } catch (error) {
+      current_notify(error.message);
+    }
+  });
+
+  current_export_all.addEventListener("click", () => {
+    current_export_all.disabled = true;
+    current_download_blob(
+      new Blob([current_state.xml], {type: "application/xml;charset=utf-8"}),
+      "current_state.drawio"
+    );
+    current_state.export_queue = ["xmlsvg", "xmlpng"];
+    current_notify("Preparing editable SVG and PNG exports…");
+    current_request_next_export();
+  });
+
+  function current_key(label) {
+    return label
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  function current_latest_record(component) {
+    return [...current_state.history].reverse().find(
+      (record) => record.component === component
+    );
+  }
+
+  function current_render_fields(values = {}) {
+    current_field_grid.replaceChildren();
+    current_state.fields.forEach((field, index) => {
+      const row = document.createElement("div");
+      row.className = "current-field-row";
+      const label = document.createElement("label");
+      label.textContent = field.label;
+      const input = document.createElement("input");
+      input.type = ["text", "number", "date"].includes(field.type)
+        ? field.type
+        : "text";
+      input.value = values[field.key] ?? "";
+      input.dataset.fieldKey = field.key;
+      label.append(input);
+      const remove = current_button(`Remove ${field.label}`);
+      remove.addEventListener("click", () => {
+        current_state.fields.splice(index, 1);
+        current_render_fields(current_field_values());
+      });
+      row.append(label, remove);
+      current_field_grid.append(row);
+    });
+  }
+
+  function current_field_values() {
+    return Object.fromEntries(
+      [...current_field_grid.querySelectorAll("[data-field-key]")].map((input) => [
+        input.dataset.fieldKey,
+        input.value
+      ])
+    );
+  }
+
+  async function current_set_template(template_name, values = {}) {
+    if (template_name === "custom") {
+      try {
+        const response = await fetch("./supplement/custom-vsm-schema.json");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const schema = await response.json();
+        if (!Array.isArray(schema.fields)) throw new Error("Missing fields array");
+        current_state.fields = schema.fields
+          .filter((field) => field && typeof field.label === "string")
+          .map((field) => ({
+            key: current_key(field.key || field.label),
+            label: field.label,
+            type: ["text", "number", "date"].includes(field.type)
+              ? field.type
+              : "text"
+          }))
+          .filter((field) => field.key);
+        current_notify(`Loaded ${schema.title || "custom metadata schema"}.`);
+      } catch {
+        current_state.fields = [];
+        current_notify(
+          "Could not load supplement/custom-vsm-schema.json. Check the schema and render the site again."
+        );
+      }
+    } else {
+      current_state.fields = structuredClone(current_templates[template_name]);
+    }
+    current_render_fields(values);
+  }
+
+  async function current_restore_component() {
+    const component = current_component.value.trim();
+    if (!component) return;
+    current_metadata_details.open = true;
+    const latest = current_latest_record(component);
+    if (!latest) {
+      await current_set_template(current_template.value);
+      return;
+    }
+    current_template.value = latest.template;
+    current_state.fields = structuredClone(
+      current_state.history_fields.get(latest.timestamp) ||
+      current_templates[latest.template] ||
+      []
+    );
+    current_render_fields(latest);
+    current_notify(`Restored the latest metadata for ${component}.`);
+  }
+
+  current_component.addEventListener("change", current_restore_component);
+  current_template.addEventListener("change", () => {
+    current_set_template(current_template.value);
+  });
+
+  current_add_field.addEventListener("click", () => {
+    const label = current_new_label.value.trim();
+    const key = current_key(label);
+    if (!key) {
+      current_notify("Enter a label for the additional field.");
+      return;
+    }
+    if (current_state.fields.some((field) => field.key === key)) {
+      current_notify("That field already exists.");
+      return;
+    }
+    const values = current_field_values();
+    current_state.fields.push({key, label, type: current_new_type.value});
+    current_new_label.value = "";
+    current_render_fields(values);
+    current_notify(`Added ${label}.`);
+  });
+
+  function current_render_history() {
+    if (current_state.history.length === 0) {
+      current_history.textContent = "No metadata records saved yet.";
+      return;
+    }
+    current_history.textContent = current_state.history
+      .map((record) => `${record.timestamp} — ${record.component} (${record.template})`)
+      .join("\n");
+  }
+
+  current_save_metadata.addEventListener("click", () => {
+    const component = current_component.value.trim();
+    if (!component) {
+      current_notify("Enter the selected process block before saving metadata.");
+      current_component.focus();
+      return;
+    }
+    const timestamp = new Date().toISOString();
+    const record = {
+      timestamp,
+      component,
+      template: current_template.value,
+      ...current_field_values()
+    };
+    current_state.history.push(record);
+    current_state.history_fields.set(timestamp, structuredClone(current_state.fields));
+    current_render_history();
+    current_workspace.dispatchEvent(new Event("input", {bubbles: true}));
+    current_notify(`Appended metadata for ${component}.`);
+  });
+
+  function current_csv_value(value) {
+    return `"${String(value ?? "").replaceAll('"', '""')}"`;
+  }
+
+  current_export_metadata.addEventListener("click", () => {
+    if (current_state.history.length === 0) {
+      current_notify("Save at least one metadata record before exporting.");
+      return;
+    }
+    const columns = [
+      "timestamp",
+      "component",
+      "template",
+      ...new Set(current_state.history.flatMap((record) => Object.keys(record)))
+    ].filter((value, index, values) => values.indexOf(value) === index);
+    const lines = [
+      columns.map(current_csv_value).join(","),
+      ...current_state.history.map((record) =>
+        columns.map((column) => current_csv_value(record[column])).join(",")
+      )
+    ];
+    current_download_blob(
+      new Blob([lines.join("\r\n")], {type: "text/csv;charset=utf-8"}),
+      "current_state_metadata.csv"
+    );
+    current_notify("Metadata history CSV ready. Save or move it into output/.");
+  });
+
+  Object.defineProperty(current_workspace, "value", {
+    get: () => ({
+      xml: current_state.xml,
+      history: structuredClone(current_state.history)
+    })
+  });
+
+  current_render_fields();
+  return current_workspace;
+}
+```
