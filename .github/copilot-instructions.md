@@ -41,7 +41,7 @@ Each section `[name]` MUST contain 4 linked Quarto files:
 - **Interactive Matrix Standards**:
   - Implement dynamic tables using OJS inputs/components (`Inputs.table`, standard HTML elements, or custom JS renderers).
   - Allow users to add/delete rows/columns, edit text, insert emojis, and apply inline styling (e.g., cell background colors).
-  - Provide standard client-side exports (CSV, JSON) triggering browser download prompts (suggesting default path `output/`).
+  - Provide standard client-side exports (CSV, JSON, XLSX via SheetJS) triggering browser download prompts (suggesting default path `output/`).
 - **File Structure**:
   - `process-intro.qmd`: Core concepts, inputs/outputs, and VSM relationship.
   - `process-example.qmd`: Tutorial featuring sample matrices for different scenarios.
