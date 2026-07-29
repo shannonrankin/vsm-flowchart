@@ -1,0 +1,18 @@
+---
+title: "Family Process Matrix"
+subtitle: "Example"
+---
+
+## Example: Marine sample processing
+
+| Product family | Receive samples | Log metadata | Laboratory analysis | Quality review |
+|---|---:|---:|---:|---:|
+| Passive acoustic recordings | 🟩 🔁 | 🟩 🔁 | 🟦 Custom detector | 🟩 🔁 |
+| eDNA samples | 🟩 🔁 | 🟩 🔁 | 🟨 ⚠️ Changeover | 🟩 🔁 |
+| Visual survey records | 🟩 🔁 | 🟩 🔁 | 🟦 Manual annotation | 🛑 Rework |
+
+Green cells reveal the high-volume shared flow. Blue cells distinguish family-specific analysis, yellow draws attention to setup time, and the stop marker identifies a likely improvement target.
+
+## Try it yourself
+
+Open the [interactive workspace](process-primary.qmd), rename the starter rows and columns, and adapt the example to your own process.

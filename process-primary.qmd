@@ -1,0 +1,494 @@
+---
+title: "Family Process Matrix"
+subtitle: "Interactive workspace"
+page-layout: full
+format:
+  html:
+    code-copy: false
+---
+
+::: {.callout-note icon=false}
+## VSM Mapping Instructions & Visual Legend
+
+### Visual Coding Recommendations
+
+| Color | Recommended meaning |
+|---|---|
+| 🟥 **Red Highlight** | Downstream Bottleneck / Constraint Process |
+| 🟩 **Green Highlight** | Standard Shared Flow / High-Volume Path |
+| 🟨 **Yellow Highlight** | Shared Process with High Setup/Changeover Time |
+| 🟦 **Blue Highlight** | Dedicated / Custom Process Step |
+
+### Standard VSM Emojis & Text Markers
+
+- ⚠️ `[Bottleneck]` - Flow constraint requiring immediate analysis
+- 🔁 `[Shared]` - Step shared across multiple product families
+- 🔀 `[Branch]` - Point where product families diverge
+- 🛑 `[Stop]` - High rework or defect area
+
+### Brief How-To
+
+1. Click a row name, column name, or matrix cell and type to edit it. Emoji and plain text are both supported.
+2. Select a matrix cell, choose whether a color applies to that **cell**, **row**, or **column**, then use a color preset.
+3. Use the marker buttons to insert a standard VSM marker into the selected cell.
+4. Add or delete rows and columns as the process changes. Similar color and marker patterns reveal shared flows and product-family groupings.
+:::
+
+<style>
+.matrix-editor {
+  --matrix-border: #9aa5ad;
+  display: grid;
+  gap: 1rem;
+}
+.matrix-toolbar {
+  align-items: end;
+  background: var(--bs-tertiary-bg, #f5f7f8);
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  padding: .75rem;
+}
+.matrix-toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+.matrix-toolbar label {
+  font-weight: 600;
+}
+.matrix-toolbar button,
+.matrix-toolbar select {
+  border: 1px solid #65727a;
+  border-radius: .3rem;
+  min-height: 2.25rem;
+  padding: .35rem .65rem;
+}
+.matrix-toolbar button {
+  background: var(--bs-body-bg, white);
+  color: var(--bs-body-color, #222);
+}
+.matrix-toolbar button:hover,
+.matrix-toolbar button:focus {
+  box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2);
+}
+.matrix-preset {
+  border-left: .8rem solid var(--preset-color) !important;
+}
+.matrix-table-wrap {
+  overflow-x: auto;
+}
+.matrix-table {
+  border-collapse: collapse;
+  min-width: 100%;
+}
+.matrix-table th,
+.matrix-table td {
+  border: 1px solid var(--matrix-border);
+  min-width: 10rem;
+  padding: .65rem;
+  vertical-align: top;
+}
+.matrix-table th {
+  background: var(--bs-tertiary-bg, #eef2f3);
+  font-weight: 600;
+}
+.matrix-table [contenteditable="true"] {
+  cursor: text;
+}
+.matrix-table .matrix-selected {
+  box-shadow: inset 0 0 0 3px #075ea8;
+  outline: 2px solid var(--bs-body-bg, white);
+  outline-offset: -4px;
+}
+.matrix-status {
+  margin: 0;
+  min-height: 1.5rem;
+}
+.matrix-export {
+  border-top: 1px solid var(--bs-border-color, #d8dee2);
+  padding-top: 1rem;
+}
+</style>
+
+```{ojs}
+//| echo: false
+
+viewof matrix_editor = {
+  const preset_colors = [
+    {label: "Red — bottleneck", value: "#f4cccc"},
+    {label: "Green — shared flow", value: "#d9ead3"},
+    {label: "Yellow — setup time", value: "#fff2cc"},
+    {label: "Blue — dedicated step", value: "#cfe2f3"},
+    {label: "Clear highlight", value: ""}
+  ];
+
+  const markers = [
+    {label: "⚠️ Bottleneck", value: "⚠️ [Bottleneck]"},
+    {label: "🔁 Shared", value: "🔁 [Shared]"},
+    {label: "🔀 Branch", value: "🔀 [Branch]"},
+    {label: "🛑 Stop", value: "🛑 [Stop]"}
+  ];
+
+  let state = {
+    columns: ["Receive", "Prepare", "Process", "Review"],
+    rows: [
+      {name: "Product family 1", cells: ["", "", "", ""]},
+      {name: "Product family 2", cells: ["", "", "", ""]},
+      {name: "Product family 3", cells: ["", "", "", ""]}
+    ],
+    colors: {}
+  };
+  let selected = {row: 0, column: 0};
+
+  const editor = html`<div class="matrix-editor"></div>`;
+  const controls = document.createElement("div");
+  controls.className = "matrix-toolbar";
+  controls.setAttribute("aria-label", "Matrix editing controls");
+
+  const structure_controls = document.createElement("div");
+  structure_controls.className = "matrix-toolbar-group";
+  const add_row = button("Add row");
+  const delete_row = button("Delete selected row");
+  const add_column = button("Add column");
+  const delete_column = button("Delete selected column");
+  structure_controls.append(add_row, delete_row, add_column, delete_column);
+
+  const scope_group = document.createElement("div");
+  scope_group.className = "matrix-toolbar-group";
+  const scope_label = document.createElement("label");
+  scope_label.textContent = "Apply color to";
+  const scope = document.createElement("select");
+  scope.setAttribute("aria-label", "Color application scope");
+  ["cell", "row", "column"].forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value[0].toUpperCase() + value.slice(1);
+    scope.append(option);
+  });
+  scope_label.append(document.createElement("br"), scope);
+  scope_group.append(scope_label);
+
+  const color_controls = document.createElement("div");
+  color_controls.className = "matrix-toolbar-group";
+  color_controls.setAttribute("aria-label", "Highlight presets");
+  preset_colors.forEach((preset) => {
+    const preset_button = button(preset.label);
+    preset_button.className = "matrix-preset";
+    preset_button.style.setProperty("--preset-color", preset.value || "#ffffff");
+    preset_button.addEventListener("click", () => apply_color(preset.value));
+    color_controls.append(preset_button);
+  });
+
+  const marker_controls = document.createElement("div");
+  marker_controls.className = "matrix-toolbar-group";
+  marker_controls.setAttribute("aria-label", "VSM marker presets");
+  markers.forEach((marker) => {
+    const marker_button = button(marker.label);
+    marker_button.addEventListener("click", () => insert_marker(marker.value));
+    marker_controls.append(marker_button);
+  });
+
+  controls.append(structure_controls, scope_group, color_controls, marker_controls);
+
+  const table_wrap = document.createElement("div");
+  table_wrap.className = "matrix-table-wrap";
+  const status = document.createElement("p");
+  status.className = "matrix-status";
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+
+  const export_section = document.createElement("div");
+  export_section.className = "matrix-export";
+  const export_heading = document.createElement("h2");
+  export_heading.textContent = "Export the matrix";
+  const export_guidance = document.createElement("p");
+  export_guidance.textContent =
+    "Your browser will prompt you to download the file. Save or move the export into this repository's output/ directory.";
+  const export_controls = document.createElement("div");
+  export_controls.className = "matrix-toolbar-group";
+  const export_csv = button("Export to CSV");
+  const export_json = button("Export to JSON");
+  const export_xlsx = button("Export to Excel (.xlsx)");
+  export_controls.append(export_csv, export_json, export_xlsx);
+  export_section.append(export_heading, export_guidance, export_controls);
+
+  editor.append(controls, table_wrap, status, export_section);
+
+  function button(label) {
+    const element = document.createElement("button");
+    element.type = "button";
+    element.textContent = label;
+    return element;
+  }
+
+  function cell_key(row, column) {
+    return `${row}:${column}`;
+  }
+
+  function notify(message) {
+    status.textContent = message;
+  }
+
+  function emit_change() {
+    editor.dispatchEvent(new Event("input", {bubbles: true}));
+  }
+
+  function show_selection(table) {
+    table.querySelectorAll(".matrix-selected").forEach((element) => {
+      element.classList.remove("matrix-selected");
+    });
+    table.tBodies[0]?.rows[selected.row]?.cells[selected.column + 1]?.classList.add(
+      "matrix-selected"
+    );
+  }
+
+  function render() {
+    const table = document.createElement("table");
+    table.className = "matrix-table";
+    const caption = document.createElement("caption");
+    caption.className = "visually-hidden";
+    caption.textContent = "Editable product family and process step matrix";
+    table.append(caption);
+
+    const head = document.createElement("thead");
+    const head_row = document.createElement("tr");
+    const corner = document.createElement("th");
+    corner.scope = "col";
+    corner.textContent = "Product family";
+    head_row.append(corner);
+
+    state.columns.forEach((column_name, column_index) => {
+      const header = document.createElement("th");
+      header.scope = "col";
+      header.contentEditable = "true";
+      header.textContent = column_name;
+      header.setAttribute("aria-label", `Process step ${column_index + 1}`);
+      if (selected.column === column_index) {
+        header.dataset.selectedColumn = "true";
+      }
+      header.addEventListener("focus", () => {
+        selected.column = column_index;
+        show_selection(table);
+      });
+      header.addEventListener("input", () => {
+        state.columns[column_index] = header.textContent;
+        emit_change();
+      });
+      head_row.append(header);
+    });
+    head.append(head_row);
+    table.append(head);
+
+    const body = document.createElement("tbody");
+    state.rows.forEach((row, row_index) => {
+      const table_row = document.createElement("tr");
+      const row_header = document.createElement("th");
+      row_header.scope = "row";
+      row_header.contentEditable = "true";
+      row_header.textContent = row.name;
+      row_header.setAttribute("aria-label", `Product family ${row_index + 1}`);
+      row_header.addEventListener("focus", () => {
+        selected.row = row_index;
+        show_selection(table);
+      });
+      row_header.addEventListener("input", () => {
+        state.rows[row_index].name = row_header.textContent;
+        emit_change();
+      });
+      table_row.append(row_header);
+
+      row.cells.forEach((value, column_index) => {
+        const cell = document.createElement("td");
+        cell.contentEditable = "true";
+        cell.textContent = value;
+        cell.style.backgroundColor = state.colors[cell_key(row_index, column_index)] || "";
+        if (cell.style.backgroundColor) cell.style.color = "#212529";
+        cell.setAttribute(
+          "aria-label",
+          `${row.name}, ${state.columns[column_index]}`
+        );
+        if (
+          selected.row === row_index &&
+          selected.column === column_index
+        ) {
+          cell.classList.add("matrix-selected");
+        }
+        cell.addEventListener("focus", () => {
+          selected = {row: row_index, column: column_index};
+          show_selection(table);
+        });
+        cell.addEventListener("click", () => {
+          selected = {row: row_index, column: column_index};
+        });
+        cell.addEventListener("input", () => {
+          state.rows[row_index].cells[column_index] = cell.textContent;
+          emit_change();
+        });
+        table_row.append(cell);
+      });
+      body.append(table_row);
+    });
+    table.append(body);
+    table_wrap.replaceChildren(table);
+  }
+
+  function apply_color(color) {
+    if (scope.value === "cell") {
+      state.colors[cell_key(selected.row, selected.column)] = color;
+    } else if (scope.value === "row") {
+      state.columns.forEach((_, column_index) => {
+        state.colors[cell_key(selected.row, column_index)] = color;
+      });
+    } else {
+      state.rows.forEach((_, row_index) => {
+        state.colors[cell_key(row_index, selected.column)] = color;
+      });
+    }
+    render();
+    emit_change();
+    notify(`Updated the selected ${scope.value}.`);
+  }
+
+  function insert_marker(marker) {
+    const current = state.rows[selected.row].cells[selected.column].trim();
+    state.rows[selected.row].cells[selected.column] =
+      current === "" ? marker : `${current} ${marker}`;
+    render();
+    emit_change();
+    notify("Marker inserted in the selected cell.");
+  }
+
+  function reindex_colors(row_to_remove, column_to_remove) {
+    const next_colors = {};
+    Object.entries(state.colors).forEach(([key, color]) => {
+      let [row, column] = key.split(":").map(Number);
+      if (row === row_to_remove || column === column_to_remove) return;
+      if (row_to_remove !== null && row > row_to_remove) row -= 1;
+      if (column_to_remove !== null && column > column_to_remove) column -= 1;
+      next_colors[cell_key(row, column)] = color;
+    });
+    state.colors = next_colors;
+  }
+
+  add_row.addEventListener("click", () => {
+    state.rows.push({
+      name: `Product family ${state.rows.length + 1}`,
+      cells: state.columns.map(() => "")
+    });
+    selected.row = state.rows.length - 1;
+    render();
+    emit_change();
+    notify("Added a product family row.");
+  });
+
+  delete_row.addEventListener("click", () => {
+    if (state.rows.length === 1) {
+      notify("The matrix must keep at least one product family.");
+      return;
+    }
+    state.rows.splice(selected.row, 1);
+    reindex_colors(selected.row, null);
+    selected.row = Math.min(selected.row, state.rows.length - 1);
+    render();
+    emit_change();
+    notify("Deleted the selected product family row.");
+  });
+
+  add_column.addEventListener("click", () => {
+    state.columns.push(`Process step ${state.columns.length + 1}`);
+    state.rows.forEach((row) => row.cells.push(""));
+    selected.column = state.columns.length - 1;
+    render();
+    emit_change();
+    notify("Added a process step column.");
+  });
+
+  delete_column.addEventListener("click", () => {
+    if (state.columns.length === 1) {
+      notify("The matrix must keep at least one process step.");
+      return;
+    }
+    state.columns.splice(selected.column, 1);
+    state.rows.forEach((row) => row.cells.splice(selected.column, 1));
+    reindex_colors(null, selected.column);
+    selected.column = Math.min(selected.column, state.columns.length - 1);
+    render();
+    emit_change();
+    notify("Deleted the selected process step column.");
+  });
+
+  function download(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function csv_value(value) {
+    return `"${String(value).replaceAll('"', '""')}"`;
+  }
+
+  export_csv.addEventListener("click", () => {
+    const lines = [
+      ["Product family", ...state.columns].map(csv_value).join(","),
+      ...state.rows.map((row) => [row.name, ...row.cells].map(csv_value).join(","))
+    ];
+    download(
+      new Blob([lines.join("\r\n")], {type: "text/csv;charset=utf-8"}),
+      "family_process_matrix.csv"
+    );
+    notify("CSV export prepared.");
+  });
+
+  export_json.addEventListener("click", () => {
+    download(
+      new Blob([JSON.stringify(state, null, 2)], {
+        type: "application/json;charset=utf-8"
+      }),
+      "family_process_matrix.json"
+    );
+    notify("JSON export prepared.");
+  });
+
+  export_xlsx.addEventListener("click", async () => {
+    export_xlsx.disabled = true;
+    notify("Preparing the Excel export…");
+    try {
+      const XLSX = await import(
+        "https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs"
+      );
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.aoa_to_sheet([
+        ["Product family", ...state.columns],
+        ...state.rows.map((row) => [row.name, ...row.cells])
+      ]);
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Process Matrix");
+      const bytes = XLSX.write(workbook, {bookType: "xlsx", type: "array"});
+      download(
+        new Blob([bytes], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }),
+        "family_process_matrix.xlsx"
+      );
+      notify("Excel export prepared.");
+    } catch (error) {
+      notify("Excel export could not be prepared. Check the network connection and try again.");
+    } finally {
+      export_xlsx.disabled = false;
+    }
+  });
+
+  Object.defineProperty(editor, "value", {
+    get: () => structuredClone(state)
+  });
+
+  render();
+  return editor;
+}
+```

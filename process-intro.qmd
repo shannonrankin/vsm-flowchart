@@ -1,0 +1,18 @@
+---
+title: "Family Process Matrix"
+subtitle: "Overview"
+---
+
+## What is a Family Process Matrix?
+
+A Family Process Matrix shows which process steps are used by each product family. It helps a team identify shared work, dedicated steps, branch points, bottlenecks, and opportunities to design a future-state value stream.
+
+## Inputs and outputs
+
+Start with a list of product families and the process steps each family follows. The completed matrix provides a visual grouping of similar flows that can inform value stream mapping (VSM), process ownership, and improvement priorities.
+
+## Workflow
+
+1. Review the [worked example](process-example.qmd).
+2. Build and export a matrix in the [interactive workspace](process-primary.qmd).
+3. Use the [next steps](process-next.qmd) to turn the matrix into a process plan.

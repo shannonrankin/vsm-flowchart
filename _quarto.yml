@@ -54,6 +54,16 @@ website:
           - content/AnalysisMethods.qmd
       - href: content/Reporting.qmd
         text: Reporting
+      - section: "Family Process Matrix"
+        contents:
+          - href: process-intro.qmd
+            text: Overview
+          - href: process-example.qmd
+            text: Tutorial and Example
+          - href: process-primary.qmd
+            text: Interactive Workspace
+          - href: process-next.qmd
+            text: Next Steps
       - section: "Optional Pages"
         contents: 
           - content/SharedValues.qmd

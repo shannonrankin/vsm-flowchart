@@ -1,0 +1,16 @@
+---
+title: "Family Process Matrix"
+subtitle: "Next Steps"
+---
+
+## Move from grouping to planning
+
+After completing the matrix:
+
+1. Validate the process sequence with people who perform the work.
+2. Group families that share most process steps.
+3. Investigate red and yellow cells before designing the future state.
+4. Confirm where branches, stops, and dedicated steps require separate maps.
+5. Save the exported matrix in `output/` and use it as an input to the next VSM session.
+
+Return to the [interactive workspace](process-primary.qmd) to revise or export the matrix.
