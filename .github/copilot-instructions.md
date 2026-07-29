@@ -34,7 +34,23 @@ Each section `[name]` MUST contain 4 linked Quarto files:
 - Code Chunks: Keep small and focused with explicit options (`echo`, `message`, `warning`).
 - Style: Prefer readability, small helper functions, and clear type stability over complex nested pipelines.
 
-## Family Process Matrix (VSM) Architectural Rules
+  ## Global Quarto & OJS Coding Standards
+
+- **OJS Scope & Reactivity**:
+  - Keep all reactive OJS state variables unique across files to prevent cross-page state leaking in Quarto multi-page builds.
+  - Avoid using external npm packages unless explicitly required (e.g., dynamic imports via `require()` for SheetJS/Draw.io).
+  - Use standard HTML/CSS wrappers (`<div class="card">...</div>`) around OJS inputs and Draw.io controls to maintain clean, scannable layouts.
+
+- **File System & Directory Structure**:
+  - **`output/`**: Reserved exclusively for user exports (CSVs, JSONs, `.drawio`, `.svg`, `.png`). Always include helper text prompting the user to place downloaded files here.
+  - **`supplement/`**: Reserved for custom schema templates (e.g., `supplement/custom-vsm-schema.json`), helper scripts, or reference documentation.
+  - Check that any hardcoded navigation links use relative local paths (e.g., `./process-primary.qmd`).
+
+- **User Guidance & UX**:
+  - Every interactive page (`*-primary.qmd`) must start with an instructional callout box (`::: {.callout-note}`) outlining clear step-by-step instructions before the interactive components.
+
+
+  ## 1. Family Process Matrix (VSM) Architectural Rules
 
 - **Framework**: Quarto (`.qmd`) utilizing native **Observable JS (OJS)** for client-side interactivity.
 - **Site Navigation**: All new pages must be registered under the `"Family Process Matrix"` sidebar section in `_quarto.yml`.
@@ -47,3 +63,27 @@ Each section `[name]` MUST contain 4 linked Quarto files:
   - `process-example.qmd`: Tutorial featuring sample matrices for different scenarios.
   - `process-primary.qmd`: Primary interactive matrix builder.
   - `process-next.qmd`: Downstream process planning and transition guide.
+  
+  
+  ## 2. Current State Map (VSM) Architectural Rules
+
+- **Framework**: Quarto (`.qmd`) utilizing native **Observable JS (OJS)** and embedded **Draw.io Embed API** (`https://embed.diagrams.net`).
+- **Site Navigation**: Place the `"Current State Map"` sidebar section directly after `"Family Process Matrix"` in `_quarto.yml`.
+- **Diagram Editor Requirements**:
+  - Integrate Draw.io via an iframe using `postMessage` protocol.
+  - Support dual entry points: (1) Automated script generation (text-to-diagram via `doc2draw`), and (2) Direct manual diagramming.
+  - On diagram save, generate downloads for `.drawio`, `.drawio.svg`, and `.png` (suggesting save location `output/`).
+- **Metadata Storage & Process Data Box Schema**:
+  - Provide an interactive slide-out sidebar/form for component metadata linked to process nodes.
+  - Pre-populate form fields with the most recent entry for each component.
+  - Maintain historical logs in memory by appending records with an ISO `timestamp` column.
+  - Pre-configure 3 form templates via dropdown:
+    1. **Basic Flow**
+    2. **Standard VSM Data Box** (Cycle Time, Changeover, Uptime, Scrap/Defect %, Batch Size, Operators)
+    3. **Software/Administrative VSM** (Metrics covering: *Funding*, *Code Errors*, *Data Errors*, *Security/Permissions*, *Approvals*)
+  - Support **Custom JSON Schema templates** with instructions pointing users to save custom definitions into the `supplement/` folder.
+- **File Structure**:
+  - `current-intro.qmd`: Core concepts and transition from Process Family Matrix.
+  - `current-example.qmd`: Walkthrough tutorial with sample VSM flowcharts.
+  - `current-primary.qmd`: Primary interactive flowchart builder and metadata collector.
+  - `current-next.qmd`: Guidance on interpreting current state waste and transitioning to Future State VSM.
