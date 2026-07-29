@@ -235,6 +235,15 @@ viewof matrix_editor = {
     editor.dispatchEvent(new Event("input", {bubbles: true}));
   }
 
+  function show_selection(table) {
+    table.querySelectorAll(".matrix-selected").forEach((element) => {
+      element.classList.remove("matrix-selected");
+    });
+    table.tBodies[0]?.rows[selected.row]?.cells[selected.column + 1]?.classList.add(
+      "matrix-selected"
+    );
+  }
+
   function render() {
     const table = document.createElement("table");
     table.className = "matrix-table";
@@ -261,6 +270,7 @@ viewof matrix_editor = {
       }
       header.addEventListener("focus", () => {
         selected.column = column_index;
+        show_selection(table);
       });
       header.addEventListener("input", () => {
         state.columns[column_index] = header.textContent;
@@ -281,6 +291,7 @@ viewof matrix_editor = {
       row_header.setAttribute("aria-label", `Product family ${row_index + 1}`);
       row_header.addEventListener("focus", () => {
         selected.row = row_index;
+        show_selection(table);
       });
       row_header.addEventListener("input", () => {
         state.rows[row_index].name = row_header.textContent;
@@ -306,10 +317,7 @@ viewof matrix_editor = {
         }
         cell.addEventListener("focus", () => {
           selected = {row: row_index, column: column_index};
-          table.querySelectorAll(".matrix-selected").forEach((element) => {
-            element.classList.remove("matrix-selected");
-          });
-          cell.classList.add("matrix-selected");
+          show_selection(table);
         });
         cell.addEventListener("click", () => {
           selected = {row: row_index, column: column_index};
