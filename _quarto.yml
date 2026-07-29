@@ -3,11 +3,11 @@ project:
 
 website: 
   page-navigation: true
-  title: "NOAA quarto simple" 
-  site-url: "https://nmfs-ost.github.io/PAM_template_lab_manual/" 
-  repo-url: "https://github.com/nmfs-ost/PAM_template_lab_manual"
+  title: "VSM Flowchart"
+  site-url: "https://shannonrankin.github.io/vsm-flowchart/"
+  repo-url: "https://github.com/shannonrankin/vsm-flowchart"
   repo-actions: [edit, source, issue]
-  favicon: images/favicon.ico
+  favicon: favicon.ico
   
   page-footer:
     right: "This page is built with [Quarto](https://quarto.org/)."
@@ -16,7 +16,7 @@ website:
   sidebar:
     background: "#D9E3E4"
     logo: "https://upload.wikimedia.org/wikipedia/commons/7/79/NOAA_logo.svg"
-    favicon: images/favicon.ico
+    favicon: favicon.ico
     pinned: true
     align: center
     tools: 
@@ -24,8 +24,8 @@ website:
         href: https://nmfs-ost.github.io/PAM_National_NMFS_Network
         text: "NMFS National Passive Acoustic Monitoring Network"
       - icon: github
-        href: https://github.com/nmfs-ost/PAM_template_lab_manual
-        text: "NMFS PAM SI Lab Manual Template"
+        href: https://github.com/shannonrankin/vsm-flowchart
+        text: "VSM Flowchart repository"
 
     style: "docked"
     search: true
