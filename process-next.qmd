@@ -3,14 +3,32 @@ title: "Family Process Matrix"
 subtitle: "Next Steps"
 ---
 
-## Move from grouping to planning
+## Move from grouping to a target value stream
 
-After completing the matrix:
+The exported matrix is a decision aid for the next VSM session. Keep the CSV, JSON, or XLSX export in the repository's `output/` folder, and bring it to a review with the people who perform and receive the work. The export preserves the family-to-step comparison so the team can discuss the selection without rebuilding the matrix.
 
-1. Validate the process sequence with people who perform the work.
-2. Group families that share most process steps.
-3. Investigate red and yellow cells before designing the future state.
-4. Confirm where branches, stops, and dedicated steps require separate maps.
-5. Save the exported matrix in `output/` and use it as an input to the next VSM session.
+Use this sequence to move from the matrix to detailed mapping:
 
-Return to the [interactive workspace](process-primary.qmd) to revise or export the matrix.
+1. **Validate the route.** Check the step order, handoffs, queues, and rework loops with the people who perform the work.
+2. **Compare the families.** Look for families that share most of their steps and can reasonably be studied as one value stream.
+3. **Choose a target.** Prioritize a family or group of families using agreed criteria such as customer importance, volume, delay, defects, or improvement opportunity.
+4. **Set the map boundary.** Define the start and end points, then confirm which dedicated steps or branches belong in the detailed current-state map.
+5. **Carry the evidence forward.** Use the selected route and its flagged cells to plan observations and collect VSM data such as processing time, wait time, inventory, and quality.
+
+## Read the patterns
+
+| Matrix pattern | What it may mean | Useful next question |
+|---|---|---|
+| Many families overlap across the same steps | A shared flow may support one common value stream. | Where does work wait, change over, or compete for capacity? |
+| A family follows an isolated path | It may need its own map or a different improvement approach. | What customer, equipment, or requirement makes this route different? |
+| Families share early steps but diverge downstream | The branch is a natural boundary for comparing value streams. | Which downstream path has the greatest impact or constraint? |
+| Red, yellow, stop, or rework markers cluster around one step | The step is a candidate bottleneck or quality focus. | What data is needed to confirm the constraint? |
+| A family has many dedicated steps | The route may be low-volume, specialized, or difficult to combine. | Is the dedicated work necessary, or could the flow be redesigned? |
+
+Patterns are clues rather than conclusions. Confirm them with direct observation and data before committing resources to a detailed map.
+
+::: {.callout-note}
+## Select a process for value stream mapping
+
+When your team has agreed on a target family or shared route, continue to the [interactive workspace](./process-primary.qmd) to refine the matrix or export a final copy for the process-selection discussion. Then use that selected route as the starting point for the next value stream mapping activity.
+:::
