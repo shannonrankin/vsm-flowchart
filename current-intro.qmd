@@ -5,22 +5,55 @@ subtitle: "Overview"
 
 ## What is a Current State Map?
 
-A Current State Map follows one selected product or service family through the way work happens today. It combines the movement of materials or information with process data, queues, handoffs, decisions, and rework. The goal is a shared, evidence-based picture—not an idealized procedure.
+A Current State Map is a visual record of how one product, service, or information request moves through work **today**. It combines the flow of materials or information with process data, queues, handoffs, decisions, and rework. The goal is a shared, evidence-based picture—not an idealized procedure.
+
+This map is the foundation of Value Stream Mapping (VSM). It makes the time spent creating value visible alongside delays and problems, so a team can agree on what to improve before designing a Future State Map.
 
 ## Start with the selected process family
 
-Use the route chosen in the Family Process Matrix to set the map boundary. Confirm the first and last steps with the people who perform the work, then observe the flow and collect enough data to describe each process block.
+The [Family Process Matrix](./process-intro.qmd) groups products or services that follow similar routes. Bring the selected family and route from that section into this activity; they define which flow to map and where the map begins and ends. Confirm those boundaries with the people who perform the work, then observe the flow and collect enough data to describe each process block.
+
+## Inputs and outputs
+
+### Inputs required
 
 Useful inputs include:
 
-- the selected process family and its expected route;
-- process owners, customers, suppliers, and handoff points;
-- cycle and changeover times, uptime, defects, batches, and staffing;
-- queues, approvals, access restrictions, and rework loops; and
-- the information systems or records that trigger and track the work.
+- the selected product or process family and its expected route;
+- operational cycle times and changeover times;
+- delay sources, queues, and handoff points;
+- defect, scrap, code-error, and data-error rates; and
+- approval checkpoints, funding holds, and access restrictions.
 
-## Workflow
+### Outputs generated
 
-1. Review the [worked example](./current-example.qmd).
-2. Build the diagram and record process metadata in the [interactive workspace](./current-primary.qmd).
-3. Use the [next steps](./current-next.qmd) to interpret waste and prepare a Future State Map.
+The interactive workspace produces:
+
+- a visual flowchart showing processes, decisions, queues, and information flow;
+- a complete, timestamped process metadata log exported as `.csv`; and
+- reusable diagram files in `.drawio`, editable `.drawio.svg`, and `.png` formats.
+
+Your browser will prompt you to download each export. Save or move the files into `output/` so the team can review and reuse them.
+
+## Key metrics and data boxes
+
+A data box records evidence for one process block. Use consistent units and record when and how each value was observed.
+
+| Measure | What it describes | Example question |
+|---|---|---|
+| **Cycle Time ($C/T$)** | Time to complete one unit at a process while work is actively being performed. | How long does one sample, request, or code change take at this step? |
+| **Changeover Time ($C/O$)** | Time needed to switch a process from one product, batch, dataset, or task type to another. | How long does setup or context switching take? |
+| **Lead Time** | Total elapsed time from one point in the flow to another, including work and waiting. | How long does the customer wait from request to delivery? |
+| **Quality** | Defects and rework, including scrap, code errors, and incorrect or incomplete data. | What share of work must be corrected, repeated, or discarded? |
+| **Administrative and governance** | Delays caused by funding holds, security or permission needs, and approval gates. | How long does work wait for authority, access, or a decision? |
+
+Cycle time and changeover time describe activities within the flow; lead time describes elapsed time across the flow. Do not substitute one for another.
+
+## Choose your next step
+
+::: {.callout-note}
+Use the tutorial to see a completed example, or launch the editor to map your selected process family.
+
+[View the Current State tutorial](./current-example.qmd){.btn .btn-outline-secondary role="button"}
+[Launch the Current State editor](./current-primary.qmd){.btn .btn-primary role="button"}
+:::
