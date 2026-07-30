@@ -1,32 +1,571 @@
 ---
 title: "Current State Map"
-subtitle: "Tutorial and Example"
+subtitle: "Tutorial and Examples"
+page-layout: full
+format:
+  html:
+    code-copy: false
 ---
 
-## Example: Marine sample data flow
+::: {.callout-note}
+## Learn from a completed map
 
-Suppose the Family Process Matrix identifies passive acoustic recordings as the target family. A first observation might produce this flow:
+1. Choose a scenario to see how work, queues, and handoffs appear on a Current State Map.
+2. Compare the data boxes below the map; they contain the evidence used to find waste.
+3. Follow the walkthrough to identify bottlenecks, quality failures, and delays.
+4. When you are ready, open the [interactive workspace](./current-primary.qmd) to map your own process.
+:::
 
-```text
-Receive recordings -> Validate files -> Run detector -> Review detections -> Publish results
+## Explore three current-state scenarios
+
+Use the scenario selector to compare examples from physical production, software delivery, and shared services. Each map is a simplified teaching example rather than a future-state recommendation.
+
+<style>
+.current-example-tutorial {
+  display: grid;
+  gap: 1rem;
+}
+.current-example-control,
+.current-example-panel,
+.current-example-data-box,
+.current-example-waste {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .5rem;
+}
+.current-example-control,
+.current-example-panel,
+.current-example-waste {
+  padding: 1rem;
+}
+.current-example-control {
+  display: grid;
+  gap: .35rem;
+  max-width: 34rem;
+}
+.current-example-control label {
+  font-weight: 700;
+}
+.current-example-control select {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid #65727a;
+  border-radius: .3rem;
+  color: var(--bs-body-color, #222);
+  padding: .55rem;
+}
+.current-example-panel h3,
+.current-example-waste h4 {
+  margin-top: 0;
+}
+.current-example-map {
+  overflow-x: auto;
+}
+.current-example-map svg {
+  display: block;
+  min-width: 920px;
+  width: 100%;
+}
+.current-example-data-grid,
+.current-example-waste-grid {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.current-example-data-box {
+  overflow: hidden;
+}
+.current-example-data-box h4 {
+  background: var(--bs-secondary-bg, #eef2f5);
+  border-bottom: 1px solid var(--bs-border-color, #d8dee2);
+  margin: 0;
+  padding: .65rem .8rem;
+}
+.current-example-data-box dl {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1fr) 1.2fr;
+  margin: 0;
+}
+.current-example-data-box dt,
+.current-example-data-box dd {
+  border-bottom: 1px solid var(--bs-border-color, #d8dee2);
+  margin: 0;
+  padding: .45rem .8rem;
+}
+.current-example-data-box dt {
+  font-weight: 600;
+}
+.current-example-waste {
+  border-left-width: .35rem;
+}
+.current-example-waste[data-kind="bottleneck"] {
+  border-left-color: #b42318;
+}
+.current-example-waste[data-kind="quality"] {
+  border-left-color: #d97706;
+}
+.current-example-waste[data-kind="wait"] {
+  border-left-color: #2563eb;
+}
+.current-example-waste p {
+  margin-bottom: 0;
+}
+.current-example-status {
+  min-height: 1.5rem;
+}
+.current-example-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+.current-example-actions .btn {
+  padding: .65rem 1rem;
+}
+</style>
+
+```{ojs}
+//| echo: false
+
+viewof current_example_tutorial = {
+  const current_example_scenarios = {
+    manufacturing: {
+      label: "Manufacturing / Assembly Line",
+      summary:
+        "A four-step assembly line where finished work accumulates before inspection.",
+      nodes: [
+        {
+          name: "Cut components",
+          metrics: {
+            "Cycle time (C/T)": "45 sec",
+            "Changeover (C/O)": "18 min",
+            "Uptime": "94%",
+            "%C/A defect rate": "1.2%"
+          }
+        },
+        {
+          name: "Assemble",
+          metrics: {
+            "Cycle time (C/T)": "72 sec",
+            "Changeover (C/O)": "12 min",
+            "Operators": "2",
+            "%C/A defect rate": "2.8%"
+          }
+        },
+        {
+          name: "Inspect",
+          metrics: {
+            "Cycle time (C/T)": "110 sec",
+            "Queue inventory": "46 units",
+            "Operators": "1",
+            "%C/A defect rate": "8.5%"
+          }
+        },
+        {
+          name: "Pack",
+          metrics: {
+            "Cycle time (C/T)": "38 sec",
+            "Batch size": "24 units",
+            "Uptime": "97%",
+            "%C/A defect rate": "0.5%"
+          }
+        }
+      ],
+      queues: ["12 units", "20 units", "46 units"],
+      waste: {
+        bottleneck: "Inspection has the longest cycle time (110 seconds), and 46 units accumulate before it.",
+        quality: "Inspection finds an 8.5% defect rate, suggesting that defects originate upstream and require rework.",
+        wait: "An 18-minute cutting changeover interrupts flow and increases the first inventory buffer."
+      }
+    },
+    software: {
+      label: "Software Development & Deployment",
+      summary:
+        "A release flow where reviews, security checks, and approvals dominate elapsed time.",
+      nodes: [
+        {
+          name: "Develop change",
+          metrics: {
+            "Touch time": "6 hr",
+            "Lead time": "2 days",
+            "Code error rate": "7%",
+            "Work in progress": "8 changes"
+          }
+        },
+        {
+          name: "Code review",
+          metrics: {
+            "Touch time": "45 min",
+            "Lead time": "3 days",
+            "Code errors found": "5 / release",
+            "Reviewers": "1"
+          }
+        },
+        {
+          name: "Security check",
+          metrics: {
+            "Touch time": "25 min",
+            "Lead time": "1.5 days",
+            "Checks requiring retry": "12%",
+            "Permissions": "Security team"
+          }
+        },
+        {
+          name: "Deploy",
+          metrics: {
+            "Touch time": "20 min",
+            "Lead time": "2 days",
+            "Approvals": "2 required",
+            "Deployment error rate": "4%"
+          }
+        }
+      ],
+      queues: ["8 changes", "6 reviews", "4 releases"],
+      waste: {
+        bottleneck: "Code review adds three days of lead time even though reviewers spend only 45 minutes on a change.",
+        quality: "A 7% code error rate and 12% security-check retry rate create avoidable loops.",
+        wait: "Two deployment approvals add two days after the technical checks are complete."
+      }
+    },
+    administrative: {
+      label: "Administrative / Shared Services",
+      summary:
+        "A funding request crosses several departments before the approved record is entered.",
+      nodes: [
+        {
+          name: "Submit request",
+          metrics: {
+            "Touch time": "20 min",
+            "Lead time": "1 day",
+            "Data entry errors": "11%",
+            "Owner": "Program office"
+          }
+        },
+        {
+          name: "Budget review",
+          metrics: {
+            "Touch time": "35 min",
+            "Lead time": "6 days",
+            "Funding holds": "18%",
+            "Owner": "Finance"
+          }
+        },
+        {
+          name: "Department approval",
+          metrics: {
+            "Touch time": "15 min",
+            "Lead time": "4 days",
+            "Approvals": "3 signatures",
+            "Owner": "Division leads"
+          }
+        },
+        {
+          name: "Enter award",
+          metrics: {
+            "Touch time": "30 min",
+            "Lead time": "2 days",
+            "Data entry errors": "6%",
+            "Owner": "Shared services"
+          }
+        }
+      ],
+      queues: ["14 requests", "9 requests", "7 awards"],
+      waste: {
+        bottleneck: "Budget review holds 14 requests and contributes six days—the largest portion of total lead time.",
+        quality: "Eleven percent of submitted requests contain data errors that are discovered after the first handoff.",
+        wait: "Three signatures and four department handoffs delay work without changing the request."
+      }
+    }
+  };
+
+  const current_example_svg_namespace = "http://www.w3.org/2000/svg";
+  const current_example_root = document.createElement("div");
+  current_example_root.className = "current-example-tutorial";
+
+  const current_example_control = document.createElement("div");
+  current_example_control.className = "current-example-control";
+  const current_example_label = document.createElement("label");
+  current_example_label.htmlFor = "current-example-scenario";
+  current_example_label.textContent = "Example scenario";
+  const current_example_select = document.createElement("select");
+  current_example_select.id = "current-example-scenario";
+  for (const [current_example_key, current_example_scenario] of Object.entries(
+    current_example_scenarios
+  )) {
+    const current_example_option = document.createElement("option");
+    current_example_option.value = current_example_key;
+    current_example_option.textContent = current_example_scenario.label;
+    current_example_select.append(current_example_option);
+  }
+  const current_example_status = document.createElement("span");
+  current_example_status.className = "current-example-status";
+  current_example_status.setAttribute("aria-live", "polite");
+  current_example_control.append(
+    current_example_label,
+    current_example_select,
+    current_example_status
+  );
+
+  const current_example_content = document.createElement("div");
+  current_example_root.append(current_example_control, current_example_content);
+
+  function current_example_svg_element(current_example_name, current_example_attributes) {
+    const current_example_element = document.createElementNS(
+      current_example_svg_namespace,
+      current_example_name
+    );
+    for (const [current_example_attribute, current_example_value] of Object.entries(
+      current_example_attributes
+    )) {
+      current_example_element.setAttribute(current_example_attribute, current_example_value);
+    }
+    return current_example_element;
+  }
+
+  function current_example_render_map(current_example_scenario) {
+    const current_example_map = document.createElement("div");
+    current_example_map.className = "current-example-map";
+    const current_example_svg = current_example_svg_element("svg", {
+      viewBox: "0 0 1000 290",
+      role: "img",
+      "aria-label": `${current_example_scenario.label} sample Current State Map`
+    });
+    const current_example_title = current_example_svg_element("title", {});
+    current_example_title.textContent =
+      `${current_example_scenario.label} flow with process steps and queues`;
+    current_example_svg.append(current_example_title);
+
+    const current_example_marker = current_example_svg_element("marker", {
+      id: "current-example-arrow",
+      markerWidth: "10",
+      markerHeight: "10",
+      refX: "8",
+      refY: "3",
+      orient: "auto",
+      markerUnits: "strokeWidth"
+    });
+    const current_example_arrow = current_example_svg_element("path", {
+      d: "M0,0 L0,6 L9,3 z",
+      fill: "currentColor"
+    });
+    current_example_marker.append(current_example_arrow);
+    const current_example_defs = current_example_svg_element("defs", {});
+    current_example_defs.append(current_example_marker);
+    current_example_svg.append(current_example_defs);
+
+    current_example_scenario.nodes.forEach((current_example_node, current_example_index) => {
+      const current_example_x = 25 + current_example_index * 245;
+      if (current_example_index > 0) {
+        const current_example_line = current_example_svg_element("line", {
+          x1: String(current_example_x - 50),
+          y1: "95",
+          x2: String(current_example_x - 12),
+          y2: "95",
+          stroke: "currentColor",
+          "stroke-width": "3",
+          "marker-end": "url(#current-example-arrow)"
+        });
+        current_example_svg.append(current_example_line);
+
+        const current_example_triangle = current_example_svg_element("path", {
+          d: `M${current_example_x - 72},150 l18,32 h-36 z`,
+          fill: "#fbbf24",
+          stroke: "#7c5d00",
+          "stroke-width": "2"
+        });
+        const current_example_queue = current_example_svg_element("text", {
+          x: String(current_example_x - 72),
+          y: "202",
+          "text-anchor": "middle",
+          fill: "currentColor",
+          "font-size": "14"
+        });
+        current_example_queue.textContent =
+          current_example_scenario.queues[current_example_index - 1];
+        current_example_svg.append(current_example_triangle, current_example_queue);
+      }
+
+      const current_example_box = current_example_svg_element("rect", {
+        x: String(current_example_x),
+        y: "45",
+        width: "180",
+        height: "100",
+        rx: "8",
+        fill: "#e8f1fb",
+        stroke: "#245b8a",
+        "stroke-width": "2"
+      });
+      const current_example_name = current_example_svg_element("text", {
+        x: String(current_example_x + 90),
+        y: "88",
+        "text-anchor": "middle",
+        fill: "#16324a",
+        "font-size": "17",
+        "font-weight": "700"
+      });
+      const current_example_name_parts = current_example_node.name.split(" ");
+      const current_example_name_first = current_example_svg_element("tspan", {
+        x: String(current_example_x + 90),
+        dy: "0"
+      });
+      const current_example_name_second = current_example_svg_element("tspan", {
+        x: String(current_example_x + 90),
+        dy: "22"
+      });
+      const current_example_split = Math.ceil(current_example_name_parts.length / 2);
+      current_example_name_first.textContent =
+        current_example_name_parts.slice(0, current_example_split).join(" ");
+      current_example_name_second.textContent =
+        current_example_name_parts.slice(current_example_split).join(" ");
+      current_example_name.append(current_example_name_first);
+      if (current_example_name_second.textContent) {
+        current_example_name.append(current_example_name_second);
+      }
+      current_example_svg.append(current_example_box, current_example_name);
+    });
+
+    const current_example_legend = current_example_svg_element("text", {
+      x: "25",
+      y: "255",
+      fill: "currentColor",
+      "font-size": "15"
+    });
+    current_example_legend.textContent =
+      "▲ Queue or inventory between process steps — larger values indicate accumulating work.";
+    current_example_svg.append(current_example_legend);
+    current_example_map.append(current_example_svg);
+    return current_example_map;
+  }
+
+  function current_example_render_data(current_example_scenario) {
+    const current_example_section = document.createElement("section");
+    current_example_section.className = "current-example-panel";
+    const current_example_heading = document.createElement("h3");
+    current_example_heading.textContent = "Process data boxes";
+    const current_example_help = document.createElement("p");
+    current_example_help.textContent =
+      "Read each data box together with the queue immediately before its process step.";
+    const current_example_grid = document.createElement("div");
+    current_example_grid.className = "current-example-data-grid";
+
+    for (const current_example_node of current_example_scenario.nodes) {
+      const current_example_box = document.createElement("article");
+      current_example_box.className = "current-example-data-box";
+      const current_example_name = document.createElement("h4");
+      current_example_name.textContent = current_example_node.name;
+      const current_example_list = document.createElement("dl");
+      for (const [current_example_metric, current_example_value] of Object.entries(
+        current_example_node.metrics
+      )) {
+        const current_example_term = document.createElement("dt");
+        current_example_term.textContent = current_example_metric;
+        const current_example_description = document.createElement("dd");
+        current_example_description.textContent = current_example_value;
+        current_example_list.append(current_example_term, current_example_description);
+      }
+      current_example_box.append(current_example_name, current_example_list);
+      current_example_grid.append(current_example_box);
+    }
+    current_example_section.append(
+      current_example_heading,
+      current_example_help,
+      current_example_grid
+    );
+    return current_example_section;
+  }
+
+  function current_example_render_waste(current_example_scenario) {
+    const current_example_section = document.createElement("section");
+    current_example_section.className = "current-example-panel";
+    const current_example_heading = document.createElement("h3");
+    current_example_heading.textContent = "Waste signals in this map";
+    const current_example_grid = document.createElement("div");
+    current_example_grid.className = "current-example-waste-grid";
+    const current_example_kinds = [
+      ["bottleneck", "🛑 Bottleneck / high lead time"],
+      ["quality", "⚠️ Quality failure"],
+      ["wait", "⏳ Wait time / delay"]
+    ];
+    for (const [current_example_kind, current_example_title_text] of current_example_kinds) {
+      const current_example_card = document.createElement("article");
+      current_example_card.className = "current-example-waste";
+      current_example_card.dataset.kind = current_example_kind;
+      const current_example_title_element = document.createElement("h4");
+      current_example_title_element.textContent = current_example_title_text;
+      const current_example_text = document.createElement("p");
+      current_example_text.textContent = current_example_scenario.waste[current_example_kind];
+      current_example_card.append(current_example_title_element, current_example_text);
+      current_example_grid.append(current_example_card);
+    }
+    current_example_section.append(current_example_heading, current_example_grid);
+    return current_example_section;
+  }
+
+  function current_example_render() {
+    const current_example_scenario =
+      current_example_scenarios[current_example_select.value];
+    const current_example_intro = document.createElement("section");
+    current_example_intro.className = "current-example-panel";
+    const current_example_heading = document.createElement("h3");
+    current_example_heading.textContent = current_example_scenario.label;
+    const current_example_summary = document.createElement("p");
+    current_example_summary.textContent = current_example_scenario.summary;
+    current_example_intro.append(
+      current_example_heading,
+      current_example_summary,
+      current_example_render_map(current_example_scenario)
+    );
+    current_example_content.replaceChildren(
+      current_example_intro,
+      current_example_render_data(current_example_scenario),
+      current_example_render_waste(current_example_scenario)
+    );
+    current_example_status.textContent =
+      `Showing ${current_example_scenario.label}.`;
+  }
+
+  current_example_select.addEventListener("change", current_example_render);
+  current_example_render();
+  return current_example_root;
+}
 ```
 
-Paste that line into the script box in the [interactive workspace](./current-primary.qmd), then choose **Create diagram from text**. The generated blocks provide a starting point in Draw.io; add queues, decisions, information flows, and rework that you observe.
+## Guided walkthrough
 
-## Add evidence to each block
+::: {.callout-tip}
+## 1. Establish the map boundary
 
-Select or enter the matching process-block label in the metadata panel. For **Run detector**, the Software/Administrative VSM template might record:
+Confirm the first and last process steps for one product or service family. Follow what happens today, including informal workarounds, rather than drawing the intended procedure.
+:::
 
-| Field | Example observation |
-|---|---|
-| Funding | Annual project allocation |
-| Code Errors | 3 failed jobs this month |
-| Data Errors | 2 malformed recording headers |
-| Security/Permissions | Controlled server access |
-| Approvals | Science lead review |
+::: {.callout-tip}
+## 2. Compare queue size with process capacity
 
-Save a new metadata record whenever an observation changes. Records are appended with timestamps, so the exported CSV preserves the history rather than only the latest value.
+Look immediately upstream of each process. A growing queue, long lead time, or cycle time above the pace of demand identifies a likely constraint.
+:::
 
-## Export the result
+::: {.callout-tip}
+## 3. Trace quality problems to their source
 
-Use **Export all diagram formats** to download the editable `.drawio` source, an editable `.drawio.svg`, and an editable `.png`. Export the metadata history separately, then save or move all four files into `output/`.
+High scrap, code-error, or data-error percentages show where quality is detected—not necessarily where the problem begins. Add rework loops and ask which earlier step creates the defect.
+:::
+
+::: {.callout-tip}
+## 4. Separate touch time from waiting
+
+Compare the time spent actively working with total elapsed lead time. Approval gates, funding holds, permissions, batches, and departmental handoffs often explain the difference.
+:::
+
+::: {.callout-tip}
+## 5. Validate before designing improvements
+
+Review the map with the people who perform the work. Confirm the observations, record missing evidence, and only then prioritize changes for a Future State Map.
+:::
+
+## Map your own system
+
+Take the patterns you identified here into the interactive builder. Start from a simple process script, refine the flow in Draw.io, and record a timestamped data box for each process node.
+
+::: {.current-example-actions}
+[Open the Current State Map builder](./current-primary.qmd){.btn .btn-primary role="button"}
+[Review Current State Map concepts](./current-intro.qmd){.btn .btn-outline-secondary role="button"}
+:::
