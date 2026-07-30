@@ -8,13 +8,15 @@ format:
 ---
 
 ::: {.callout-note}
-## Design and measure the future flow
+## Design the future flow
 
 1. Preserve your Current State exports, then load `current_state.drawio` and `current_state_metadata.csv` from `output/` to establish the baseline.
-2. Remove unnecessary work and queues, add Kaizen bursts for improvement experiments, and use pull signals where downstream demand should trigger work.
+2. Remove unnecessary work and queues, rearrange process nodes, and use pull signals where downstream demand should trigger work.
 3. Generate a revised layout from a simple `Step A -> Step B` doc2draw-style script, or edit the loaded baseline directly in Draw.io.
-4. Select a process component, compare its latest timestamped baseline with editable targets, and append each target update to the in-memory history.
-5. Export all diagram formats and the target metadata CSV. Your browser will prompt for downloads; save or move them into `output/`.
+4. Select a process component, enter its target metadata, and append each target update to the in-memory history.
+5. Export all diagram formats and `future-primary.csv`. Your browser will prompt for downloads; save or move them into `output/`.
+
+The dedicated **Gap Analysis** and **Kaizen Experiments** sections use these exports for calculations and improvement planning.
 :::
 
 <style>
@@ -96,21 +98,6 @@ format:
 .future-field-row input[readonly] {
   background: var(--bs-secondary-bg, #eef2f5);
 }
-.future-gap-grid {
-  display: grid;
-  gap: .75rem;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  margin: 1rem 0;
-}
-.future-gap-result {
-  border-left: .35rem solid #2563eb;
-  padding: .65rem .8rem;
-}
-.future-gap-result output {
-  display: block;
-  font-size: 1.35rem;
-  font-weight: 700;
-}
 .future-history {
   display: block;
   margin-top: .75rem;
@@ -169,7 +156,7 @@ viewof future_map_workspace = {
   future_script_heading.textContent = "Option A: Generate an updated flow from text";
   const future_script_help = document.createElement("p");
   future_script_help.textContent =
-    "Enter doc2draw-style process text, one step per line or connected with ->. Include pull signals and Kaizen bursts as labeled steps or annotations, then refine the generated flow below.";
+    "Enter doc2draw-style process text, one step per line or connected with ->. Include pull signals as labeled steps or annotations, then refine the generated flow below.";
   const future_script = document.createElement("textarea");
   future_script.className = "future-script";
   future_script.setAttribute("aria-label", "Future State text-to-diagram script");
@@ -225,10 +212,10 @@ viewof future_map_workspace = {
   future_metadata_details.className = "future-metadata-panel";
   future_metadata_details.open = true;
   const future_metadata_summary = document.createElement("summary");
-  future_metadata_summary.textContent = "Target metadata and gap analysis";
+  future_metadata_summary.textContent = "Target process metadata";
   const future_metadata_help = document.createElement("p");
   future_metadata_help.textContent =
-    "Load the Current State CSV, then select a component. The latest valid ISO timestamp for each component supplies its read-only baseline.";
+    "Load the Current State CSV, then select a component. Its latest valid ISO timestamp supplies a read-only reference while you record target values for future-primary.csv.";
   const future_metadata_controls = document.createElement("div");
   future_metadata_controls.className = "future-map-controls";
   const future_load_metadata = future_button("Load Current State Metadata CSV");
@@ -256,29 +243,6 @@ viewof future_map_workspace = {
   future_baseline_note.textContent = "No Current State metadata loaded.";
   const future_field_grid = document.createElement("div");
   future_field_grid.className = "future-field-grid";
-  const future_gap_heading = document.createElement("h3");
-  future_gap_heading.textContent = "Live gap analysis";
-  const future_gap_help = document.createElement("p");
-  future_gap_help.textContent =
-    "Use the same units in each baseline/target pair. Defect/error reduction combines available numeric Scrap, Code Error, and Data Error pairs.";
-  const future_gap_grid = document.createElement("div");
-  future_gap_grid.className = "future-gap-grid";
-  const future_gap_outputs = new Map();
-  [
-    ["cycle_time_reduction", "Cycle Time Reduction"],
-    ["lead_time_reduction", "Lead Time Reduction"],
-    ["defect_error_reduction", "Defect / Error Reduction"]
-  ].forEach(([key, label]) => {
-    const result = document.createElement("div");
-    result.className = "future-gap-result";
-    const heading = document.createElement("strong");
-    heading.textContent = label;
-    const output = document.createElement("output");
-    output.textContent = "Not available";
-    result.append(heading, output);
-    future_gap_grid.append(result);
-    future_gap_outputs.set(key, output);
-  });
   const future_record_controls = document.createElement("div");
   future_record_controls.className = "future-map-controls";
   const future_save_metadata = future_button("Append Target Metadata");
@@ -293,9 +257,6 @@ viewof future_map_workspace = {
     future_metadata_controls,
     future_baseline_note,
     future_field_grid,
-    future_gap_heading,
-    future_gap_help,
-    future_gap_grid,
     future_record_controls,
     future_history
   );
@@ -605,12 +566,10 @@ viewof future_map_workspace = {
       target_input.type = "text";
       target_input.value = latest_target?.[field.key] ?? "";
       target_input.dataset.targetKey = field.key;
-      target_input.addEventListener("input", future_render_gaps);
       target_label.append(target_input);
       row.append(heading, baseline_label, target_label);
       future_field_grid.append(row);
     });
-    future_render_gaps();
   }
 
   function future_values(selector, key_name) {
@@ -620,57 +579,6 @@ viewof future_map_workspace = {
         input.value
       ])
     );
-  }
-
-  function future_number(value) {
-    const match = String(value ?? "").replaceAll(",", "").match(/-?\d+(?:\.\d+)?/);
-    return match ? Number(match[0]) : NaN;
-  }
-
-  function future_reduction(baseline, target) {
-    if (!Number.isFinite(baseline) || !Number.isFinite(target) || baseline === 0) {
-      return null;
-    }
-    return ((baseline - target) / baseline) * 100;
-  }
-
-  function future_format_reduction(value) {
-    return value === null ? "Not available" : `${value.toFixed(1)}%`;
-  }
-
-  function future_gap_values() {
-    const baseline = future_values("[data-baseline-key]", "baselineKey");
-    const target = future_values("[data-target-key]", "targetKey");
-    const cycle = future_reduction(
-      future_number(baseline.cycle_time),
-      future_number(target.cycle_time)
-    );
-    const lead = future_reduction(
-      future_number(baseline.lead_time),
-      future_number(target.lead_time)
-    );
-    const error_keys = ["scrap_defect_rate", "code_errors", "data_errors"];
-    const error_pairs = error_keys
-      .map((key) => [future_number(baseline[key]), future_number(target[key])])
-      .filter(([base, goal]) => Number.isFinite(base) && Number.isFinite(goal));
-    const defect = error_pairs.length
-      ? future_reduction(
-          error_pairs.reduce((sum, [base]) => sum + base, 0),
-          error_pairs.reduce((sum, [, goal]) => sum + goal, 0)
-        )
-      : null;
-    return {
-      cycle_time_reduction: cycle,
-      lead_time_reduction: lead,
-      defect_error_reduction: defect
-    };
-  }
-
-  function future_render_gaps() {
-    const gaps = future_gap_values();
-    Object.entries(gaps).forEach(([key, value]) => {
-      future_gap_outputs.get(key).textContent = future_format_reduction(value);
-    });
   }
 
   future_load_metadata.addEventListener("click", () => future_metadata_file.click());
@@ -730,18 +638,11 @@ viewof future_map_workspace = {
     }
     const baseline = future_state.baseline.get(component);
     const targets = future_values("[data-target-key]", "targetKey");
-    const gaps = future_gap_values();
     const record = {
       timestamp: new Date().toISOString(),
       component,
       baseline_timestamp: baseline?.timestamp ?? "",
-      ...targets,
-      ...Object.fromEntries(
-        Object.entries(gaps).map(([key, value]) => [
-          key,
-          value === null ? "" : value.toFixed(1)
-        ])
-      )
+      ...targets
     };
     future_state.history.push(record);
     future_add_component_options([component]);
@@ -763,10 +664,7 @@ viewof future_map_workspace = {
       "timestamp",
       "component",
       "baseline_timestamp",
-      ...future_fields.map((field) => field.key),
-      "cycle_time_reduction",
-      "lead_time_reduction",
-      "defect_error_reduction"
+      ...future_fields.map((field) => field.key)
     ];
     const lines = [
       columns.map(future_csv_value).join(","),
@@ -776,7 +674,7 @@ viewof future_map_workspace = {
     ];
     future_download_blob(
       new Blob([lines.join("\r\n")], {type: "text/csv;charset=utf-8"}),
-      "future_state_target_metadata.csv"
+      "future-primary.csv"
     );
     future_notify("Target metadata history CSV ready. Save or move it into output/.");
   });
