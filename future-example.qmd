@@ -1,27 +1,563 @@
 ---
 title: "Future State Map"
-subtitle: "Tutorial and Example"
+subtitle: "Tutorial and Examples"
+page-layout: full
+format:
+  html:
+    code-copy: false
 ---
 
 ::: {.callout-note}
-## From baseline to target
+## Learn by comparing Current and Future States
 
-1. Preserve the Current State exports in `output/`.
-2. Load the `.drawio` source and latest metadata observations in the Future State workspace.
-3. Remove avoidable waits and rework, add pull signals where appropriate, and mark experiments with Kaizen bursts.
-4. Set targets with consistent units and confirm that each reduction is realistic.
+1. Choose a scenario to compare its baseline flow with a measurable Future State design.
+2. Find the 💥 Kaizen bursts that mark changes to test—not improvements that are already guaranteed.
+3. Compare each baseline with its target using the same units.
+4. When you are ready, [open the interactive builder](./future-primary.qmd) to load your Current State files and design your own map.
 :::
 
-## Example improvement
+## Explore three Future State scenarios
 
-Suppose a review step has a baseline cycle time of 40 minutes, a lead time of 3 days, and a 10% error rate. A future design that limits work in progress, clarifies acceptance criteria, and triggers review with a pull signal might target 30 minutes, 1.5 days, and 4%.
+These simplified examples show how pull signals, automation, and quality at the source can change flow in physical production, software delivery, and shared services.
 
-| Gap measure | Calculation | Result |
-|---|---|---:|
-| Cycle time reduction | $(40 - 30) / 40 \times 100$ | 25% |
-| Lead time reduction | $(3 - 1.5) / 3 \times 100$ | 50% |
-| Defect/error reduction | $(10 - 4) / 10 \times 100$ | 60% |
+<style>
+.future-example-tutorial {
+  display: grid;
+  gap: 1rem;
+}
+.future-example-control,
+.future-example-panel,
+.future-example-map-card,
+.future-example-metric-card,
+.future-example-kaizen-card {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .5rem;
+}
+.future-example-control,
+.future-example-panel {
+  padding: 1rem;
+}
+.future-example-control {
+  display: grid;
+  gap: .35rem;
+  max-width: 36rem;
+}
+.future-example-control label {
+  font-weight: 700;
+}
+.future-example-control select {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid #65727a;
+  border-radius: .3rem;
+  color: var(--bs-body-color, #222);
+  padding: .55rem;
+}
+.future-example-panel h3,
+.future-example-map-card h4,
+.future-example-kaizen-card h4 {
+  margin-top: 0;
+}
+.future-example-map-grid,
+.future-example-metric-grid,
+.future-example-kaizen-grid {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+.future-example-map-card {
+  overflow: hidden;
+  padding: .75rem;
+}
+.future-example-map {
+  overflow-x: auto;
+}
+.future-example-map svg {
+  display: block;
+  min-width: 620px;
+  width: 100%;
+}
+.future-example-metric-card {
+  overflow: hidden;
+}
+.future-example-metric-card h4 {
+  background: var(--bs-secondary-bg, #eef2f5);
+  border-bottom: 1px solid var(--bs-border-color, #d8dee2);
+  margin: 0;
+  padding: .65rem .8rem;
+}
+.future-example-metric-card table {
+  margin: 0;
+  width: 100%;
+}
+.future-example-metric-card th,
+.future-example-metric-card td {
+  border-bottom: 1px solid var(--bs-border-color, #d8dee2);
+  padding: .5rem .8rem;
+  text-align: left;
+}
+.future-example-metric-card th:not(:first-child),
+.future-example-metric-card td:not(:first-child) {
+  text-align: right;
+}
+.future-example-gap {
+  color: var(--bs-success-text-emphasis, #146c43);
+  font-weight: 700;
+}
+.future-example-kaizen-card {
+  border-left: .35rem solid #d97706;
+  padding: .8rem;
+}
+.future-example-kaizen-card p {
+  margin-bottom: 0;
+}
+.future-example-status {
+  min-height: 1.5rem;
+}
+.future-example-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+.future-example-actions .btn {
+  padding: .65rem 1rem;
+}
+</style>
 
-Treat targets as hypotheses. Assign an owner and test each change before considering it part of the standard process.
+```{ojs}
+//| echo: false
 
-[Open the interactive workspace](./future-primary.qmd){.btn .btn-primary role="button"}
+viewof future_example_tutorial = {
+  const future_example_scenarios = {
+    manufacturing: {
+      label: "Manufacturing / Assembly Line",
+      summary:
+        "Replace push scheduling and large physical buffers with a paced pull system and kanban replenishment.",
+      current_steps: ["Cut", "Assembly", "Inspection", "Pack"],
+      future_steps: ["Cut", "Flow cell", "Quality at source", "Pack"],
+      current_queues: ["32 units", "46 units", "24 units"],
+      future_signals: ["Kanban: 8", "One-piece flow", "Kanban: 6"],
+      metrics: [
+        ["Assembly", "Cycle time (sec)", 72, 55],
+        ["Inspection", "Cycle time (sec)", 110, 60],
+        ["Total flow", "Lead time (hr)", 18, 7],
+        ["Total flow", "Value-added time (hr)", 2.5, 2.2],
+        ["Quality", "Defect rate (%)", 8.5, 3]
+      ],
+      kaizens: [
+        ["Pull scheduling", "Use kanban signals so downstream demand authorizes replenishment; reduce physical WIP from 102 to 14 units."],
+        ["Balanced flow cell", "Combine and rebalance assembly work to target a 55-second cycle time."],
+        ["Quality at source", "Move checks upstream and stop defects before they enter the next process."]
+      ]
+    },
+    software: {
+      label: "Software Development & Deployment",
+      summary:
+        "Integrate automated CI/CD checks, remove redundant manual gates, and shorten code-error rework loops.",
+      current_steps: ["Develop", "Code review", "Manual approval", "Deploy"],
+      future_steps: ["Develop", "Peer review", "Automated CI/CD", "Deploy"],
+      current_queues: ["8 changes", "6 reviews", "4 releases"],
+      future_signals: ["Pull request", "Auto trigger", "Auto deploy"],
+      metrics: [
+        ["Peer review", "Cycle time (min)", 45, 30],
+        ["Pipeline", "Cycle time (min)", 90, 20],
+        ["Total flow", "Lead time (days)", 8.5, 2],
+        ["Total flow", "Value-added time (days)", 1.1, 1],
+        ["Quality", "Code error/rework rate (%)", 7, 2]
+      ],
+      kaizens: [
+        ["Automated CI/CD", "Run tests and security checks on each pull request instead of waiting for a release batch."],
+        ["Approval policy", "Remove the duplicate manual deployment gate when automated controls pass."],
+        ["Fast feedback", "Use small changes and immediate test results to reduce code-error rework."]
+      ]
+    },
+    administrative: {
+      label: "Administrative / Shared Services",
+      summary:
+        "Streamline funding review, automate permission provisioning, and validate information at entry.",
+      current_steps: ["Request", "Funding review", "Approvals", "Provision"],
+      future_steps: ["Validated request", "Funding triage", "Single approval", "Auto provision"],
+      current_queues: ["14 requests", "9 requests", "7 awards"],
+      future_signals: ["Rules check", "Priority pull", "Approved trigger"],
+      metrics: [
+        ["Funding triage", "Cycle time (min)", 35, 20],
+        ["Provisioning", "Cycle time (min)", 120, 15],
+        ["Total flow", "Lead time (days)", 13, 4],
+        ["Total flow", "Value-added time (days)", 0.3, 0.25],
+        ["Quality", "Data entry error rate (%)", 11, 2]
+      ],
+      kaizens: [
+        ["Funding triage", "Route complete, eligible requests directly to the appropriate funding reviewer."],
+        ["Permission provisioning", "Trigger role-based access automatically after one accountable approval."],
+        ["Validated entry", "Check required fields and allowed values before the request enters the workflow."]
+      ]
+    }
+  };
+
+  const future_example_root = document.createElement("div");
+  future_example_root.className = "future-example-tutorial";
+  const future_example_control = document.createElement("div");
+  future_example_control.className = "future-example-control";
+  const future_example_label = document.createElement("label");
+  future_example_label.htmlFor = "future-example-scenario";
+  future_example_label.textContent = "Example scenario";
+  const future_example_select = document.createElement("select");
+  future_example_select.id = "future-example-scenario";
+  for (const [future_example_key, future_example_scenario] of Object.entries(
+    future_example_scenarios
+  )) {
+    const future_example_option = document.createElement("option");
+    future_example_option.value = future_example_key;
+    future_example_option.textContent = future_example_scenario.label;
+    future_example_select.append(future_example_option);
+  }
+  const future_example_status = document.createElement("span");
+  future_example_status.className = "future-example-status";
+  future_example_status.setAttribute("aria-live", "polite");
+  future_example_control.append(
+    future_example_label,
+    future_example_select,
+    future_example_status
+  );
+  const future_example_content = document.createElement("div");
+  future_example_content.className = "future-example-tutorial";
+  future_example_root.append(future_example_control, future_example_content);
+
+  const future_example_svg_namespace = "http://www.w3.org/2000/svg";
+
+  function future_example_svg_element(future_example_name, future_example_attributes) {
+    const future_example_element = document.createElementNS(
+      future_example_svg_namespace,
+      future_example_name
+    );
+    for (const [future_example_attribute, future_example_value] of Object.entries(
+      future_example_attributes
+    )) {
+      future_example_element.setAttribute(future_example_attribute, future_example_value);
+    }
+    return future_example_element;
+  }
+
+  function future_example_render_map(
+    future_example_title_text,
+    future_example_steps,
+    future_example_connections,
+    future_example_is_future
+  ) {
+    const future_example_card = document.createElement("article");
+    future_example_card.className = "future-example-map-card";
+    const future_example_heading = document.createElement("h4");
+    future_example_heading.textContent = future_example_title_text;
+    const future_example_map = document.createElement("div");
+    future_example_map.className = "future-example-map";
+    const future_example_svg = future_example_svg_element("svg", {
+      viewBox: "0 0 700 235",
+      role: "img",
+      "aria-label": `${future_example_title_text} process flow`
+    });
+    const future_example_svg_title = future_example_svg_element("title", {});
+    future_example_svg_title.textContent = `${future_example_title_text} process flow`;
+    future_example_svg.append(future_example_svg_title);
+
+    const future_example_marker_id = future_example_is_future
+      ? "future-example-target-arrow"
+      : "future-example-baseline-arrow";
+    const future_example_marker = future_example_svg_element("marker", {
+      id: future_example_marker_id,
+      markerWidth: "10",
+      markerHeight: "10",
+      refX: "8",
+      refY: "3",
+      orient: "auto",
+      markerUnits: "strokeWidth"
+    });
+    const future_example_arrow = future_example_svg_element("path", {
+      d: "M0,0 L0,6 L9,3 z",
+      fill: "currentColor"
+    });
+    future_example_marker.append(future_example_arrow);
+    const future_example_defs = future_example_svg_element("defs", {});
+    future_example_defs.append(future_example_marker);
+    future_example_svg.append(future_example_defs);
+
+    future_example_steps.forEach((future_example_step, future_example_index) => {
+      const future_example_x = 15 + future_example_index * 175;
+      if (future_example_index > 0) {
+        const future_example_line = future_example_svg_element("line", {
+          x1: String(future_example_x - 48),
+          y1: "77",
+          x2: String(future_example_x - 10),
+          y2: "77",
+          stroke: "currentColor",
+          "stroke-width": "3",
+          "marker-end": `url(#${future_example_marker_id})`
+        });
+        const future_example_connection = future_example_svg_element("text", {
+          x: String(future_example_x - 30),
+          y: "145",
+          "text-anchor": "middle",
+          fill: "currentColor",
+          "font-size": "13"
+        });
+        future_example_connection.textContent =
+          future_example_connections[future_example_index - 1];
+        future_example_svg.append(future_example_line, future_example_connection);
+      }
+
+      const future_example_box = future_example_svg_element("rect", {
+        x: String(future_example_x),
+        y: "38",
+        width: "135",
+        height: "78",
+        rx: "8",
+        fill: future_example_is_future ? "#dcfce7" : "#e8f1fb",
+        stroke: future_example_is_future ? "#287a46" : "#245b8a",
+        "stroke-width": "2"
+      });
+      const future_example_name = future_example_svg_element("text", {
+        x: String(future_example_x + 67.5),
+        y: "71",
+        "text-anchor": "middle",
+        fill: future_example_is_future ? "#174c2b" : "#16324a",
+        "font-size": "14",
+        "font-weight": "700"
+      });
+      const future_example_words = future_example_step.split(" ");
+      const future_example_split = Math.ceil(future_example_words.length / 2);
+      const future_example_first = future_example_svg_element("tspan", {
+        x: String(future_example_x + 67.5),
+        dy: "0"
+      });
+      const future_example_second = future_example_svg_element("tspan", {
+        x: String(future_example_x + 67.5),
+        dy: "19"
+      });
+      future_example_first.textContent =
+        future_example_words.slice(0, future_example_split).join(" ");
+      future_example_second.textContent =
+        future_example_words.slice(future_example_split).join(" ");
+      future_example_name.append(future_example_first);
+      if (future_example_second.textContent) {
+        future_example_name.append(future_example_second);
+      }
+      future_example_svg.append(future_example_box, future_example_name);
+
+      if (future_example_is_future && future_example_index > 0) {
+        const future_example_burst = future_example_svg_element("text", {
+          x: String(future_example_x + 112),
+          y: "35",
+          "text-anchor": "middle",
+          "font-size": "28"
+        });
+        future_example_burst.textContent = "💥";
+        future_example_svg.append(future_example_burst);
+      }
+    });
+
+    const future_example_legend = future_example_svg_element("text", {
+      x: "15",
+      y: "205",
+      fill: "currentColor",
+      "font-size": "14"
+    });
+    future_example_legend.textContent = future_example_is_future
+      ? "Pull signals appear below the arrows; 💥 marks proposed experiments."
+      : "Baseline queues appear below the arrows and expose waiting work.";
+    future_example_svg.append(future_example_legend);
+    future_example_map.append(future_example_svg);
+    future_example_card.append(future_example_heading, future_example_map);
+    return future_example_card;
+  }
+
+  function future_example_reduction(future_example_baseline, future_example_target) {
+    return ((future_example_baseline - future_example_target) / future_example_baseline) * 100;
+  }
+
+  function future_example_render_metrics(future_example_scenario) {
+    const future_example_section = document.createElement("section");
+    future_example_section.className = "future-example-panel";
+    const future_example_heading = document.createElement("h3");
+    future_example_heading.textContent = "Current baseline vs. Future target";
+    const future_example_help = document.createElement("p");
+    future_example_help.textContent =
+      "Targets are hypotheses. Confirm matching units, assign an owner, and test each change.";
+    const future_example_grid = document.createElement("div");
+    future_example_grid.className = "future-example-metric-grid";
+
+    const future_example_groups = new Map();
+    for (const future_example_metric of future_example_scenario.metrics) {
+      const [future_example_component] = future_example_metric;
+      if (!future_example_groups.has(future_example_component)) {
+        future_example_groups.set(future_example_component, []);
+      }
+      future_example_groups.get(future_example_component).push(future_example_metric);
+    }
+
+    for (const [future_example_component, future_example_metrics] of future_example_groups) {
+      const future_example_card = document.createElement("article");
+      future_example_card.className = "future-example-metric-card";
+      const future_example_title = document.createElement("h4");
+      future_example_title.textContent = future_example_component;
+      const future_example_table = document.createElement("table");
+      const future_example_head = document.createElement("thead");
+      const future_example_head_row = document.createElement("tr");
+      for (const future_example_text of ["Metric", "Baseline", "Target", "Reduction"]) {
+        const future_example_cell = document.createElement("th");
+        future_example_cell.scope = "col";
+        future_example_cell.textContent = future_example_text;
+        future_example_head_row.append(future_example_cell);
+      }
+      future_example_head.append(future_example_head_row);
+      const future_example_body = document.createElement("tbody");
+      for (const [
+        ,
+        future_example_metric_name,
+        future_example_baseline,
+        future_example_target
+      ] of future_example_metrics) {
+        const future_example_row = document.createElement("tr");
+        const future_example_values = [
+          future_example_metric_name,
+          String(future_example_baseline),
+          String(future_example_target),
+          `${future_example_reduction(
+            future_example_baseline,
+            future_example_target
+          ).toFixed(1)}%`
+        ];
+        future_example_values.forEach((future_example_value, future_example_index) => {
+          const future_example_cell = document.createElement("td");
+          future_example_cell.textContent = future_example_value;
+          if (future_example_index === 3) {
+            future_example_cell.className = "future-example-gap";
+          }
+          future_example_row.append(future_example_cell);
+        });
+        future_example_body.append(future_example_row);
+      }
+      future_example_table.append(future_example_head, future_example_body);
+      future_example_card.append(future_example_title, future_example_table);
+      future_example_grid.append(future_example_card);
+    }
+    future_example_section.append(
+      future_example_heading,
+      future_example_help,
+      future_example_grid
+    );
+    return future_example_section;
+  }
+
+  function future_example_render_kaizens(future_example_scenario) {
+    const future_example_section = document.createElement("section");
+    future_example_section.className = "future-example-panel";
+    const future_example_heading = document.createElement("h3");
+    future_example_heading.textContent = "💥 Kaizen experiments";
+    const future_example_grid = document.createElement("div");
+    future_example_grid.className = "future-example-kaizen-grid";
+    for (const [future_example_name, future_example_description] of future_example_scenario.kaizens) {
+      const future_example_card = document.createElement("article");
+      future_example_card.className = "future-example-kaizen-card";
+      const future_example_title = document.createElement("h4");
+      future_example_title.textContent = future_example_name;
+      const future_example_text = document.createElement("p");
+      future_example_text.textContent = future_example_description;
+      future_example_card.append(future_example_title, future_example_text);
+      future_example_grid.append(future_example_card);
+    }
+    future_example_section.append(future_example_heading, future_example_grid);
+    return future_example_section;
+  }
+
+  function future_example_render() {
+    const future_example_scenario =
+      future_example_scenarios[future_example_select.value];
+    const future_example_intro = document.createElement("section");
+    future_example_intro.className = "future-example-panel";
+    const future_example_heading = document.createElement("h3");
+    future_example_heading.textContent = future_example_scenario.label;
+    const future_example_summary = document.createElement("p");
+    future_example_summary.textContent = future_example_scenario.summary;
+    const future_example_maps = document.createElement("div");
+    future_example_maps.className = "future-example-map-grid";
+    future_example_maps.append(
+      future_example_render_map(
+        "Current State baseline",
+        future_example_scenario.current_steps,
+        future_example_scenario.current_queues,
+        false
+      ),
+      future_example_render_map(
+        "Future State design",
+        future_example_scenario.future_steps,
+        future_example_scenario.future_signals,
+        true
+      )
+    );
+    future_example_intro.append(
+      future_example_heading,
+      future_example_summary,
+      future_example_maps
+    );
+    future_example_content.replaceChildren(
+      future_example_intro,
+      future_example_render_metrics(future_example_scenario),
+      future_example_render_kaizens(future_example_scenario)
+    );
+    future_example_status.textContent =
+      `Showing ${future_example_scenario.label}.`;
+  }
+
+  future_example_select.addEventListener("change", future_example_render);
+  future_example_render();
+  return future_example_root;
+}
+```
+
+## Guided gap analysis
+
+::: {.callout-tip}
+## 📉 Lead Time Reduction
+
+Add the elapsed lead time across the map, including queues and approvals. Then calculate:
+
+$$
+\text{Lead time reduction} =
+\frac{\text{Current lead time} - \text{Future lead time}}
+{\text{Current lead time}} \times 100
+$$
+
+For the manufacturing example, $(18 - 7) / 18 \times 100 = 61.1\%$.
+:::
+
+::: {.callout-tip}
+## ⚡ Process Efficiency Gain
+
+Process cycle efficiency is Value-Added Time divided by total lead time. Compare both states rather than reducing value-added work:
+
+$$
+\text{Process cycle efficiency} =
+\frac{\text{Value-Added Time}}{\text{Lead Time}} \times 100
+$$
+
+Manufacturing improves from $2.5 / 18 = 13.9\%$ to $2.2 / 7 = 31.4\%$, a gain of 17.5 percentage points.
+:::
+
+::: {.callout-tip}
+## 💥 Kaizen Identification
+
+Place a burst next to a specific constraint, delay, or quality source that must change to reach a target. Give each burst an owner, expected measure, and review date. A burst is a proposed experiment, not proof that the target will be achieved.
+:::
+
+## Take the walkthrough into the builder
+
+1. Export the `.drawio` diagram and timestamped metadata CSV from the [Current State builder](./current-primary.qmd), then keep both files in `output/`.
+2. Open the Future State builder and load the `.drawio` file as the visual baseline.
+3. Load the Current State CSV; the latest timestamped record for each component becomes its baseline.
+4. Redesign the flow, add Kaizen bursts, and enter targets in the same units as their baselines.
+5. Review the live reductions, save target history, and export the revised map and metadata to `output/`.
+
+::: {.future-example-actions}
+[Build your Future State Map](./future-primary.qmd){.btn .btn-primary role="button"}
+[Review Future State concepts](./future-intro.qmd){.btn .btn-outline-secondary role="button"}
+:::
