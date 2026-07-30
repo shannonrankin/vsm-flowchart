@@ -7,17 +7,59 @@ subtitle: "Next Steps"
 
 Review the exported diagram and metadata log with the people who perform and receive the work. Confirm that the map shows what normally happens as well as important exceptions.
 
-Look for:
+Open `current_state_metadata.csv` from `output/` and group records by process component. Because each saved observation has a timestamp, compare the latest record with earlier records instead of assuming one observation is typical. Check for missing values, confirm that time fields use the same unit, and trace unusual values back to the matching process block in the diagram.
 
-- long waits relative to processing time;
-- repeated approvals, handoffs, or data entry;
-- rework loops and recurring code or data errors;
-- large batches or work-in-progress queues;
-- unreliable steps, access constraints, or unclear ownership; and
-- process blocks whose recent metadata differs from earlier observations.
+### Compare lead time with value-added time
+
+For one complete trip through the value stream, classify each interval as either active work that changes the product or service in a way the customer needs, or non-value-added time such as waiting, movement, rework, or approval delay. Then calculate:
+
+$$
+\text{Total Lead Time} = \text{Value-Added Time} + \text{Non-Value-Added Time}
+$$
+
+$$
+\text{Process Cycle Efficiency} = \frac{\text{Value-Added Time}}{\text{Total Lead Time}} \times 100\%
+$$
+
+Add the value-added portions of the relevant cycle times rather than treating every recorded cycle time as value-added. Use the map timeline, queue observations, and approval or delay fields to calculate total elapsed lead time. A large gap between the two totals identifies the greatest opportunity; it does not by itself identify the cause.
+
+## Spot the eight wastes
+
+The classic eight wastes can appear in physical, administrative, scientific, and software workflows.
+
+| Waste | What to look for |
+|---|---|
+| 🔄 **Defects and rework** | Scrapped material, failed quality checks, code errors, incorrect data, or repeated submissions. |
+| 📦 **Overproduction** | Producing batches, reports, analyses, or features before they are requested or can be used. |
+| ⏳ **Waiting and delays** | Idle equipment or people, pending funding, unnecessary approvals, permission requests, or queued reviews. |
+| 🧠 **Non-utilized talent** | Decisions made without the people who know the work, or skilled staff occupied by avoidable manual tasks. |
+| 🚚 **Transportation** | Unnecessary movement of samples, equipment, files, or records between locations or systems. |
+| 🗃️ **Inventory** | Excess supplies, samples, work in progress, support tickets, datasets, or unreviewed code. |
+| 🚶 **Motion** | Repeated searching, walking, clicking, copying, or switching between tools to complete one task. |
+| 🛑 **Over-processing** | Redundant checks, duplicate data entry, unnecessary reviews, or work performed at greater detail than needed. |
+
+Treat these patterns as prompts for investigation. Validate the reason for each delay or activity before deciding that it can be removed.
 
 ## Prepare the Future State Map
 
-Agree on the customer need and a small number of measurable improvements. Preserve the Current State exports in `output/`, then copy the diagram before experimenting with a future flow. Remove waste only after validating why it occurs, and identify an owner and follow-up measure for each proposed change.
+The Current State Map supplies the evidence for designing a Future State Map. Bottlenecks, rework loops, excess queues, and governance delays show where a future flow should reduce interruptions, improve quality, or simplify a handoff. Agree on the customer need and a small number of measurable improvements rather than redrawing every step at once.
 
-Return to the [interactive workspace](./current-primary.qmd) if the team needs to correct the observed flow or append another metadata record.
+Before moving forward:
+
+- [ ] Validate the map and metadata with the people who perform and receive the work.
+- [ ] Confirm the map boundary, customer need, demand, and required quality.
+- [ ] Calculate Total Lead Time, Value-Added Time, and Process Cycle Efficiency using consistent units.
+- [ ] Mark the bottlenecks, queues, defects, approval gates, and other observed wastes.
+- [ ] Identify likely causes and note where more evidence is needed.
+- [ ] Choose measurable improvement targets and assign an owner to each.
+- [ ] Preserve the `.csv`, `.drawio`, `.drawio.svg`, and `.png` Current State exports in `output/`.
+- [ ] Copy the source diagram before testing Future State ideas.
+
+::: {.callout-note}
+## Ready for the next mapping session?
+
+Return to the editor if the team needs to correct the observed flow or append another metadata record. Once the checklist is complete, use the preserved Current State evidence as the baseline for the upcoming Future State Map.
+
+[Update the Current State Map](./current-primary.qmd){.btn .btn-outline-secondary role="button"}
+[Review the tutorial](./current-example.qmd){.btn .btn-primary role="button"}
+:::
