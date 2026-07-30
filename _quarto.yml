@@ -23,8 +23,8 @@ website:
     align: center
     tools: 
       - icon: globe
-        href: https://nmfs-ost.github.io/PAM_National_NMFS_Network
-        text: "NMFS National Passive Acoustic Monitoring Network"
+        href: https://shannonrankin.github.io/vsm-flowchart/
+        text: "Value Stream Management Toolbox"
       - icon: github
         href: https://github.com/shannonrankin/vsm-flowchart
         text: "VSM Flowchart repository"
@@ -35,27 +35,6 @@ website:
     contents:
       - href: index.qmd
         text: Home
-      - section: content/LabManagement.qmd
-        contents: 
-          - href: content/Safety.qmd
-            text: Safety
-          - href: content/Inventory.qmd
-            text: Inventory
-          - href: content/Hardware.qmd
-            text: Hardware
-      - href: content/FieldMethods.qmd
-        text: "Field Methods"
-      - href: content/DataManagement.qmd
-        text: Data Management
-      - href: content/Hardware.qmd
-        text: Hardware
-      - section: content/SoftwareAnalysis.qmd
-#        text: "Software & Analysis"
-        contents: 
-          - content/Software.qmd
-          - content/AnalysisMethods.qmd
-      - href: content/Reporting.qmd
-        text: Reporting
       - section: "Family Process Matrix"
         contents:
           - href: process-intro.qmd
@@ -76,25 +55,7 @@ website:
             text: Interactive Workspace
           - href: current-next.qmd
             text: Next Steps
-      - section: "Optional Pages"
-        contents: 
-          - content/SharedValues.qmd
-          - content/Onboarding.qmd
-          - content/Offboarding.qmd
-          - content/FieldMethods.qmd
-          - content/OpenScience.qmd
-          - content/PublicationsPresentations.qmd
-          - content/Resources.qmd
-      # - section: "NMFS Open Science Directions"  #Removed but did not yet delete
-      #   contents:
-      #     - content/NMFS_OpenSciDirections/Getting-Started.qmd
-      #     - content/NMFS_OpenSciDirections/organize.qmd
-      #     - content/NMFS_OpenSciDirections/add-content.qmd
-      #     - content/NMFS_OpenSciDirections/rendering.qmd
-      #     - content/NMFS_OpenSciDirections/rmarkdown.Rmd
-      #     - content/NMFS_OpenSciDirections/code.qmd
-      #     - content/NMFS_OpenSciDirections/acknowledgements.qmd 
-        
+
 format:
   html:
     theme:
