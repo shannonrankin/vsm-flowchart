@@ -87,3 +87,23 @@ Each section `[name]` MUST contain 4 linked Quarto files:
   - `current-example.qmd`: Walkthrough tutorial with sample VSM flowcharts.
   - `current-primary.qmd`: Primary interactive flowchart builder and metadata collector.
   - `current-next.qmd`: Guidance on interpreting current state waste and transitioning to Future State VSM.
+  
+  ## Future State Map (VSM) Architectural Rules
+
+- **Framework**: Quarto (`.qmd`) utilizing native **Observable JS (OJS)** and embedded **Draw.io Embed API** (`https://embed.diagrams.net`).
+- **Site Navigation**: Place the `"Future State Map"` sidebar section directly after `"Current State Map"` in `_quarto.yml`.
+- **Diagram Editor Requirements**:
+  - Integrate Draw.io via an iframe using `postMessage` protocol.
+  - Support dual entry points: (1) Automated script generation (`doc2draw`), and (2) Direct manual diagramming.
+  - **Baseline Import**: Allow users to load/import their baseline `.drawio` diagram file exported from `current-primary.qmd` as the starting point for the Future State Map.
+  - On diagram save, generate downloads for `.drawio`, `.drawio.svg`, and `.png` (suggesting save location `output/`).
+- **Target Metrics & Gap Analysis Schema**:
+  - Allow users to import or paste their CSV metadata log from `current-primary.qmd`. Automatically extract the **most recent timestamped values** for each process node/metric as the baseline.
+  - Pre-populate the slide-out metadata form with these baseline values alongside editable **Target Value** fields.
+  - Calculate real-time VSM Gap Analysis metrics: *Cycle Time Reduction %*, *Lead Time Reduction %*, and *Defect/Error Reduction %*.
+  - Maintain historical logs in memory by appending records with an ISO `timestamp` column.
+- **File Structure**:
+  - `future-intro.qmd`: Core concepts, kaizen bursts, and transition from Current State Map.
+  - `future-example.qmd`: Walkthrough tutorial with sample Future State maps and target gap analyses.
+  - `future-primary.qmd`: Primary interactive Future State flowchart builder and target metadata collector.
+  - `future-next.qmd`: Guidance on creating a Value Stream Work Plan / Implementation Roadmap.
