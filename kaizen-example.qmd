@@ -1,0 +1,35 @@
+---
+title: "Kaizen Experiments"
+subtitle: "Tutorial and Example"
+---
+
+::: {.callout-note}
+## Practice designing a focused experiment
+
+1. Choose a verified gap with a measurable baseline and target.
+2. Describe one change and the result you expect from it.
+3. Break the test into small action steps and assign one owner.
+4. Move the experiment to verification only after collecting evidence.
+:::
+
+## Example experiment
+
+| Attribute | Example |
+|---|---|
+| Experiment title | Reduce intake data errors |
+| Target gap | Data error rate: 8% baseline → 3% target |
+| Hypothesis | If we add a required-field check at intake, then data error rate will improve by 5 percentage points. |
+| Action steps | Define required fields; pilot the check for one week; review rejected records |
+| Owner | Intake coordinator |
+| Success metric | Data error rate at or below 3% during the pilot |
+| Priority | High |
+| Status | Backlog / Proposed |
+
+Keep the hypothesis specific enough to disprove. A completed action is not evidence of improvement; compare the observed success metric with the baseline and target before marking an experiment completed.
+
+## Try your own roadmap
+
+Export `gap-analysis.csv` from Gap Analysis, then import it into the workspace. Critical or high gaps become starting cards that you can edit in either board or table view.
+
+[Launch the Kaizen Experiments workspace](./kaizen-primary.qmd){.btn .btn-primary role="button"}
+[Review experiment next steps](./kaizen-next.qmd){.btn .btn-outline-secondary role="button"}

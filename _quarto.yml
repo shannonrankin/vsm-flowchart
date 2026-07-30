@@ -75,6 +75,16 @@ website:
             text: Interactive Workspace
           - href: gap-next.qmd
             text: Next Steps
+      - section: "Kaizen Experiments"
+        contents:
+          - href: kaizen-intro.qmd
+            text: Overview
+          - href: kaizen-example.qmd
+            text: Tutorial and Example
+          - href: kaizen-primary.qmd
+            text: Interactive Workspace
+          - href: kaizen-next.qmd
+            text: Next Steps
 
 format:
   html:
