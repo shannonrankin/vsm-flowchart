@@ -65,6 +65,16 @@ website:
             text: Interactive Workspace
           - href: future-next.qmd
             text: Next Steps
+      - section: "Gap Analysis"
+        contents:
+          - href: gap-intro.qmd
+            text: Overview
+          - href: gap-example.qmd
+            text: Tutorial and Example
+          - href: gap-primary.qmd
+            text: Interactive Workspace
+          - href: gap-next.qmd
+            text: Next Steps
 
 format:
   html:

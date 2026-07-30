@@ -1,0 +1,12 @@
+---
+title: "Gap Analysis"
+subtitle: "Overview"
+---
+
+## Compare current and future performance
+
+Gap analysis connects the measured Current State to the targets in the Future State. The workspace joins the latest records for each process node and metric, calculates the size of each gap, and preserves reviewed overrides and custom measures.
+
+Use consistent process node names, metric definitions, and units in both source files. Keep the resulting `gap-analysis.csv` in `output/` for improvement planning.
+
+[Open the tutorial](./gap-example.qmd){.btn .btn-primary role="button"}

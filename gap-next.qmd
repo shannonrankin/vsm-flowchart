@@ -1,0 +1,16 @@
+---
+title: "Gap Analysis"
+subtitle: "Next Steps"
+---
+
+## Prioritize the gaps
+
+Review critical and moderate gaps with process owners. Confirm the values, units, and direction of improvement before selecting work to address them.
+
+Keep `gap-analysis.csv` in `output/`. It contains the joined metrics, manual overrides, custom metrics, and timestamps needed by the Kaizen Experiments workspace.
+
+::: {.callout-note}
+If a source value is incorrect, update and re-export the Current or Future State metadata before repeating the comparison.
+
+[Return to the Gap Analysis workspace](./gap-primary.qmd){.btn .btn-outline-secondary role="button"}
+:::

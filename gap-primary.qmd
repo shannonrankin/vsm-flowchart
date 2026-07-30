@@ -1,0 +1,534 @@
+---
+title: "Gap Analysis"
+subtitle: "Interactive workspace"
+page-layout: full
+format:
+  html:
+    code-copy: false
+---
+
+::: {.callout-note}
+## Compare Current and Future State metrics
+
+1. Upload the CSV exported from `current-primary.qmd` (`current-primary.csv`, or the existing `current_state_metadata.csv` export).
+2. Upload `future-primary.csv` from `future-primary.qmd`.
+3. Select **Compare latest records** to join the newest timestamped record for each process node and calculate metric variances.
+4. Edit baseline, target, or calculated cells directly, and add any custom metrics needed for the review.
+5. Export `gap-analysis.csv`. Your browser will prompt for the download; save or move it into `output/`.
+:::
+
+<style>
+.gap-workspace {
+  display: grid;
+  gap: 1rem;
+}
+.gap-card {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .5rem;
+  padding: 1rem;
+}
+.gap-card h2 {
+  margin-top: 0;
+}
+.gap-controls {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+.gap-controls label {
+  display: grid;
+  font-weight: 600;
+  gap: .3rem;
+}
+.gap-workspace button,
+.gap-workspace input {
+  border: 1px solid #65727a;
+  border-radius: .3rem;
+  padding: .45rem .65rem;
+}
+.gap-workspace button {
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color, #222);
+  min-height: 2.35rem;
+}
+.gap-workspace button:hover,
+.gap-workspace button:focus {
+  box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2);
+}
+.gap-table-wrap {
+  overflow-x: auto;
+}
+.gap-table {
+  border-collapse: collapse;
+  margin-top: 1rem;
+  min-width: 900px;
+  width: 100%;
+}
+.gap-table th,
+.gap-table td {
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  padding: .45rem;
+  text-align: left;
+}
+.gap-table th {
+  background: var(--bs-secondary-bg, #eef2f5);
+}
+.gap-table td[contenteditable="true"] {
+  background: color-mix(in srgb, var(--bs-warning-bg-subtle, #fff3cd) 45%, transparent);
+  min-width: 7rem;
+}
+.gap-table td[contenteditable="true"]:focus {
+  outline: 2px solid #0d6efd;
+  outline-offset: -2px;
+}
+.gap-status {
+  min-height: 1.5rem;
+}
+</style>
+
+```{ojs}
+//| echo: false
+
+viewof gap_analysis_workspace = {
+  const gap_metadata_columns = new Set([
+    "timestamp",
+    "component",
+    "process_node",
+    "node",
+    "template",
+    "baseline_timestamp"
+  ]);
+  const gap_state = {
+    current_records: [],
+    future_records: [],
+    rows: []
+  };
+
+  const gap_workspace = document.createElement("div");
+  gap_workspace.className = "gap-workspace";
+
+  const gap_import_card = document.createElement("section");
+  gap_import_card.className = "gap-card";
+  const gap_import_heading = document.createElement("h2");
+  gap_import_heading.textContent = "Import map metadata";
+  const gap_import_help = document.createElement("p");
+  gap_import_help.textContent =
+    "CSV files stay in this browser tab. For each process node, only the record with the latest valid ISO timestamp is compared.";
+  const gap_import_controls = document.createElement("div");
+  gap_import_controls.className = "gap-controls";
+  const gap_current_label = document.createElement("label");
+  gap_current_label.textContent = "Current State CSV (current-primary.csv)";
+  const gap_current_file = document.createElement("input");
+  gap_current_file.type = "file";
+  gap_current_file.accept = ".csv,text/csv";
+  gap_current_label.append(gap_current_file);
+  const gap_future_label = document.createElement("label");
+  gap_future_label.textContent = "Future State CSV (future-primary.csv)";
+  const gap_future_file = document.createElement("input");
+  gap_future_file.type = "file";
+  gap_future_file.accept = ".csv,text/csv";
+  gap_future_label.append(gap_future_file);
+  const gap_compare = gap_button("Compare latest records");
+  gap_import_controls.append(gap_current_label, gap_future_label, gap_compare);
+  gap_import_card.append(gap_import_heading, gap_import_help, gap_import_controls);
+
+  const gap_results_card = document.createElement("section");
+  gap_results_card.className = "gap-card";
+  const gap_results_heading = document.createElement("h2");
+  gap_results_heading.textContent = "Gap comparison";
+  const gap_results_help = document.createElement("p");
+  gap_results_help.textContent =
+    "Improvement assumes lower values are better: (baseline − target) ÷ |baseline|. Yellow cells are directly editable.";
+  const gap_table_wrap = document.createElement("div");
+  gap_table_wrap.className = "gap-table-wrap";
+  const gap_table = document.createElement("table");
+  gap_table.className = "gap-table";
+  const gap_head = document.createElement("thead");
+  const gap_head_row = document.createElement("tr");
+  [
+    "Process node",
+    "Metric",
+    "Baseline value",
+    "Target value",
+    "Absolute change (Δ)",
+    "Percentage improvement (%)",
+    "Gap status"
+  ].forEach((label) => {
+    const heading = document.createElement("th");
+    heading.scope = "col";
+    heading.textContent = label;
+    gap_head_row.append(heading);
+  });
+  gap_head.append(gap_head_row);
+  const gap_body = document.createElement("tbody");
+  gap_table.append(gap_head, gap_body);
+  gap_table_wrap.append(gap_table);
+  gap_results_card.append(gap_results_heading, gap_results_help, gap_table_wrap);
+
+  const gap_custom_card = document.createElement("section");
+  gap_custom_card.className = "gap-card";
+  const gap_custom_heading = document.createElement("h2");
+  gap_custom_heading.textContent = "Add Custom Metric";
+  const gap_custom_controls = document.createElement("div");
+  gap_custom_controls.className = "gap-controls";
+  const gap_custom_component = gap_labeled_input("Process node", "text");
+  const gap_custom_metric = gap_labeled_input("Metric", "text");
+  const gap_custom_baseline = gap_labeled_input("Baseline value", "text");
+  const gap_custom_target = gap_labeled_input("Target value", "text");
+  const gap_add_custom = gap_button("Add Custom Metric");
+  gap_custom_controls.append(
+    gap_custom_component.label,
+    gap_custom_metric.label,
+    gap_custom_baseline.label,
+    gap_custom_target.label,
+    gap_add_custom
+  );
+  gap_custom_card.append(gap_custom_heading, gap_custom_controls);
+
+  const gap_export_card = document.createElement("section");
+  gap_export_card.className = "gap-card";
+  const gap_export_heading = document.createElement("h2");
+  gap_export_heading.textContent = "Export";
+  const gap_export_controls = document.createElement("div");
+  gap_export_controls.className = "gap-controls";
+  const gap_export = gap_button("Export Gap Analysis Log");
+  const gap_export_help = document.createElement("span");
+  gap_export_help.textContent =
+    "Downloads gap-analysis.csv with source timestamps, overrides, and custom metrics. Place it in output/.";
+  gap_export_controls.append(gap_export, gap_export_help);
+  gap_export_card.append(gap_export_heading, gap_export_controls);
+
+  const gap_status = document.createElement("p");
+  gap_status.className = "gap-status";
+  gap_status.setAttribute("role", "status");
+  gap_status.setAttribute("aria-live", "polite");
+  gap_workspace.append(
+    gap_import_card,
+    gap_results_card,
+    gap_custom_card,
+    gap_export_card,
+    gap_status
+  );
+
+  function gap_button(label) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    return button;
+  }
+
+  function gap_labeled_input(label_text, type) {
+    const label = document.createElement("label");
+    label.textContent = label_text;
+    const input = document.createElement("input");
+    input.type = type;
+    label.append(input);
+    return {label, input};
+  }
+
+  function gap_notify(message) {
+    gap_status.textContent = message;
+  }
+
+  function gap_parse_csv(text) {
+    const rows = [];
+    let row = [];
+    let field = "";
+    let quoted = false;
+    for (let index = 0; index < text.length; index += 1) {
+      const character = text[index];
+      if (quoted) {
+        if (character === '"' && text[index + 1] === '"') {
+          field += '"';
+          index += 1;
+        } else if (character === '"') {
+          quoted = false;
+        } else {
+          field += character;
+        }
+      } else if (character === '"') {
+        quoted = true;
+      } else if (character === ",") {
+        row.push(field);
+        field = "";
+      } else if (character === "\n") {
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = "";
+      } else if (character !== "\r") {
+        field += character;
+      }
+    }
+    if (quoted) throw new Error("The CSV contains an unclosed quoted value.");
+    if (field || row.length) {
+      row.push(field);
+      rows.push(row);
+    }
+    if (rows.length < 2) throw new Error("The CSV has no metadata records.");
+    const headers = rows[0].map((header, index) =>
+      (index === 0 ? header.replace(/^\uFEFF/, "") : header).trim()
+    );
+    if (!headers.includes("timestamp") || !gap_component_header(headers)) {
+      throw new Error("Each CSV must contain timestamp and component (or process_node) columns.");
+    }
+    return rows.slice(1)
+      .filter((values) => values.some((value) => value !== ""))
+      .map((values) => Object.fromEntries(
+        headers.map((header, index) => [header, values[index] ?? ""])
+      ));
+  }
+
+  function gap_component_header(headers) {
+    return ["component", "process_node", "node"].find((header) =>
+      headers.includes(header)
+    );
+  }
+
+  function gap_component(record) {
+    return String(
+      record.component ?? record.process_node ?? record.node ?? ""
+    ).trim();
+  }
+
+  function gap_latest_records(records) {
+    const latest = new Map();
+    records.forEach((record) => {
+      const component = gap_component(record);
+      const timestamp = Date.parse(record.timestamp);
+      if (!component || !Number.isFinite(timestamp)) return;
+      const existing = latest.get(component);
+      if (!existing || timestamp > Date.parse(existing.timestamp)) {
+        latest.set(component, record);
+      }
+    });
+    return latest;
+  }
+
+  async function gap_read_file(file, label) {
+    if (!file) throw new Error(`Choose the ${label} CSV first.`);
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error(`Choose a ${label} CSV smaller than 5 MB.`);
+    }
+    return gap_parse_csv(await file.text());
+  }
+
+  function gap_number(value) {
+    if (String(value).trim() === "") return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function gap_format(number) {
+    return Number.isInteger(number)
+      ? String(number)
+      : String(Math.round((number + Number.EPSILON) * 100) / 100);
+  }
+
+  function gap_calculate(row) {
+    const baseline = gap_number(row.baseline_value);
+    const target = gap_number(row.target_value);
+    if (baseline === null || target === null) {
+      row.absolute_change = "";
+      row.percentage_improvement = "";
+      row.gap_status = "⚪ Not calculated";
+      return;
+    }
+    row.absolute_change = gap_format(target - baseline);
+    const improvement = baseline === 0
+      ? (target === 0 ? 0 : null)
+      : ((baseline - target) / Math.abs(baseline)) * 100;
+    row.percentage_improvement =
+      improvement === null ? "" : gap_format(improvement);
+    row.gap_status = improvement === null
+      ? "⚪ Not calculated"
+      : improvement >= 20
+        ? "🟢 On Target"
+        : improvement >= 0
+          ? "🟡 Moderate Gap"
+          : "🔴 Critical Gap";
+  }
+
+  function gap_join_records() {
+    const current = gap_latest_records(gap_state.current_records);
+    const future = gap_latest_records(gap_state.future_records);
+    const components = new Set([...current.keys(), ...future.keys()]);
+    const rows = [];
+    [...components].sort().forEach((component) => {
+      const baseline_record = current.get(component);
+      const target_record = future.get(component);
+      const metrics = new Set([
+        ...Object.keys(baseline_record || {}),
+        ...Object.keys(target_record || {})
+      ]);
+      [...metrics]
+        .filter((metric) => !gap_metadata_columns.has(metric))
+        .sort()
+        .forEach((metric) => {
+          const row = {
+            process_node: component,
+            metric,
+            baseline_value: baseline_record?.[metric] ?? "",
+            target_value: target_record?.[metric] ?? "",
+            absolute_change: "",
+            percentage_improvement: "",
+            gap_status: "",
+            current_timestamp: baseline_record?.timestamp ?? "",
+            future_timestamp: target_record?.timestamp ?? "",
+            is_custom: "false"
+          };
+          gap_calculate(row);
+          rows.push(row);
+        });
+    });
+    return rows;
+  }
+
+  function gap_editable_cell(row, field) {
+    const cell = document.createElement("td");
+    cell.contentEditable = "true";
+    cell.spellcheck = false;
+    cell.textContent = row[field];
+    cell.addEventListener("input", () => {
+      row[field] = cell.textContent.trim();
+      gap_workspace.dispatchEvent(new Event("input", {bubbles: true}));
+    });
+    if (field === "baseline_value" || field === "target_value") {
+      cell.addEventListener("blur", () => {
+        gap_calculate(row);
+        gap_render();
+      });
+    }
+    return cell;
+  }
+
+  function gap_render() {
+    gap_body.replaceChildren();
+    gap_state.rows.forEach((row) => {
+      const table_row = document.createElement("tr");
+      const component = document.createElement("td");
+      component.textContent = row.process_node;
+      const metric = document.createElement("td");
+      metric.textContent = row.metric;
+      table_row.append(
+        component,
+        metric,
+        gap_editable_cell(row, "baseline_value"),
+        gap_editable_cell(row, "target_value"),
+        gap_editable_cell(row, "absolute_change"),
+        gap_editable_cell(row, "percentage_improvement"),
+        gap_editable_cell(row, "gap_status")
+      );
+      gap_body.append(table_row);
+    });
+  }
+
+  gap_compare.addEventListener("click", async () => {
+    try {
+      gap_compare.disabled = true;
+      const [current_records, future_records] = await Promise.all([
+        gap_read_file(gap_current_file.files?.[0], "Current State"),
+        gap_read_file(gap_future_file.files?.[0], "Future State")
+      ]);
+      gap_state.current_records = current_records;
+      gap_state.future_records = future_records;
+      gap_state.rows = gap_join_records();
+      if (gap_state.rows.length === 0) {
+        throw new Error("No comparable metric columns were found.");
+      }
+      gap_render();
+      gap_workspace.dispatchEvent(new Event("input", {bubbles: true}));
+      gap_notify(`Compared ${gap_state.rows.length} metrics across the latest process records.`);
+    } catch (error) {
+      gap_notify(error.message);
+    } finally {
+      gap_compare.disabled = false;
+    }
+  });
+
+  gap_add_custom.addEventListener("click", () => {
+    const process_node = gap_custom_component.input.value.trim();
+    const metric = gap_custom_metric.input.value.trim();
+    if (!process_node || !metric) {
+      gap_notify("Enter both a process node and metric name.");
+      return;
+    }
+    const row = {
+      process_node,
+      metric,
+      baseline_value: gap_custom_baseline.input.value.trim(),
+      target_value: gap_custom_target.input.value.trim(),
+      absolute_change: "",
+      percentage_improvement: "",
+      gap_status: "",
+      current_timestamp: "",
+      future_timestamp: "",
+      is_custom: "true"
+    };
+    gap_calculate(row);
+    gap_state.rows.push(row);
+    gap_render();
+    [
+      gap_custom_component.input,
+      gap_custom_metric.input,
+      gap_custom_baseline.input,
+      gap_custom_target.input
+    ].forEach((input) => { input.value = ""; });
+    gap_workspace.dispatchEvent(new Event("input", {bubbles: true}));
+    gap_notify(`Added custom metric ${metric} for ${process_node}.`);
+  });
+
+  function gap_csv_value(value) {
+    return `"${String(value ?? "").replaceAll('"', '""')}"`;
+  }
+
+  gap_export.addEventListener("click", () => {
+    if (gap_state.rows.length === 0) {
+      gap_notify("Compare CSV files or add a custom metric before exporting.");
+      return;
+    }
+    const columns = [
+      "export_timestamp",
+      "current_timestamp",
+      "future_timestamp",
+      "process_node",
+      "metric",
+      "baseline_value",
+      "target_value",
+      "absolute_change",
+      "percentage_improvement",
+      "gap_status",
+      "is_custom"
+    ];
+    const export_timestamp = new Date().toISOString();
+    const records = gap_state.rows.map((row) => ({export_timestamp, ...row}));
+    const lines = [
+      columns.map(gap_csv_value).join(","),
+      ...records.map((record) =>
+        columns.map((column) => gap_csv_value(record[column])).join(",")
+      )
+    ];
+    const blob = new Blob([lines.join("\r\n")], {
+      type: "text/csv;charset=utf-8"
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "gap-analysis.csv";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    gap_notify("Gap Analysis log ready. Save or move gap-analysis.csv into output/.");
+  });
+
+  Object.defineProperty(gap_workspace, "value", {
+    get: () => ({rows: structuredClone(gap_state.rows)})
+  });
+
+  gap_render();
+  return gap_workspace;
+}
+```
