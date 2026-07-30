@@ -5,8 +5,36 @@ subtitle: "Overview"
 
 ## Compare current and future performance
 
-Gap analysis connects the measured Current State to the targets in the Future State. The workspace joins the latest records for each process node and metric, calculates the size of each gap, and preserves reviewed overrides and custom measures.
+Gap Analysis in Value Stream Mapping (VSM) compares how a process performs now with how the team wants it to perform. It turns the difference between a Current State baseline and a Future State target into a list of measurable gaps. That list helps the team agree on where improvement is needed instead of choosing changes from assumptions alone.
 
-Use consistent process node names, metric definitions, and units in both source files. Keep the resulting `gap-analysis.csv` in `output/` for improvement planning.
+The comparison is a starting point for discussion, not an automatic priority list. Confirm the source data with the people who perform and receive the work before acting on the results.
 
-[Open the tutorial](./gap-example.qmd){.btn .btn-primary role="button"}
+## Inputs and output
+
+| File | Role in the comparison |
+|---|---|
+| `current-primary.csv` | Supplies the latest measured baseline for each Current State process node and metric. |
+| `future-primary.csv` | Supplies the latest target value for each matching Future State process node and metric. |
+| `gap-analysis.csv` | Records the joined baseline and target, calculated change and percentage improvement, gap status, source timestamps, reviewed overrides, and custom metrics. |
+
+The [interactive workspace](./gap-primary.qmd) reads both input files in your browser and uses the most recent valid timestamped record for each process node. Use consistent process node names, metric definitions, and units in both files so the correct values are compared. Your browser will prompt you to download `gap-analysis.csv`; save or move it into `output/` for improvement planning.
+
+## What the comparison shows
+
+For each matched metric, the workspace displays:
+
+- the Current State baseline and Future State target;
+- the absolute change between those values;
+- the percentage improvement, assuming lower values are better; and
+- a gap status that makes potential regressions and remaining shortfalls easier to review.
+
+You can correct values during the review and add measures that were not captured in the maps. Check higher-is-better measures, such as coverage or uptime, carefully because they may need a reviewed percentage and status.
+
+## Choose your next step
+
+1. Explore the [worked examples](./gap-example.qmd) to practice interpreting gaps.
+2. Open the [interactive workspace](./gap-primary.qmd) to compare your own Current and Future State exports.
+3. Export `gap-analysis.csv`, then use the next steps to turn verified gaps into Kaizen experiments.
+
+[Open the tutorial](./gap-example.qmd){.btn .btn-outline-secondary role="button"}
+[Launch the Gap Analysis workspace](./gap-primary.qmd){.btn .btn-primary role="button"}
