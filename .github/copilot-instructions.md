@@ -107,3 +107,27 @@ Each section `[name]` MUST contain 4 linked Quarto files:
   - `future-example.qmd`: Walkthrough tutorial with sample Future State maps and target gap analyses.
   - `future-primary.qmd`: Primary interactive Future State flowchart builder and target metadata collector.
   - `future-next.qmd`: Guidance on creating a Value Stream Work Plan / Implementation Roadmap.
+  
+  ## Gap Analysis Architectural Rules
+
+- **Framework**: Quarto (`.qmd`) utilizing native **Observable JS (OJS)**.
+- **Site Navigation**: Place `"Gap Analysis"` directly after `"Future State Map"` in `_quarto.yml`.
+- **Interactive Workspace (`gap-primary.qmd`)**:
+  - Dual CSV Importer: Allow users to upload both `current-primary.csv` and `future-primary.csv`.
+  - Auto-calculate variance columns ($\Delta$ Lead Time, $\Delta$ Cycle Time, % Defect Reduction).
+  - Allow manual inline cell editing/overriding and adding custom user-defined metrics.
+  - Export structured Gap Summary log (`gap-analysis.csv`) to `output/`.
+- **File Structure**: `gap-intro.qmd`, `gap-example.qmd`, `gap-primary.qmd`, `gap-next.qmd`.
+
+---
+
+## Kaizen Experiments Architectural Rules
+
+- **Framework**: Quarto (`.qmd`) utilizing native **Observable JS (OJS)**.
+- **Site Navigation**: Place `"Kaizen Experiments"` directly after `"Gap Analysis"` in `_quarto.yml`.
+- **Interactive Workspace (`kaizen-primary.qmd`)**:
+  - Importer: Allow importing `gap-analysis.csv` to seed baseline experiment cards.
+  - Interactive Views: Toggle between **Kanban Board** (To Do, In Progress, Testing, Done) and **Editable Data Table**.
+  - Card Details: Target Gap, Hypothesis, Action Items, Owner, Success Metric, Status, Priority.
+  - Export experiment roadmap (`kaizen-experiments.json` / `.csv`) to `output/`.
+- **File Structure**: `kaizen-intro.qmd`, `kaizen-example.qmd`, `kaizen-primary.qmd`, `kaizen-next.qmd`.
