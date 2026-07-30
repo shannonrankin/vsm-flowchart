@@ -1,0 +1,23 @@
+---
+title: "Current State Map"
+subtitle: "Next Steps"
+---
+
+## Interpret the current state
+
+Review the exported diagram and metadata log with the people who perform and receive the work. Confirm that the map shows what normally happens as well as important exceptions.
+
+Look for:
+
+- long waits relative to processing time;
+- repeated approvals, handoffs, or data entry;
+- rework loops and recurring code or data errors;
+- large batches or work-in-progress queues;
+- unreliable steps, access constraints, or unclear ownership; and
+- process blocks whose recent metadata differs from earlier observations.
+
+## Prepare the Future State Map
+
+Agree on the customer need and a small number of measurable improvements. Preserve the Current State exports in `output/`, then copy the diagram before experimenting with a future flow. Remove waste only after validating why it occurs, and identify an owner and follow-up measure for each proposed change.
+
+Return to the [interactive workspace](./current-primary.qmd) if the team needs to correct the observed flow or append another metadata record.

@@ -1,0 +1,32 @@
+---
+title: "Current State Map"
+subtitle: "Tutorial and Example"
+---
+
+## Example: Marine sample data flow
+
+Suppose the Family Process Matrix identifies passive acoustic recordings as the target family. A first observation might produce this flow:
+
+```text
+Receive recordings -> Validate files -> Run detector -> Review detections -> Publish results
+```
+
+Paste that line into the script box in the [interactive workspace](./current-primary.qmd), then choose **Create diagram from text**. The generated blocks provide a starting point in Draw.io; add queues, decisions, information flows, and rework that you observe.
+
+## Add evidence to each block
+
+Select or enter the matching process-block label in the metadata panel. For **Run detector**, the Software/Administrative VSM template might record:
+
+| Field | Example observation |
+|---|---|
+| Funding | Annual project allocation |
+| Code Errors | 3 failed jobs this month |
+| Data Errors | 2 malformed recording headers |
+| Security/Permissions | Controlled server access |
+| Approvals | Science lead review |
+
+Save a new metadata record whenever an observation changes. Records are appended with timestamps, so the exported CSV preserves the history rather than only the latest value.
+
+## Export the result
+
+Use **Export all diagram formats** to download the editable `.drawio` source, an editable `.drawio.svg`, and an editable `.png`. Export the metadata history separately, then save or move all four files into `output/`.

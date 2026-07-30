@@ -1,0 +1,26 @@
+---
+title: "Current State Map"
+subtitle: "Overview"
+---
+
+## What is a Current State Map?
+
+A Current State Map follows one selected product or service family through the way work happens today. It combines the movement of materials or information with process data, queues, handoffs, decisions, and rework. The goal is a shared, evidence-based picture—not an idealized procedure.
+
+## Start with the selected process family
+
+Use the route chosen in the Family Process Matrix to set the map boundary. Confirm the first and last steps with the people who perform the work, then observe the flow and collect enough data to describe each process block.
+
+Useful inputs include:
+
+- the selected process family and its expected route;
+- process owners, customers, suppliers, and handoff points;
+- cycle and changeover times, uptime, defects, batches, and staffing;
+- queues, approvals, access restrictions, and rework loops; and
+- the information systems or records that trigger and track the work.
+
+## Workflow
+
+1. Review the [worked example](./current-example.qmd).
+2. Build the diagram and record process metadata in the [interactive workspace](./current-primary.qmd).
+3. Use the [next steps](./current-next.qmd) to interpret waste and prepare a Future State Map.

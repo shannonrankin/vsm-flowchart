@@ -1,5 +1,7 @@
 project: 
   type: website
+  resources:
+    - supplement/custom-vsm-schema.json
 
 website: 
   page-navigation: true
@@ -63,6 +65,16 @@ website:
           - href: process-primary.qmd
             text: Interactive Workspace
           - href: process-next.qmd
+            text: Next Steps
+      - section: "Current State Map"
+        contents:
+          - href: current-intro.qmd
+            text: Overview
+          - href: current-example.qmd
+            text: Tutorial and Example
+          - href: current-primary.qmd
+            text: Interactive Workspace
+          - href: current-next.qmd
             text: Next Steps
       - section: "Optional Pages"
         contents: 
