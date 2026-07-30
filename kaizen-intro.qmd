@@ -5,9 +5,32 @@ subtitle: "Overview"
 
 ## Turn priority gaps into testable changes
 
-Kaizen experiments are small, measurable tests designed to improve a process without committing to an unproven solution. The experiment roadmap connects evidence from `gap-analysis.csv` to a hypothesis, an owner, action steps, and a success measure.
+**Kaizen** means improving a process through small, ongoing changes led by the people who know the work. Instead of committing to an unproven solution, a team runs a limited, measurable experiment, learns from the result, and decides what to do next. In Value Stream Mapping (VSM), this continuous-improvement practice turns the gaps between the Current and Future State maps into evidence-based action.
 
 Start with critical and high-priority gaps, confirm the underlying data with the people who perform the work, and choose the smallest safe change that can test an assumption.
+
+## Use the PDCA cycle
+
+The **Plan-Do-Check-Act (PDCA)** cycle provides a simple scientific method for each experiment:
+
+| Stage | What the team does |
+|---|---|
+| **Plan** | Select a verified gap, describe the proposed change as a testable hypothesis, choose a success metric, and define the owner, scope, and measurement period. |
+| **Do** | Run the smallest safe test and record the actions completed and evidence collected. |
+| **Check** | Compare the measured result with the baseline and success metric, including effects on downstream work. |
+| **Act** | Adopt a supported change, adapt the experiment using what was learned, or abandon an unsupported approach. |
+
+PDCA is a cycle rather than a one-time project. A result can support the next experiment, revise a Future State target, or establish a new Current State baseline.
+
+## Inputs and outputs
+
+| File | Role in the experiment cycle |
+|---|---|
+| `gap-analysis.csv` | Supplies verified process gaps, baselines, targets, priorities, and source timestamps for starting experiment cards. |
+| `kaizen-experiments.json` | Preserves the experiment roadmap and nested action-step checklists for later use. |
+| `kaizen-experiments.csv` | Provides a flat experiment roadmap for review, reporting, and analysis. |
+
+The files are processed entirely in your browser. Save or move downloaded exports into `output/` so the roadmap remains with the rest of the VSM project.
 
 ## From gap to experiment
 
@@ -16,8 +39,6 @@ Start with critical and high-priority gaps, confirm the underlying data with the
 3. Assign an owner, action steps, priority, and success metric.
 4. Move work through **Backlog / Proposed**, **In Progress**, **Testing / Verification**, and **Completed**.
 5. Export the roadmap as `kaizen-experiments.json` or `kaizen-experiments.csv`.
-
-The files are generated entirely in your browser. Save or move downloaded exports into `output/` so the roadmap remains with the rest of the VSM project.
 
 [Open the tutorial](./kaizen-example.qmd){.btn .btn-outline-secondary role="button"}
 [Launch the Kaizen Experiments workspace](./kaizen-primary.qmd){.btn .btn-primary role="button"}

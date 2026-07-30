@@ -7,6 +7,17 @@ subtitle: "Next Steps"
 
 Treat the roadmap as a living record. Before starting an experiment, confirm its owner, scope, baseline, target, measurement period, and any safety or operational constraints. During the test, record completed actions and preserve the evidence used for verification.
 
+## Establish a review cadence
+
+Choose a rhythm that matches the speed and risk of the work rather than waiting until every experiment is finished:
+
+- Use brief standups during active tests to surface blockers, safety concerns, and missing measurements. Daily or weekly may be appropriate depending on how quickly the process changes.
+- Review the roadmap at each sprint or another regular planning interval. Limit work in progress, confirm owners and capacity, and decide which proposed experiment should start next.
+- Hold a verification review at the end of each measurement period. Include process owners and the people who perform and receive the work so that local gains do not hide downstream problems.
+- Schedule a monthly or quarterly VSM review to compare accumulated results with the Future State goals and approve baseline or target changes.
+
+Assign one owner to coordinate each experiment and identify who can approve adoption. Record decisions and supporting evidence in the roadmap so that governance does not depend on memory.
+
 ## Review each result
 
 - **Adopt:** the measured result supports the hypothesis and the change is practical to sustain.
@@ -14,6 +25,18 @@ Treat the roadmap as a living record. Before starting an experiment, confirm its
 - **Abandon:** the result does not support the hypothesis or the change creates unacceptable effects elsewhere.
 
 Do not mark an experiment completed based only on finishing its action steps. Verify the success metric, check for effects on downstream work, and document what the team learned.
+
+## Feed results into the next VSM baseline
+
+When a result is validated and the change is adopted:
+
+1. Preserve the experiment export and the measurements that support the decision.
+2. Update the standard work, ownership, and controls needed to sustain the change.
+3. Observe the changed process over an agreed period, then add the latest measured values to a new Current State metadata log. Do not replace the earlier timestamped evidence.
+4. Revisit the Current State Map if the flow, handoffs, queues, or process nodes changed.
+5. Compare the new baseline with the Future State targets, re-export `gap-analysis.csv`, and create the next set of experiments.
+
+Revise a Future State target only when the evidence or operating context changes—not simply to make an unsupported result appear successful. This feedback loop begins another PDCA cycle and keeps the maps aligned with the process people actually use.
 
 ## Preserve the roadmap
 
@@ -23,5 +46,16 @@ Export both formats when useful:
 - `kaizen-experiments.csv` provides a flat roadmap for review and reporting.
 
 Save or move the downloaded files into `output/`, alongside the `gap-analysis.csv` that supplied the original evidence.
+
+## Complete the VSM suite
+
+- [ ] **Family Process Matrix:** select and validate the target process family, then preserve the matrix export.
+- [ ] **Current State Map:** validate the observed flow and timestamped baseline metadata, then preserve the diagram and CSV exports.
+- [ ] **Future State Map:** agree on a feasible improved flow and measurable targets, then preserve the diagram and `future-primary.csv`.
+- [ ] **Gap Analysis:** compare consistent baseline and target measures, review overrides, and preserve `gap-analysis.csv`.
+- [ ] **Kaizen Experiments:** assign each priority experiment an owner, hypothesis, actions, success metric, status, and review date.
+- [ ] Run each experiment through Plan, Do, Check, and Act; record the decision and supporting evidence.
+- [ ] Export `kaizen-experiments.json` and/or `kaizen-experiments.csv` into `output/`.
+- [ ] Schedule the next roadmap and VSM baseline reviews so continuous improvement continues.
 
 [Return to the Kaizen Experiments workspace](./kaizen-primary.qmd){.btn .btn-primary role="button"}
