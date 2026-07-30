@@ -1,19 +1,356 @@
 ---
 title: "Gap Analysis"
-subtitle: "Tutorial and Example"
+subtitle: "Tutorial and Examples"
+page-layout: full
+format:
+  html:
+    code-copy: false
 ---
 
-## Example comparison
+::: {.callout-note}
+## Learn to prioritize process gaps
 
-Suppose the latest Current State record for **Validate request** has a cycle time of `10`, and its Future State target is `7`. The workspace calculates an absolute change of `-3` and a 30% improvement. Review the result with the process team and edit any value that needs a documented override.
+1. Choose an industry example to compare Current State baselines with Future State targets.
+2. Review the absolute variance, percentage improvement, and color-coded gap status.
+3. Use the walkthrough to decide which shortfalls need immediate intervention.
+4. When you are ready, [open the interactive workspace](./gap-primary.qmd) to analyze your own exports.
+:::
 
-You can also add measures that were not captured in the maps, such as cost savings, carbon footprint reduction, or compliance points.
+## Explore three gap-analysis scenarios
 
-## Try it
+These teaching examples use the same calculation as the workspace for lower-is-better measures:
 
-1. Export the Current State and Future State metadata CSV files.
-2. Open the workspace and load both files.
-3. Review calculated rows and add any custom metrics.
-4. Export `gap-analysis.csv` and save or move it into `output/`.
+$$\text{Improvement (\%)} = \frac{\text{Baseline} - \text{Target}}{|\text{Baseline}|} \times 100$$
 
-[Open the interactive workspace](./gap-primary.qmd){.btn .btn-primary role="button"}
+For a higher-is-better measure such as automated testing coverage, the subtraction is reversed. A negative result is a critical warning because the proposed target is worse than the baseline.
+
+<style>
+.gap-example-tutorial {
+  display: grid;
+  gap: 1rem;
+}
+.gap-example-control,
+.gap-example-panel {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .5rem;
+  padding: 1rem;
+}
+.gap-example-control {
+  display: grid;
+  gap: .35rem;
+  max-width: 36rem;
+}
+.gap-example-control label {
+  font-weight: 700;
+}
+.gap-example-control select {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid #65727a;
+  border-radius: .3rem;
+  color: var(--bs-body-color, #222);
+  padding: .55rem;
+}
+.gap-example-table-wrap {
+  overflow-x: auto;
+}
+.gap-example-table {
+  border-collapse: collapse;
+  min-width: 900px;
+  width: 100%;
+}
+.gap-example-table th,
+.gap-example-table td {
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  padding: .55rem;
+  text-align: left;
+}
+.gap-example-table th {
+  background: var(--bs-secondary-bg, #eef2f5);
+}
+.gap-example-table td:nth-child(n + 3):nth-child(-n + 6) {
+  text-align: right;
+}
+.gap-example-table tr[data-status="target"] td:last-child {
+  background: color-mix(in srgb, #198754 18%, transparent);
+}
+.gap-example-table tr[data-status="moderate"] td:last-child {
+  background: color-mix(in srgb, #ffc107 25%, transparent);
+}
+.gap-example-table tr[data-status="critical"] td:last-child {
+  background: color-mix(in srgb, #dc3545 18%, transparent);
+  font-weight: 700;
+}
+.gap-example-status {
+  min-height: 1.5rem;
+}
+.gap-example-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1.25rem;
+  margin-bottom: 0;
+}
+.gap-example-legend span {
+  white-space: nowrap;
+}
+.gap-example-observation {
+  border-left: .35rem solid #0d6efd;
+  margin-bottom: 0;
+  padding-left: .75rem;
+}
+.gap-example-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+.gap-example-actions .btn {
+  padding: .65rem 1rem;
+}
+</style>
+
+```{ojs}
+//| echo: false
+
+viewof gap_example_tutorial = {
+  const gap_example_scenarios = {
+    manufacturing: {
+      label: "Manufacturing",
+      summary:
+        "A production team plans faster flow and less scrap, but its proposed setup target would increase downtime.",
+      observation:
+        "Setup time is the immediate intervention: the 50-minute target is worse than the 45-minute baseline. Resolve that target before launching broader experiments.",
+      rows: [
+        ["Assembly", "Cycle time", 120, 80, "sec", "lower"],
+        ["Inspection", "Scrap rate", 8, 3, "%", "lower"],
+        ["Changeover", "Setup time", 45, 50, "min", "lower"]
+      ]
+    },
+    software: {
+      label: "Software / IT",
+      summary:
+        "A delivery team proposes a shorter release path, fewer escaped errors, and broader automated test coverage.",
+      observation:
+        "Deployment lead time has the largest operational delay, while test coverage is a higher-is-better measure. Validate that the planned automation can support both targets.",
+      rows: [
+        ["Release pipeline", "Deployment lead time", 10, 3, "days", "lower"],
+        ["Production", "Code error rate", 6, 2, "%", "lower"],
+        ["CI pipeline", "Automated testing coverage", 45, 80, "%", "higher"]
+      ]
+    },
+    administrative: {
+      label: "Admin / Operations",
+      summary:
+        "A shared-services team targets faster approvals and handoffs, but its proposed data-quality result regresses.",
+      observation:
+        "The data error target is critical because errors would rise from 4% to 5%. Address validation at entry before speeding up downstream approvals.",
+      rows: [
+        ["Department review", "Approval delay", 12, 4, "days", "lower"],
+        ["Request intake", "Data error rate", 4, 5, "%", "lower"],
+        ["Shared services", "Handoff wait time", 7, 3, "days", "lower"]
+      ]
+    }
+  };
+
+  const gap_example_root = document.createElement("div");
+  gap_example_root.className = "gap-example-tutorial";
+
+  const gap_example_control = document.createElement("div");
+  gap_example_control.className = "gap-example-control";
+  const gap_example_label = document.createElement("label");
+  gap_example_label.htmlFor = "gap-example-scenario";
+  gap_example_label.textContent = "Industry example";
+  const gap_example_select = document.createElement("select");
+  gap_example_select.id = "gap-example-scenario";
+  for (const [gap_example_key, gap_example_scenario] of Object.entries(
+    gap_example_scenarios
+  )) {
+    const gap_example_option = document.createElement("option");
+    gap_example_option.value = gap_example_key;
+    gap_example_option.textContent = gap_example_scenario.label;
+    gap_example_select.append(gap_example_option);
+  }
+  const gap_example_status = document.createElement("span");
+  gap_example_status.className = "gap-example-status";
+  gap_example_status.setAttribute("role", "status");
+  gap_example_status.setAttribute("aria-live", "polite");
+  gap_example_control.append(
+    gap_example_label,
+    gap_example_select,
+    gap_example_status
+  );
+
+  const gap_example_content = document.createElement("div");
+  gap_example_root.append(gap_example_control, gap_example_content);
+
+  function gap_example_format(gap_example_value) {
+    return Number(gap_example_value.toFixed(1)).toString();
+  }
+
+  function gap_example_calculate(gap_example_row) {
+    const [
+      gap_example_node,
+      gap_example_metric,
+      gap_example_baseline,
+      gap_example_target,
+      gap_example_unit,
+      gap_example_direction
+    ] = gap_example_row;
+    const gap_example_delta = gap_example_target - gap_example_baseline;
+    const gap_example_improvement = gap_example_baseline === 0
+      ? null
+      : (gap_example_direction === "higher"
+          ? gap_example_target - gap_example_baseline
+          : gap_example_baseline - gap_example_target) /
+        Math.abs(gap_example_baseline) * 100;
+    const gap_example_status_value = gap_example_improvement === null
+      ? ["uncalculated", "⚪ Not calculated"]
+      : gap_example_improvement >= 20
+        ? ["target", "🟢 On Target"]
+        : gap_example_improvement >= 0
+          ? ["moderate", "🟡 Moderate Gap"]
+          : ["critical", "🔴 Critical Gap"];
+    return {
+      node: gap_example_node,
+      metric: gap_example_metric,
+      baseline: `${gap_example_format(gap_example_baseline)} ${gap_example_unit}`,
+      target: `${gap_example_format(gap_example_target)} ${gap_example_unit}`,
+      delta: `${gap_example_delta > 0 ? "+" : ""}${gap_example_format(gap_example_delta)} ${gap_example_unit}`,
+      improvement:
+        gap_example_improvement === null
+          ? "Not calculated"
+          : `${gap_example_format(gap_example_improvement)}%`,
+      status_key: gap_example_status_value[0],
+      status_label: gap_example_status_value[1]
+    };
+  }
+
+  function gap_example_render() {
+    const gap_example_scenario =
+      gap_example_scenarios[gap_example_select.value];
+    const gap_example_panel = document.createElement("section");
+    gap_example_panel.className = "gap-example-panel";
+    const gap_example_heading = document.createElement("h3");
+    gap_example_heading.textContent = gap_example_scenario.label;
+    const gap_example_summary = document.createElement("p");
+    gap_example_summary.textContent = gap_example_scenario.summary;
+
+    const gap_example_table_wrap = document.createElement("div");
+    gap_example_table_wrap.className = "gap-example-table-wrap";
+    const gap_example_table = document.createElement("table");
+    gap_example_table.className = "gap-example-table";
+    const gap_example_caption = document.createElement("caption");
+    gap_example_caption.textContent =
+      `${gap_example_scenario.label} Current and Future State variance breakdown`;
+    const gap_example_head = document.createElement("thead");
+    const gap_example_head_row = document.createElement("tr");
+    [
+      "Process node",
+      "Metric",
+      "Baseline",
+      "Target",
+      "Absolute variance (Δ)",
+      "Improvement",
+      "Gap status"
+    ].forEach((gap_example_heading_text) => {
+      const gap_example_header = document.createElement("th");
+      gap_example_header.scope = "col";
+      gap_example_header.textContent = gap_example_heading_text;
+      gap_example_head_row.append(gap_example_header);
+    });
+    gap_example_head.append(gap_example_head_row);
+    const gap_example_body = document.createElement("tbody");
+
+    gap_example_scenario.rows
+      .map(gap_example_calculate)
+      .forEach((gap_example_result) => {
+        const gap_example_table_row = document.createElement("tr");
+        gap_example_table_row.dataset.status = gap_example_result.status_key;
+        [
+          gap_example_result.node,
+          gap_example_result.metric,
+          gap_example_result.baseline,
+          gap_example_result.target,
+          gap_example_result.delta,
+          gap_example_result.improvement,
+          gap_example_result.status_label
+        ].forEach((gap_example_value) => {
+          const gap_example_cell = document.createElement("td");
+          gap_example_cell.textContent = gap_example_value;
+          gap_example_table_row.append(gap_example_cell);
+        });
+        gap_example_body.append(gap_example_table_row);
+      });
+
+    gap_example_table.append(
+      gap_example_caption,
+      gap_example_head,
+      gap_example_body
+    );
+    gap_example_table_wrap.append(gap_example_table);
+
+    const gap_example_legend = document.createElement("p");
+    gap_example_legend.className = "gap-example-legend";
+    ["🟢 20% or greater", "🟡 0% to under 20%", "🔴 Negative improvement"].forEach(
+      (gap_example_legend_text) => {
+        const gap_example_legend_item = document.createElement("span");
+        gap_example_legend_item.textContent = gap_example_legend_text;
+        gap_example_legend.append(gap_example_legend_item);
+      }
+    );
+    const gap_example_observation = document.createElement("p");
+    gap_example_observation.className = "gap-example-observation";
+    gap_example_observation.textContent = gap_example_scenario.observation;
+
+    gap_example_panel.append(
+      gap_example_heading,
+      gap_example_summary,
+      gap_example_table_wrap,
+      gap_example_legend,
+      gap_example_observation
+    );
+    gap_example_content.replaceChildren(gap_example_panel);
+    gap_example_status.textContent =
+      `Showing ${gap_example_scenario.label}.`;
+  }
+
+  gap_example_select.addEventListener("change", gap_example_render);
+  gap_example_render();
+  return gap_example_root;
+}
+```
+
+## Analysis walkthrough
+
+::: {.callout-tip}
+## 1. Confirm comparable measures
+
+Check that baseline and target values use the same process boundary, definition, and unit. A convincing percentage is not useful if one value measures hours and the other measures days.
+:::
+
+::: {.callout-tip}
+## 2. Check the direction of improvement
+
+Most time and error measures improve when they decrease. Measures such as automated testing coverage improve when they increase. The workspace assumes lower is better, so edit its calculated percentage and status when adding a higher-is-better custom measure.
+:::
+
+::: {.callout-warning}
+## 3. Intervene on critical gaps first
+
+A red row means the proposed Future State is worse than the baseline. Verify the source data and target, then resolve the regression before creating a Kaizen experiment. Next, review yellow rows and large gaps whose success depends on untested assumptions, constrained staff, or unavailable technology.
+:::
+
+::: {.callout-tip}
+## 4. Turn a verified gap into an experiment
+
+Choose a gap with a clear owner, measurable baseline, and testable target. Preserve the evidence and export `gap-analysis.csv`; it will seed the later Kaizen Experiments workspace.
+:::
+
+## Analyze your own process
+
+Import your latest Current and Future State CSV files, review calculated rows, and add any measures that were not captured in the maps. Your browser will prompt you to download `gap-analysis.csv`; save or move it into `output/`.
+
+<div class="gap-example-actions">
+[Launch the Gap Analysis workspace](./gap-primary.qmd){.btn .btn-primary role="button"}
+[Review Gap Analysis next steps](./gap-next.qmd){.btn .btn-outline-secondary role="button"}
+</div>
