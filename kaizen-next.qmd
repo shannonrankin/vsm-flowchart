@@ -1,0 +1,27 @@
+---
+title: "Kaizen Experiments"
+subtitle: "Next Steps"
+---
+
+## Run, learn, and update
+
+Treat the roadmap as a living record. Before starting an experiment, confirm its owner, scope, baseline, target, measurement period, and any safety or operational constraints. During the test, record completed actions and preserve the evidence used for verification.
+
+## Review each result
+
+- **Adopt:** the measured result supports the hypothesis and the change is practical to sustain.
+- **Adapt:** the test produced useful evidence, but the change or measurement plan needs revision.
+- **Abandon:** the result does not support the hypothesis or the change creates unacceptable effects elsewhere.
+
+Do not mark an experiment completed based only on finishing its action steps. Verify the success metric, check for effects on downstream work, and document what the team learned.
+
+## Preserve the roadmap
+
+Export both formats when useful:
+
+- `kaizen-experiments.json` preserves nested action-step checklists for re-use.
+- `kaizen-experiments.csv` provides a flat roadmap for review and reporting.
+
+Save or move the downloaded files into `output/`, alongside the `gap-analysis.csv` that supplied the original evidence.
+
+[Return to the Kaizen Experiments workspace](./kaizen-primary.qmd){.btn .btn-primary role="button"}

@@ -1,0 +1,23 @@
+---
+title: "Kaizen Experiments"
+subtitle: "Overview"
+---
+
+## Turn priority gaps into testable changes
+
+Kaizen experiments are small, measurable tests designed to improve a process without committing to an unproven solution. The experiment roadmap connects evidence from `gap-analysis.csv` to a hypothesis, an owner, action steps, and a success measure.
+
+Start with critical and high-priority gaps, confirm the underlying data with the people who perform the work, and choose the smallest safe change that can test an assumption.
+
+## From gap to experiment
+
+1. Import `gap-analysis.csv` in the [interactive workspace](./kaizen-primary.qmd).
+2. Review the generated experiment cards and clarify each hypothesis.
+3. Assign an owner, action steps, priority, and success metric.
+4. Move work through **Backlog / Proposed**, **In Progress**, **Testing / Verification**, and **Completed**.
+5. Export the roadmap as `kaizen-experiments.json` or `kaizen-experiments.csv`.
+
+The files are generated entirely in your browser. Save or move downloaded exports into `output/` so the roadmap remains with the rest of the VSM project.
+
+[Open the tutorial](./kaizen-example.qmd){.btn .btn-outline-secondary role="button"}
+[Launch the Kaizen Experiments workspace](./kaizen-primary.qmd){.btn .btn-primary role="button"}

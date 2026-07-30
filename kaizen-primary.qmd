@@ -1,0 +1,842 @@
+---
+title: "Kaizen Experiments"
+subtitle: "Interactive workspace"
+page-layout: full
+format:
+  html:
+    code-copy: false
+---
+
+::: {.callout-note}
+## Build your Kaizen experiment roadmap
+
+1. Upload `gap-analysis.csv` exported from the Gap Analysis workspace. Critical or high gaps automatically become starting experiment cards with their baseline and target.
+2. Use **Board** to review experiments by status or **Table** to edit the complete roadmap.
+3. Select **Edit** on a card or table row to refine its hypothesis, checklist, owner, priority, status, and success metric.
+4. Check off action steps as work is completed and move each card through verification.
+5. Export `kaizen-experiments.json` or `kaizen-experiments.csv`. Your browser will prompt for the download; save or move it into `output/`.
+:::
+
+<style>
+.kaizen-workspace {
+  display: grid;
+  gap: 1rem;
+}
+.kaizen-panel {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .5rem;
+  padding: 1rem;
+}
+.kaizen-panel h2,
+.kaizen-panel h3 {
+  margin-top: 0;
+}
+.kaizen-controls {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+.kaizen-controls label,
+.kaizen-editor label {
+  display: grid;
+  font-weight: 600;
+  gap: .25rem;
+}
+.kaizen-workspace button,
+.kaizen-workspace input,
+.kaizen-workspace select,
+.kaizen-workspace textarea {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid #65727a;
+  border-radius: .3rem;
+  color: var(--bs-body-color, #222);
+  padding: .45rem .6rem;
+}
+.kaizen-workspace button {
+  min-height: 2.35rem;
+}
+.kaizen-workspace button:hover,
+.kaizen-workspace button:focus {
+  box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2);
+}
+.kaizen-view-button[aria-pressed="true"] {
+  background: #0d6efd;
+  color: #fff;
+}
+.kaizen-board {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(4, minmax(15rem, 1fr));
+  overflow-x: auto;
+}
+.kaizen-column {
+  background: var(--bs-tertiary-bg, #f4f6f7);
+  border-radius: .45rem;
+  min-height: 10rem;
+  padding: .65rem;
+}
+.kaizen-column-title {
+  font-size: 1rem;
+}
+.kaizen-card {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #cbd3d8);
+  border-left: .35rem solid #6c757d;
+  border-radius: .35rem;
+  display: grid;
+  gap: .5rem;
+  margin-bottom: .65rem;
+  padding: .7rem;
+}
+.kaizen-card[data-priority="High"] {
+  border-left-color: #dc3545;
+}
+.kaizen-card[data-priority="Medium"] {
+  border-left-color: #ffc107;
+}
+.kaizen-card p {
+  margin: 0;
+}
+.kaizen-checklist {
+  display: grid;
+  gap: .2rem;
+  margin: 0;
+  padding: 0;
+}
+.kaizen-checklist label {
+  align-items: start;
+  display: flex;
+  font-weight: 400;
+  gap: .4rem;
+}
+.kaizen-table-wrap {
+  overflow-x: auto;
+}
+.kaizen-table {
+  border-collapse: collapse;
+  min-width: 1250px;
+  width: 100%;
+}
+.kaizen-table th,
+.kaizen-table td {
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  padding: .4rem;
+  text-align: left;
+  vertical-align: top;
+}
+.kaizen-table th {
+  background: var(--bs-secondary-bg, #eef2f5);
+}
+.kaizen-table input,
+.kaizen-table select,
+.kaizen-table textarea {
+  box-sizing: border-box;
+  min-width: 8rem;
+  width: 100%;
+}
+.kaizen-editor {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(2, minmax(14rem, 1fr));
+}
+.kaizen-editor .kaizen-wide {
+  grid-column: 1 / -1;
+}
+.kaizen-editor textarea {
+  min-height: 5rem;
+}
+.kaizen-empty,
+.kaizen-status {
+  min-height: 1.5rem;
+}
+@media (max-width: 700px) {
+  .kaizen-editor {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+```{ojs}
+//| echo: false
+
+viewof kaizen_experiment_workspace = {
+  const kaizen_statuses = [
+    "Backlog / Proposed",
+    "In Progress",
+    "Testing / Verification",
+    "Completed"
+  ];
+  const kaizen_priorities = ["High", "Medium", "Low"];
+  const kaizen_state = {
+    experiments: [],
+    selected_id: null,
+    view: "board"
+  };
+
+  const kaizen_root = document.createElement("div");
+  kaizen_root.className = "kaizen-workspace";
+
+  const kaizen_import_panel = document.createElement("section");
+  kaizen_import_panel.className = "kaizen-panel";
+  const kaizen_import_heading = document.createElement("h2");
+  kaizen_import_heading.textContent = "Import priority gaps";
+  const kaizen_import_help = document.createElement("p");
+  kaizen_import_help.textContent =
+    "Choose gap-analysis.csv. The file stays in this browser tab and replaces the current roadmap after confirmation.";
+  const kaizen_import_controls = document.createElement("div");
+  kaizen_import_controls.className = "kaizen-controls";
+  const kaizen_file_label = document.createElement("label");
+  kaizen_file_label.textContent = "Gap Analysis CSV";
+  const kaizen_file = document.createElement("input");
+  kaizen_file.type = "file";
+  kaizen_file.accept = ".csv,text/csv";
+  kaizen_file_label.append(kaizen_file);
+  const kaizen_add = kaizen_button("Add blank experiment");
+  kaizen_import_controls.append(kaizen_file_label, kaizen_add);
+  kaizen_import_panel.append(
+    kaizen_import_heading,
+    kaizen_import_help,
+    kaizen_import_controls
+  );
+
+  const kaizen_roadmap_panel = document.createElement("section");
+  kaizen_roadmap_panel.className = "kaizen-panel";
+  const kaizen_roadmap_heading = document.createElement("h2");
+  kaizen_roadmap_heading.textContent = "Experiment roadmap";
+  const kaizen_view_controls = document.createElement("div");
+  kaizen_view_controls.className = "kaizen-controls";
+  kaizen_view_controls.setAttribute("aria-label", "Roadmap view");
+  const kaizen_board_button = kaizen_button("Board");
+  kaizen_board_button.className = "kaizen-view-button";
+  const kaizen_table_button = kaizen_button("Table");
+  kaizen_table_button.className = "kaizen-view-button";
+  kaizen_view_controls.append(kaizen_board_button, kaizen_table_button);
+  const kaizen_view = document.createElement("div");
+  kaizen_roadmap_panel.append(
+    kaizen_roadmap_heading,
+    kaizen_view_controls,
+    kaizen_view
+  );
+
+  const kaizen_editor_panel = document.createElement("section");
+  kaizen_editor_panel.className = "kaizen-panel";
+  kaizen_editor_panel.hidden = true;
+  const kaizen_editor_heading = document.createElement("h2");
+  kaizen_editor_heading.textContent = "Edit experiment";
+  const kaizen_editor = document.createElement("div");
+  kaizen_editor.className = "kaizen-editor";
+  const kaizen_title = kaizen_labeled_control("Experiment title", "input");
+  const kaizen_gap = kaizen_labeled_control("Target gap", "input");
+  const kaizen_hypothesis = kaizen_labeled_control("Hypothesis", "textarea");
+  const kaizen_steps = kaizen_labeled_control(
+    "Action steps (one step per line)",
+    "textarea"
+  );
+  const kaizen_owner = kaizen_labeled_control("Owner / assignee", "input");
+  const kaizen_success = kaizen_labeled_control("Success metric", "input");
+  const kaizen_priority = kaizen_labeled_control(
+    "Priority level",
+    "select",
+    kaizen_priorities
+  );
+  const kaizen_status_control = kaizen_labeled_control(
+    "Status",
+    "select",
+    kaizen_statuses
+  );
+  kaizen_hypothesis.label.classList.add("kaizen-wide");
+  kaizen_steps.label.classList.add("kaizen-wide");
+  const kaizen_editor_controls = document.createElement("div");
+  kaizen_editor_controls.className = "kaizen-controls kaizen-wide";
+  const kaizen_save = kaizen_button("Save changes");
+  const kaizen_delete = kaizen_button("Delete experiment");
+  const kaizen_cancel = kaizen_button("Cancel");
+  kaizen_editor_controls.append(kaizen_save, kaizen_delete, kaizen_cancel);
+  kaizen_editor.append(
+    kaizen_title.label,
+    kaizen_gap.label,
+    kaizen_hypothesis.label,
+    kaizen_steps.label,
+    kaizen_owner.label,
+    kaizen_success.label,
+    kaizen_priority.label,
+    kaizen_status_control.label,
+    kaizen_editor_controls
+  );
+  kaizen_editor_panel.append(kaizen_editor_heading, kaizen_editor);
+
+  const kaizen_export_panel = document.createElement("section");
+  kaizen_export_panel.className = "kaizen-panel";
+  const kaizen_export_heading = document.createElement("h2");
+  kaizen_export_heading.textContent = "Export Kaizen Roadmap";
+  const kaizen_export_controls = document.createElement("div");
+  kaizen_export_controls.className = "kaizen-controls";
+  const kaizen_json = kaizen_button("Export Kaizen Roadmap (JSON)");
+  const kaizen_csv = kaizen_button("Export Kaizen Roadmap (CSV)");
+  const kaizen_export_help = document.createElement("span");
+  kaizen_export_help.textContent =
+    "Your browser will download kaizen-experiments.json or kaizen-experiments.csv. Save or move the file into output/.";
+  kaizen_export_controls.append(
+    kaizen_json,
+    kaizen_csv,
+    kaizen_export_help
+  );
+  kaizen_export_panel.append(kaizen_export_heading, kaizen_export_controls);
+
+  const kaizen_message = document.createElement("p");
+  kaizen_message.className = "kaizen-status";
+  kaizen_message.setAttribute("role", "status");
+  kaizen_message.setAttribute("aria-live", "polite");
+  kaizen_root.append(
+    kaizen_import_panel,
+    kaizen_roadmap_panel,
+    kaizen_editor_panel,
+    kaizen_export_panel,
+    kaizen_message
+  );
+
+  function kaizen_button(label) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    return button;
+  }
+
+  function kaizen_labeled_control(label_text, kind, options = []) {
+    const label = document.createElement("label");
+    label.textContent = label_text;
+    const control = document.createElement(kind);
+    if (kind === "input") control.type = "text";
+    options.forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      control.append(option);
+    });
+    label.append(control);
+    return {label, control};
+  }
+
+  function kaizen_notify(message) {
+    kaizen_message.textContent = message;
+  }
+
+  function kaizen_id() {
+    return globalThis.crypto?.randomUUID?.() ??
+      `kaizen-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  function kaizen_parse_csv(text) {
+    const rows = [];
+    let row = [];
+    let field = "";
+    let quoted = false;
+    for (let index = 0; index < text.length; index += 1) {
+      const character = text[index];
+      if (quoted) {
+        if (character === '"' && text[index + 1] === '"') {
+          field += '"';
+          index += 1;
+        } else if (character === '"') {
+          quoted = false;
+        } else {
+          field += character;
+        }
+      } else if (character === '"') {
+        quoted = true;
+      } else if (character === ",") {
+        row.push(field);
+        field = "";
+      } else if (character === "\n") {
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = "";
+      } else if (character !== "\r") {
+        field += character;
+      }
+    }
+    if (quoted) throw new Error("The CSV contains an unclosed quoted value.");
+    if (field || row.length) {
+      row.push(field);
+      rows.push(row);
+    }
+    if (rows.length < 2) throw new Error("The CSV has no gap records.");
+    const headers = rows[0].map((header, index) =>
+      (index === 0 ? header.replace(/^\uFEFF/, "") : header).trim()
+    );
+    const required = [
+      "process_node",
+      "metric",
+      "baseline_value",
+      "target_value",
+      "gap_status"
+    ];
+    if (required.some((header) => !headers.includes(header))) {
+      throw new Error(
+        `The CSV must contain ${required.join(", ")} columns.`
+      );
+    }
+    return rows.slice(1)
+      .filter((values) => values.some((value) => value !== ""))
+      .map((values) => Object.fromEntries(
+        headers.map((header, index) => [header, values[index] ?? ""])
+      ));
+  }
+
+  function kaizen_from_gap(record) {
+    const process_node = String(record.process_node).trim();
+    const metric = String(record.metric).trim();
+    const baseline = String(record.baseline_value).trim();
+    const target = String(record.target_value).trim();
+    const amount = String(
+      record.percentage_improvement || record.absolute_change || target
+    ).trim();
+    return {
+      id: kaizen_id(),
+      title: `${process_node}: improve ${metric}`,
+      target_gap: `${metric}: ${baseline} baseline → ${target} target`,
+      hypothesis:
+        `If we [action], then ${metric} will improve by ${amount || "[amount]"}.`,
+      action_steps: [],
+      owner: "",
+      success_metric: `${metric} reaches ${target}`,
+      priority: "High",
+      status: "Backlog / Proposed",
+      source_gap_status: String(record.gap_status).trim()
+    };
+  }
+
+  function kaizen_blank() {
+    return {
+      id: kaizen_id(),
+      title: "New Kaizen experiment",
+      target_gap: "",
+      hypothesis: "If we [action], then [metric] will improve by [amount].",
+      action_steps: [],
+      owner: "",
+      success_metric: "",
+      priority: "Medium",
+      status: "Backlog / Proposed",
+      source_gap_status: ""
+    };
+  }
+
+  function kaizen_dispatch() {
+    kaizen_root.dispatchEvent(new Event("input", {bubbles: true}));
+  }
+
+  function kaizen_select(experiment) {
+    kaizen_state.selected_id = experiment.id;
+    kaizen_title.control.value = experiment.title;
+    kaizen_gap.control.value = experiment.target_gap;
+    kaizen_hypothesis.control.value = experiment.hypothesis;
+    kaizen_steps.control.value =
+      experiment.action_steps.map((step) => step.text).join("\n");
+    kaizen_owner.control.value = experiment.owner;
+    kaizen_success.control.value = experiment.success_metric;
+    kaizen_priority.control.value = experiment.priority;
+    kaizen_status_control.control.value = experiment.status;
+    kaizen_editor_panel.hidden = false;
+    kaizen_editor_heading.focus?.();
+  }
+
+  function kaizen_options(select, values, selected) {
+    values.forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      option.selected = value === selected;
+      select.append(option);
+    });
+  }
+
+  function kaizen_render_card(experiment) {
+    const card = document.createElement("article");
+    card.className = "kaizen-card";
+    card.dataset.priority = experiment.priority;
+    const title = document.createElement("h4");
+    title.textContent = experiment.title;
+    const gap = document.createElement("p");
+    const gap_label = document.createElement("strong");
+    gap_label.textContent = "Target gap: ";
+    gap.append(gap_label, experiment.target_gap || "Not set");
+    const hypothesis = document.createElement("p");
+    hypothesis.textContent = experiment.hypothesis;
+    const details = document.createElement("p");
+    details.textContent =
+      `Owner: ${experiment.owner || "Unassigned"} · Priority: ${experiment.priority}`;
+    const checklist = document.createElement("div");
+    checklist.className = "kaizen-checklist";
+    experiment.action_steps.forEach((step) => {
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = step.done;
+      checkbox.addEventListener("change", () => {
+        step.done = checkbox.checked;
+        kaizen_dispatch();
+      });
+      const text = document.createElement("span");
+      text.textContent = step.text;
+      label.append(checkbox, text);
+      checklist.append(label);
+    });
+    const controls = document.createElement("div");
+    controls.className = "kaizen-controls";
+    const status = document.createElement("select");
+    status.setAttribute("aria-label", `Status for ${experiment.title}`);
+    kaizen_options(status, kaizen_statuses, experiment.status);
+    status.addEventListener("change", () => {
+      experiment.status = status.value;
+      kaizen_render();
+      kaizen_dispatch();
+      kaizen_notify(`${experiment.title} moved to ${experiment.status}.`);
+    });
+    const edit = kaizen_button("Edit");
+    edit.addEventListener("click", () => kaizen_select(experiment));
+    controls.append(status, edit);
+    card.append(title, gap, hypothesis, details, checklist, controls);
+    return card;
+  }
+
+  function kaizen_edit_control(experiment, field, kind = "input") {
+    const control = document.createElement(kind);
+    if (kind === "input") control.type = "text";
+    control.value = field === "action_steps"
+      ? experiment.action_steps.map((step) => step.text).join("; ")
+      : experiment[field];
+    control.setAttribute("aria-label", `${field} for ${experiment.title}`);
+    control.addEventListener("change", () => {
+      if (field === "action_steps") {
+        const completed = new Map(
+          experiment.action_steps.map((step) => [step.text, step.done])
+        );
+        experiment.action_steps = control.value
+          .split(";")
+          .map((text) => text.trim())
+          .filter(Boolean)
+          .map((text) => ({text, done: completed.get(text) || false}));
+      } else {
+        experiment[field] = control.value.trim();
+      }
+      kaizen_render();
+      kaizen_dispatch();
+    });
+    return control;
+  }
+
+  function kaizen_render_board() {
+    const board = document.createElement("div");
+    board.className = "kaizen-board";
+    kaizen_statuses.forEach((status) => {
+      const column = document.createElement("section");
+      column.className = "kaizen-column";
+      const experiments = kaizen_state.experiments.filter(
+        (experiment) => experiment.status === status
+      );
+      const heading = document.createElement("h3");
+      heading.className = "kaizen-column-title";
+      heading.textContent = `${status} (${experiments.length})`;
+      column.append(heading);
+      experiments.forEach((experiment) => {
+        column.append(kaizen_render_card(experiment));
+      });
+      board.append(column);
+    });
+    kaizen_view.replaceChildren(board);
+  }
+
+  function kaizen_render_table() {
+    const wrap = document.createElement("div");
+    wrap.className = "kaizen-table-wrap";
+    const table = document.createElement("table");
+    table.className = "kaizen-table";
+    const head = document.createElement("thead");
+    const head_row = document.createElement("tr");
+    [
+      "Title",
+      "Target gap",
+      "Hypothesis",
+      "Action steps",
+      "Owner",
+      "Success metric",
+      "Priority",
+      "Status",
+      "Actions"
+    ].forEach((label) => {
+      const heading = document.createElement("th");
+      heading.scope = "col";
+      heading.textContent = label;
+      head_row.append(heading);
+    });
+    head.append(head_row);
+    const body = document.createElement("tbody");
+    kaizen_state.experiments.forEach((experiment) => {
+      const row = document.createElement("tr");
+      [
+        ["title", "input"],
+        ["target_gap", "input"],
+        ["hypothesis", "textarea"],
+        ["action_steps", "textarea"],
+        ["owner", "input"],
+        ["success_metric", "input"]
+      ].forEach(([field, kind]) => {
+        const cell = document.createElement("td");
+        cell.append(kaizen_edit_control(experiment, field, kind));
+        row.append(cell);
+      });
+      const priority_cell = document.createElement("td");
+      const priority = document.createElement("select");
+      kaizen_options(priority, kaizen_priorities, experiment.priority);
+      priority.addEventListener("change", () => {
+        experiment.priority = priority.value;
+        kaizen_dispatch();
+      });
+      priority_cell.append(priority);
+      const status_cell = document.createElement("td");
+      const status = document.createElement("select");
+      kaizen_options(status, kaizen_statuses, experiment.status);
+      status.addEventListener("change", () => {
+        experiment.status = status.value;
+        kaizen_dispatch();
+      });
+      status_cell.append(status);
+      const actions = document.createElement("td");
+      const edit = kaizen_button("Edit");
+      edit.addEventListener("click", () => kaizen_select(experiment));
+      actions.append(edit);
+      row.append(priority_cell, status_cell, actions);
+      body.append(row);
+    });
+    table.append(head, body);
+    wrap.append(table);
+    kaizen_view.replaceChildren(wrap);
+  }
+
+  function kaizen_render() {
+    kaizen_board_button.setAttribute(
+      "aria-pressed",
+      String(kaizen_state.view === "board")
+    );
+    kaizen_table_button.setAttribute(
+      "aria-pressed",
+      String(kaizen_state.view === "table")
+    );
+    if (kaizen_state.experiments.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "kaizen-empty";
+      empty.textContent =
+        "Import gap-analysis.csv or add a blank experiment to begin.";
+      kaizen_view.replaceChildren(empty);
+    } else if (kaizen_state.view === "board") {
+      kaizen_render_board();
+    } else {
+      kaizen_render_table();
+    }
+  }
+
+  function kaizen_set_view(view) {
+    kaizen_state.view = view;
+    kaizen_render();
+  }
+
+  kaizen_board_button.addEventListener(
+    "click",
+    () => kaizen_set_view("board")
+  );
+  kaizen_table_button.addEventListener(
+    "click",
+    () => kaizen_set_view("table")
+  );
+
+  kaizen_file.addEventListener("change", async () => {
+    try {
+      const file = kaizen_file.files?.[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Choose a gap-analysis.csv file smaller than 5 MB.");
+      }
+      const records = kaizen_parse_csv(await file.text());
+      const priority_records = records.filter((record) =>
+        /critical|high/i.test(String(record.gap_status))
+      );
+      if (priority_records.length === 0) {
+        throw new Error(
+          "No critical or high gaps were found. Review gap_status values or add an experiment manually."
+        );
+      }
+      if (
+        kaizen_state.experiments.length > 0 &&
+        !globalThis.confirm(
+          "Replace the current roadmap with experiments from this file?"
+        )
+      ) {
+        kaizen_file.value = "";
+        return;
+      }
+      kaizen_state.experiments = priority_records.map(kaizen_from_gap);
+      kaizen_state.selected_id = null;
+      kaizen_editor_panel.hidden = true;
+      kaizen_render();
+      kaizen_dispatch();
+      kaizen_notify(
+        `Created ${priority_records.length} experiment card(s) from priority gaps.`
+      );
+    } catch (error) {
+      kaizen_notify(error.message);
+    }
+  });
+
+  kaizen_add.addEventListener("click", () => {
+    const experiment = kaizen_blank();
+    kaizen_state.experiments.push(experiment);
+    kaizen_render();
+    kaizen_select(experiment);
+    kaizen_dispatch();
+    kaizen_notify("Added a blank experiment.");
+  });
+
+  kaizen_save.addEventListener("click", () => {
+    const experiment = kaizen_state.experiments.find(
+      (candidate) => candidate.id === kaizen_state.selected_id
+    );
+    if (!experiment) return;
+    const title = kaizen_title.control.value.trim();
+    if (!title) {
+      kaizen_notify("Enter an experiment title before saving.");
+      return;
+    }
+    const completed = new Map(
+      experiment.action_steps.map((step) => [step.text, step.done])
+    );
+    experiment.title = title;
+    experiment.target_gap = kaizen_gap.control.value.trim();
+    experiment.hypothesis = kaizen_hypothesis.control.value.trim();
+    experiment.action_steps = kaizen_steps.control.value
+      .split("\n")
+      .map((text) => text.trim())
+      .filter(Boolean)
+      .map((text) => ({text, done: completed.get(text) || false}));
+    experiment.owner = kaizen_owner.control.value.trim();
+    experiment.success_metric = kaizen_success.control.value.trim();
+    experiment.priority = kaizen_priority.control.value;
+    experiment.status = kaizen_status_control.control.value;
+    kaizen_editor_panel.hidden = true;
+    kaizen_render();
+    kaizen_dispatch();
+    kaizen_notify(`Saved ${experiment.title}.`);
+  });
+
+  kaizen_delete.addEventListener("click", () => {
+    const experiment = kaizen_state.experiments.find(
+      (candidate) => candidate.id === kaizen_state.selected_id
+    );
+    if (!experiment || !globalThis.confirm(`Delete "${experiment.title}"?`)) {
+      return;
+    }
+    kaizen_state.experiments = kaizen_state.experiments.filter(
+      (candidate) => candidate.id !== experiment.id
+    );
+    kaizen_state.selected_id = null;
+    kaizen_editor_panel.hidden = true;
+    kaizen_render();
+    kaizen_dispatch();
+    kaizen_notify(`Deleted ${experiment.title}.`);
+  });
+
+  kaizen_cancel.addEventListener("click", () => {
+    kaizen_editor_panel.hidden = true;
+    kaizen_state.selected_id = null;
+  });
+
+  function kaizen_download(content, type, filename) {
+    const blob = new Blob([content], {type});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function kaizen_export_records() {
+    const export_timestamp = new Date().toISOString();
+    return kaizen_state.experiments.map((experiment) => ({
+      export_timestamp,
+      ...experiment,
+      action_steps: experiment.action_steps.map((step) => ({...step}))
+    }));
+  }
+
+  function kaizen_can_export() {
+    if (kaizen_state.experiments.length > 0) return true;
+    kaizen_notify("Import gaps or add an experiment before exporting.");
+    return false;
+  }
+
+  kaizen_json.addEventListener("click", () => {
+    if (!kaizen_can_export()) return;
+    kaizen_download(
+      JSON.stringify(kaizen_export_records(), null, 2),
+      "application/json;charset=utf-8",
+      "kaizen-experiments.json"
+    );
+    kaizen_notify(
+      "Kaizen roadmap ready. Save or move kaizen-experiments.json into output/."
+    );
+  });
+
+  function kaizen_csv_value(value) {
+    return `"${String(value ?? "").replaceAll('"', '""')}"`;
+  }
+
+  kaizen_csv.addEventListener("click", () => {
+    if (!kaizen_can_export()) return;
+    const columns = [
+      "export_timestamp",
+      "id",
+      "title",
+      "target_gap",
+      "hypothesis",
+      "action_steps",
+      "owner",
+      "success_metric",
+      "priority",
+      "status",
+      "source_gap_status"
+    ];
+    const records = kaizen_export_records().map((record) => ({
+      ...record,
+      action_steps: record.action_steps
+        .map((step) => `${step.done ? "[x]" : "[ ]"} ${step.text}`)
+        .join("; ")
+    }));
+    const lines = [
+      columns.map(kaizen_csv_value).join(","),
+      ...records.map((record) =>
+        columns.map((column) => kaizen_csv_value(record[column])).join(",")
+      )
+    ];
+    kaizen_download(
+      lines.join("\r\n"),
+      "text/csv;charset=utf-8",
+      "kaizen-experiments.csv"
+    );
+    kaizen_notify(
+      "Kaizen roadmap ready. Save or move kaizen-experiments.csv into output/."
+    );
+  });
+
+  Object.defineProperty(kaizen_root, "value", {
+    get: () => ({experiments: structuredClone(kaizen_state.experiments)})
+  });
+
+  kaizen_render();
+  return kaizen_root;
+}
+```
