@@ -1,0 +1,19 @@
+---
+title: "Gap Analysis"
+subtitle: "Tutorial and Example"
+---
+
+## Example comparison
+
+Suppose the latest Current State record for **Validate request** has a cycle time of `10`, and its Future State target is `7`. The workspace calculates an absolute change of `-3` and a 30% improvement. Review the result with the process team and edit any value that needs a documented override.
+
+You can also add measures that were not captured in the maps, such as cost savings, carbon footprint reduction, or compliance points.
+
+## Try it
+
+1. Export the Current State and Future State metadata CSV files.
+2. Open the workspace and load both files.
+3. Review calculated rows and add any custom metrics.
+4. Export `gap-analysis.csv` and save or move it into `output/`.
+
+[Open the interactive workspace](./gap-primary.qmd){.btn .btn-primary role="button"}
