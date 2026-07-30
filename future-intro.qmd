@@ -1,0 +1,23 @@
+---
+title: "Future State Map"
+subtitle: "Overview"
+---
+
+## Design a better flow
+
+A Future State Map turns evidence from the Current State Map into a practical design for improved flow. Preserve the current-state files as a baseline, then remove unnecessary steps, reduce queues and rework, introduce pull where demand should trigger work, and mark proposed improvements with Kaizen bursts.
+
+Set measurable targets rather than drawing an idealized process. Compare target cycle time, lead time, and defect or error measures with the latest timestamped observation for each process component.
+
+## Inputs and outputs
+
+Bring the `.drawio` source and metadata `.csv` exported by the [Current State workspace](./current-primary.qmd). The Future State workspace produces:
+
+- an updated diagram in `.drawio`, editable `.drawio.svg`, and `.png` formats;
+- an append-only, timestamped target metadata log; and
+- live cycle-time, lead-time, and defect/error reduction summaries.
+
+::: {.callout-note}
+[View the Future State tutorial](./future-example.qmd){.btn .btn-outline-secondary role="button"}
+[Launch the Future State editor](./future-primary.qmd){.btn .btn-primary role="button"}
+:::

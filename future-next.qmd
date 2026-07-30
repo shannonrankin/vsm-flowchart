@@ -1,0 +1,22 @@
+---
+title: "Future State Map"
+subtitle: "Next Steps"
+---
+
+## Turn the map into an implementation plan
+
+Review the Future State Map and target log with the people who perform and receive the work. Prioritize changes that address the largest validated gaps, then convert each Kaizen burst into a small action with an owner, due date, expected measure, and review point.
+
+Before implementation:
+
+- [ ] Confirm the proposed flow meets customer demand and required quality.
+- [ ] Check that baseline and target values use the same units.
+- [ ] Assign owners to pull-system, quality, and handoff changes.
+- [ ] Sequence dependencies and choose short experiments.
+- [ ] Preserve all Future State diagram and target metadata exports in `output/`.
+- [ ] Schedule follow-up measurements and update the map when evidence changes.
+
+::: {.callout-note}
+[Revise the Future State Map](./future-primary.qmd){.btn .btn-outline-secondary role="button"}
+[Review the tutorial](./future-example.qmd){.btn .btn-primary role="button"}
+:::

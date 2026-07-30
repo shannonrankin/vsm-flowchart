@@ -58,8 +58,8 @@ Before moving forward:
 ::: {.callout-note}
 ## Ready for the next mapping session?
 
-Return to the editor if the team needs to correct the observed flow or append another metadata record. Once the checklist is complete, use the preserved Current State evidence as the baseline for the upcoming Future State Map.
+Return to the editor if the team needs to correct the observed flow or append another metadata record. Once the checklist is complete, use the preserved Current State evidence as the baseline for the Future State Map.
 
 [Update the Current State Map](./current-primary.qmd){.btn .btn-outline-secondary role="button"}
-[Review the tutorial](./current-example.qmd){.btn .btn-primary role="button"}
+[Start the Future State Map](./future-intro.qmd){.btn .btn-primary role="button"}
 :::
