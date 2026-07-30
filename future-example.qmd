@@ -1,0 +1,27 @@
+---
+title: "Future State Map"
+subtitle: "Tutorial and Example"
+---
+
+::: {.callout-note}
+## From baseline to target
+
+1. Preserve the Current State exports in `output/`.
+2. Load the `.drawio` source and latest metadata observations in the Future State workspace.
+3. Remove avoidable waits and rework, add pull signals where appropriate, and mark experiments with Kaizen bursts.
+4. Set targets with consistent units and confirm that each reduction is realistic.
+:::
+
+## Example improvement
+
+Suppose a review step has a baseline cycle time of 40 minutes, a lead time of 3 days, and a 10% error rate. A future design that limits work in progress, clarifies acceptance criteria, and triggers review with a pull signal might target 30 minutes, 1.5 days, and 4%.
+
+| Gap measure | Calculation | Result |
+|---|---|---:|
+| Cycle time reduction | $(40 - 30) / 40 \times 100$ | 25% |
+| Lead time reduction | $(3 - 1.5) / 3 \times 100$ | 50% |
+| Defect/error reduction | $(10 - 4) / 10 \times 100$ | 60% |
+
+Treat targets as hypotheses. Assign an owner and test each change before considering it part of the standard process.
+
+[Open the interactive workspace](./future-primary.qmd){.btn .btn-primary role="button"}

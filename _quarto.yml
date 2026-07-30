@@ -55,6 +55,16 @@ website:
             text: Interactive Workspace
           - href: current-next.qmd
             text: Next Steps
+      - section: "Future State Map"
+        contents:
+          - href: future-intro.qmd
+            text: Overview
+          - href: future-example.qmd
+            text: Tutorial and Example
+          - href: future-primary.qmd
+            text: Interactive Workspace
+          - href: future-next.qmd
+            text: Next Steps
 
 format:
   html:

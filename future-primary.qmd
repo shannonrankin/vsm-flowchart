@@ -1,0 +1,795 @@
+---
+title: "Future State Map"
+subtitle: "Interactive workspace"
+page-layout: full
+format:
+  html:
+    code-copy: false
+---
+
+::: {.callout-note}
+## Design and measure the future flow
+
+1. Preserve your Current State exports, then load `current_state.drawio` and `current_state_metadata.csv` from `output/` to establish the baseline.
+2. Remove unnecessary work and queues, add Kaizen bursts for improvement experiments, and use pull signals where downstream demand should trigger work.
+3. Generate a revised layout from a simple `Step A -> Step B` doc2draw-style script, or edit the loaded baseline directly in Draw.io.
+4. Select a process component, compare its latest timestamped baseline with editable targets, and append each target update to the in-memory history.
+5. Export all diagram formats and the target metadata CSV. Your browser will prompt for downloads; save or move them into `output/`.
+:::
+
+<style>
+.future-map-workspace {
+  display: grid;
+  gap: 1rem;
+}
+.future-map-card {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .5rem;
+  padding: 1rem;
+}
+.future-map-card h2,
+.future-map-card h3 {
+  margin-top: 0;
+}
+.future-map-controls {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+.future-map-workspace button,
+.future-map-workspace input,
+.future-map-workspace textarea {
+  border: 1px solid #65727a;
+  border-radius: .3rem;
+  padding: .45rem .65rem;
+}
+.future-map-workspace button {
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color, #222);
+  min-height: 2.35rem;
+}
+.future-map-workspace button:hover,
+.future-map-workspace button:focus {
+  box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2);
+}
+.future-script {
+  box-sizing: border-box;
+  display: block;
+  min-height: 7rem;
+  width: 100%;
+}
+.future-drawio-frame {
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  height: 680px;
+  margin-top: .75rem;
+  width: 100%;
+}
+.future-metadata-panel summary {
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.future-field-grid {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  margin: 1rem 0;
+}
+.future-field-row {
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .35rem;
+  display: grid;
+  gap: .5rem;
+  grid-template-columns: 1fr 1fr;
+  padding: .65rem;
+}
+.future-field-row strong {
+  grid-column: 1 / -1;
+}
+.future-field-row label {
+  display: grid;
+  font-weight: 600;
+  gap: .3rem;
+}
+.future-field-row input[readonly] {
+  background: var(--bs-secondary-bg, #eef2f5);
+}
+.future-gap-grid {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin: 1rem 0;
+}
+.future-gap-result {
+  border-left: .35rem solid #2563eb;
+  padding: .65rem .8rem;
+}
+.future-gap-result output {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.future-history {
+  display: block;
+  margin-top: .75rem;
+  max-height: 14rem;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+.future-status {
+  min-height: 1.5rem;
+}
+@media (max-width: 700px) {
+  .future-drawio-frame {
+    height: 520px;
+  }
+  .future-field-row {
+    grid-template-columns: 1fr;
+  }
+  .future-field-row strong {
+    grid-column: 1;
+  }
+}
+</style>
+
+```{ojs}
+//| echo: false
+
+viewof future_map_workspace = {
+  const future_drawio_origin = "https://embed.diagrams.net";
+  const future_empty_xml =
+    '<mxfile host="embed.diagrams.net"><diagram id="future-state" name="Page-1"><mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>';
+  const future_fields = [
+    {key: "cycle_time", label: "Cycle Time"},
+    {key: "changeover_time", label: "Changeover Time"},
+    {key: "lead_time", label: "Lead Time", aliases: ["lead_time_days"]},
+    {key: "scrap_defect_rate", label: "Scrap / Defect Rate (%)"},
+    {key: "funding", label: "Funding Holds", aliases: ["funding_holds"]},
+    {key: "code_errors", label: "Code Errors"},
+    {key: "data_errors", label: "Data Errors"},
+    {key: "security_permissions", label: "Security / Permissions"},
+    {key: "approvals", label: "Approvals"}
+  ];
+  const future_state = {
+    xml: future_empty_xml,
+    baseline: new Map(),
+    history: [],
+    export_queue: [],
+    active_export: null
+  };
+
+  const future_workspace = document.createElement("div");
+  future_workspace.className = "future-map-workspace";
+
+  const future_script_card = document.createElement("section");
+  future_script_card.className = "future-map-card";
+  const future_script_heading = document.createElement("h2");
+  future_script_heading.textContent = "Option A: Generate an updated flow from text";
+  const future_script_help = document.createElement("p");
+  future_script_help.textContent =
+    "Enter doc2draw-style process text, one step per line or connected with ->. Include pull signals and Kaizen bursts as labeled steps or annotations, then refine the generated flow below.";
+  const future_script = document.createElement("textarea");
+  future_script.className = "future-script";
+  future_script.setAttribute("aria-label", "Future State text-to-diagram script");
+  future_script.value =
+    "Customer pull signal -> Validate request -> Perform streamlined process -> Quality at source -> Deliver";
+  const future_create_diagram = future_button("Create Future State diagram");
+  future_script_card.append(
+    future_script_heading,
+    future_script_help,
+    future_script,
+    future_create_diagram
+  );
+
+  const future_editor_card = document.createElement("section");
+  future_editor_card.className = "future-map-card";
+  const future_editor_heading = document.createElement("h2");
+  future_editor_heading.textContent = "Option B: Load a baseline and edit in Draw.io";
+  const future_editor_help = document.createElement("p");
+  future_editor_help.textContent =
+    "Load the editable .drawio file exported by the Current State workspace, or begin with an empty canvas. Changes remain in this browser tab until exported.";
+  const future_editor_controls = document.createElement("div");
+  future_editor_controls.className = "future-map-controls";
+  const future_load_diagram = future_button("Load Current State Diagram");
+  const future_diagram_file = document.createElement("input");
+  future_diagram_file.type = "file";
+  future_diagram_file.accept = ".drawio,.xml,application/xml,text/xml";
+  future_diagram_file.hidden = true;
+  const future_export_all = future_button("Export all diagram formats");
+  const future_export_help = document.createElement("span");
+  future_export_help.textContent =
+    "Downloads future_state.drawio, future_state.drawio.svg, and future_state.png. Place them in output/.";
+  future_editor_controls.append(
+    future_load_diagram,
+    future_diagram_file,
+    future_export_all,
+    future_export_help
+  );
+  const future_frame = document.createElement("iframe");
+  future_frame.className = "future-drawio-frame";
+  future_frame.title = "Draw.io Future State Map editor";
+  future_frame.src =
+    `${future_drawio_origin}/?embed=1&proto=json&spin=1&autosave=1&saveAndExit=0&noSaveBtn=1&libraries=1`;
+  future_editor_card.append(
+    future_editor_heading,
+    future_editor_help,
+    future_editor_controls,
+    future_frame
+  );
+
+  const future_metadata_card = document.createElement("section");
+  future_metadata_card.className = "future-map-card";
+  const future_metadata_details = document.createElement("details");
+  future_metadata_details.className = "future-metadata-panel";
+  future_metadata_details.open = true;
+  const future_metadata_summary = document.createElement("summary");
+  future_metadata_summary.textContent = "Target metadata and gap analysis";
+  const future_metadata_help = document.createElement("p");
+  future_metadata_help.textContent =
+    "Load the Current State CSV, then select a component. The latest valid ISO timestamp for each component supplies its read-only baseline.";
+  const future_metadata_controls = document.createElement("div");
+  future_metadata_controls.className = "future-map-controls";
+  const future_load_metadata = future_button("Load Current State Metadata CSV");
+  const future_metadata_file = document.createElement("input");
+  future_metadata_file.type = "file";
+  future_metadata_file.accept = ".csv,text/csv";
+  future_metadata_file.hidden = true;
+  const future_component_label = document.createElement("label");
+  future_component_label.textContent = "Process component";
+  const future_component = document.createElement("input");
+  future_component.type = "text";
+  future_component.setAttribute("list", "future-component-options");
+  future_component.setAttribute("aria-label", "Process component");
+  const future_component_list = document.createElement("datalist");
+  future_component_list.id = "future-component-options";
+  future_component_label.append(document.createElement("br"), future_component);
+  future_metadata_controls.append(
+    future_load_metadata,
+    future_metadata_file,
+    future_component_label,
+    future_component_list
+  );
+
+  const future_baseline_note = document.createElement("p");
+  future_baseline_note.textContent = "No Current State metadata loaded.";
+  const future_field_grid = document.createElement("div");
+  future_field_grid.className = "future-field-grid";
+  const future_gap_heading = document.createElement("h3");
+  future_gap_heading.textContent = "Live gap analysis";
+  const future_gap_help = document.createElement("p");
+  future_gap_help.textContent =
+    "Use the same units in each baseline/target pair. Defect/error reduction combines available numeric Scrap, Code Error, and Data Error pairs.";
+  const future_gap_grid = document.createElement("div");
+  future_gap_grid.className = "future-gap-grid";
+  const future_gap_outputs = new Map();
+  [
+    ["cycle_time_reduction", "Cycle Time Reduction"],
+    ["lead_time_reduction", "Lead Time Reduction"],
+    ["defect_error_reduction", "Defect / Error Reduction"]
+  ].forEach(([key, label]) => {
+    const result = document.createElement("div");
+    result.className = "future-gap-result";
+    const heading = document.createElement("strong");
+    heading.textContent = label;
+    const output = document.createElement("output");
+    output.textContent = "Not available";
+    result.append(heading, output);
+    future_gap_grid.append(result);
+    future_gap_outputs.set(key, output);
+  });
+  const future_record_controls = document.createElement("div");
+  future_record_controls.className = "future-map-controls";
+  const future_save_metadata = future_button("Append Target Metadata");
+  const future_export_metadata = future_button("Export Target Metadata to CSV");
+  future_record_controls.append(future_save_metadata, future_export_metadata);
+  const future_history = document.createElement("code");
+  future_history.className = "future-history";
+  future_history.textContent = "No target metadata records saved yet.";
+  future_metadata_details.append(
+    future_metadata_summary,
+    future_metadata_help,
+    future_metadata_controls,
+    future_baseline_note,
+    future_field_grid,
+    future_gap_heading,
+    future_gap_help,
+    future_gap_grid,
+    future_record_controls,
+    future_history
+  );
+  future_metadata_card.append(future_metadata_details);
+
+  const future_status = document.createElement("p");
+  future_status.className = "future-status";
+  future_status.setAttribute("role", "status");
+  future_status.setAttribute("aria-live", "polite");
+  future_workspace.append(
+    future_script_card,
+    future_editor_card,
+    future_metadata_card,
+    future_status
+  );
+
+  function future_button(label) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    return button;
+  }
+
+  function future_notify(message) {
+    future_status.textContent = message;
+  }
+
+  function future_post(message) {
+    future_frame.contentWindow?.postMessage(
+      JSON.stringify(message),
+      future_drawio_origin
+    );
+  }
+
+  function future_load_xml(xml, title = "Future State Map") {
+    future_state.xml = xml;
+    future_post({
+      action: "load",
+      autosave: 1,
+      modified: "unsavedChanges",
+      xml,
+      title
+    });
+  }
+
+  function future_escape_xml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&apos;");
+  }
+
+  function future_parse_script(script) {
+    const nodes = [];
+    const edges = [];
+    const node_index = new Map();
+    const add_node = (label) => {
+      const clean_label = label.trim();
+      if (!clean_label) return null;
+      if (!node_index.has(clean_label)) {
+        node_index.set(clean_label, nodes.length);
+        nodes.push(clean_label);
+      }
+      return node_index.get(clean_label);
+    };
+    script.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).forEach((line) => {
+      const labels = line.split(/\s*->\s*/).filter(Boolean);
+      labels.forEach(add_node);
+      for (let index = 0; index < labels.length - 1; index += 1) {
+        edges.push([add_node(labels[index]), add_node(labels[index + 1])]);
+      }
+    });
+    if (edges.length === 0) {
+      for (let index = 0; index < nodes.length - 1; index += 1) {
+        edges.push([index, index + 1]);
+      }
+    }
+    return {nodes, edges};
+  }
+
+  function future_xml_from_script(script) {
+    const parsed = future_parse_script(script);
+    if (parsed.nodes.length === 0) {
+      throw new Error("Enter at least one process step.");
+    }
+    const cells = parsed.nodes.map((label, index) => {
+      const x = 60 + (index % 4) * 240;
+      const y = 80 + Math.floor(index / 4) * 150;
+      return `<mxCell id="future-node-${index}" value="${future_escape_xml(label)}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="${x}" y="${y}" width="170" height="60" as="geometry"/></mxCell>`;
+    });
+    parsed.edges.forEach(([source, target], index) => {
+      cells.push(`<mxCell id="future-edge-${index}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="future-node-${source}" target="future-node-${target}"><mxGeometry relative="1" as="geometry"/></mxCell>`);
+    });
+    future_add_component_options(parsed.nodes);
+    return `<mxfile host="embed.diagrams.net"><diagram id="future-state" name="Page-1"><mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827"><root><mxCell id="0"/><mxCell id="1" parent="0"/>${cells.join("")}</root></mxGraphModel></diagram></mxfile>`;
+  }
+
+  future_create_diagram.addEventListener("click", () => {
+    try {
+      future_load_xml(future_xml_from_script(future_script.value));
+      future_notify("Created a Future State starting diagram from the process script.");
+    } catch (error) {
+      future_notify(error.message);
+    }
+  });
+
+  future_load_diagram.addEventListener("click", () => future_diagram_file.click());
+  future_diagram_file.addEventListener("change", async () => {
+    const file = future_diagram_file.files?.[0];
+    if (!file) return;
+    try {
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("Choose a Current State diagram smaller than 10 MB.");
+      }
+      const xml = await file.text();
+      const document_xml = new DOMParser().parseFromString(xml, "application/xml");
+      if (
+        document_xml.querySelector("parsererror") ||
+        !["mxfile", "mxGraphModel"].includes(document_xml.documentElement.tagName)
+      ) {
+        throw new Error("The selected file is not a valid Draw.io XML diagram.");
+      }
+      future_load_xml(xml);
+      future_notify(`Loaded ${file.name} as the Future State baseline.`);
+    } catch (error) {
+      future_notify(error.message);
+    } finally {
+      future_diagram_file.value = "";
+    }
+  });
+
+  function future_download_url(url, filename) {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+  }
+
+  function future_download_blob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    future_download_url(url, filename);
+    URL.revokeObjectURL(url);
+  }
+
+  function future_request_next_export() {
+    const format = future_state.export_queue.shift();
+    if (!format) {
+      future_export_all.disabled = false;
+      future_notify("All diagram downloads are ready. Save or move them into output/.");
+      return;
+    }
+    future_state.active_export = format;
+    future_post({
+      action: "export",
+      format,
+      xml: future_state.xml,
+      spinKey: "export"
+    });
+  }
+
+  future_export_all.addEventListener("click", () => {
+    future_export_all.disabled = true;
+    future_download_blob(
+      new Blob([future_state.xml], {type: "application/xml;charset=utf-8"}),
+      "future_state.drawio"
+    );
+    future_state.export_queue = ["xmlsvg", "xmlpng"];
+    future_notify("Preparing editable SVG and PNG exports…");
+    future_request_next_export();
+  });
+
+  function future_handle_message(event) {
+    if (
+      event.origin !== future_drawio_origin ||
+      event.source !== future_frame.contentWindow
+    ) return;
+    let message;
+    try {
+      message = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+    } catch {
+      return;
+    }
+    if (message.event === "init") {
+      future_load_xml(future_state.xml);
+      future_notify("Draw.io editor ready.");
+    } else if (message.event === "autosave" || message.event === "save") {
+      if (message.xml) future_state.xml = message.xml;
+    } else if (message.event === "export" && message.data) {
+      const filename =
+        future_state.active_export === "xmlsvg"
+          ? "future_state.drawio.svg"
+          : "future_state.png";
+      future_download_url(message.data, filename);
+      future_request_next_export();
+    }
+  }
+  window.addEventListener("message", future_handle_message);
+
+  function future_parse_csv(text) {
+    const rows = [];
+    let row = [];
+    let field = "";
+    let quoted = false;
+    for (let index = 0; index < text.length; index += 1) {
+      const character = text[index];
+      if (quoted) {
+        if (character === '"' && text[index + 1] === '"') {
+          field += '"';
+          index += 1;
+        } else if (character === '"') {
+          quoted = false;
+        } else {
+          field += character;
+        }
+      } else if (character === '"') {
+        quoted = true;
+      } else if (character === ",") {
+        row.push(field);
+        field = "";
+      } else if (character === "\n") {
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = "";
+      } else if (character !== "\r") {
+        field += character;
+      }
+    }
+    if (quoted) throw new Error("The CSV contains an unclosed quoted value.");
+    if (field || row.length) {
+      row.push(field);
+      rows.push(row);
+    }
+    if (rows.length < 2) throw new Error("The CSV has no metadata records.");
+    const headers = rows[0].map((header, index) =>
+      (index === 0 ? header.replace(/^\uFEFF/, "") : header).trim()
+    );
+    if (!headers.includes("timestamp") || !headers.includes("component")) {
+      throw new Error("The CSV must contain timestamp and component columns.");
+    }
+    return rows.slice(1)
+      .filter((values) => values.some((value) => value !== ""))
+      .map((values) => Object.fromEntries(
+        headers.map((header, index) => [header, values[index] ?? ""])
+      ));
+  }
+
+  function future_add_component_options(components) {
+    const names = new Set([
+      ...future_state.baseline.keys(),
+      ...[...future_component_list.options].map((option) => option.value),
+      ...components
+    ]);
+    future_component_list.replaceChildren(
+      ...[...names].sort().map((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        return option;
+      })
+    );
+  }
+
+  function future_baseline_value(record, field) {
+    if (!record) return "";
+    for (const key of [field.key, ...(field.aliases || [])]) {
+      if (record[key] !== undefined && record[key] !== "") return record[key];
+    }
+    return "";
+  }
+
+  function future_latest_target(component) {
+    return [...future_state.history].reverse().find(
+      (record) => record.component === component
+    );
+  }
+
+  function future_render_fields() {
+    const component = future_component.value.trim();
+    const baseline = future_state.baseline.get(component);
+    const latest_target = future_latest_target(component);
+    future_baseline_note.textContent = baseline
+      ? `Baseline for ${component}: latest record at ${baseline.timestamp}.`
+      : component
+        ? `No baseline record found for ${component}.`
+        : "Load metadata and select a process component.";
+    future_field_grid.replaceChildren();
+    future_fields.forEach((field) => {
+      const row = document.createElement("div");
+      row.className = "future-field-row";
+      const heading = document.createElement("strong");
+      heading.textContent = field.label;
+      const baseline_label = document.createElement("label");
+      baseline_label.textContent = "Baseline";
+      const baseline_input = document.createElement("input");
+      baseline_input.type = "text";
+      baseline_input.readOnly = true;
+      baseline_input.value = future_baseline_value(baseline, field);
+      baseline_input.dataset.baselineKey = field.key;
+      baseline_label.append(baseline_input);
+      const target_label = document.createElement("label");
+      target_label.textContent = "Target";
+      const target_input = document.createElement("input");
+      target_input.type = "text";
+      target_input.value = latest_target?.[field.key] ?? "";
+      target_input.dataset.targetKey = field.key;
+      target_input.addEventListener("input", future_render_gaps);
+      target_label.append(target_input);
+      row.append(heading, baseline_label, target_label);
+      future_field_grid.append(row);
+    });
+    future_render_gaps();
+  }
+
+  function future_values(selector, key_name) {
+    return Object.fromEntries(
+      [...future_field_grid.querySelectorAll(selector)].map((input) => [
+        input.dataset[key_name],
+        input.value
+      ])
+    );
+  }
+
+  function future_number(value) {
+    const match = String(value ?? "").replaceAll(",", "").match(/-?\d+(?:\.\d+)?/);
+    return match ? Number(match[0]) : NaN;
+  }
+
+  function future_reduction(baseline, target) {
+    if (!Number.isFinite(baseline) || !Number.isFinite(target) || baseline === 0) {
+      return null;
+    }
+    return ((baseline - target) / baseline) * 100;
+  }
+
+  function future_format_reduction(value) {
+    return value === null ? "Not available" : `${value.toFixed(1)}%`;
+  }
+
+  function future_gap_values() {
+    const baseline = future_values("[data-baseline-key]", "baselineKey");
+    const target = future_values("[data-target-key]", "targetKey");
+    const cycle = future_reduction(
+      future_number(baseline.cycle_time),
+      future_number(target.cycle_time)
+    );
+    const lead = future_reduction(
+      future_number(baseline.lead_time),
+      future_number(target.lead_time)
+    );
+    const error_keys = ["scrap_defect_rate", "code_errors", "data_errors"];
+    const error_pairs = error_keys
+      .map((key) => [future_number(baseline[key]), future_number(target[key])])
+      .filter(([base, goal]) => Number.isFinite(base) && Number.isFinite(goal));
+    const defect = error_pairs.length
+      ? future_reduction(
+          error_pairs.reduce((sum, [base]) => sum + base, 0),
+          error_pairs.reduce((sum, [, goal]) => sum + goal, 0)
+        )
+      : null;
+    return {
+      cycle_time_reduction: cycle,
+      lead_time_reduction: lead,
+      defect_error_reduction: defect
+    };
+  }
+
+  function future_render_gaps() {
+    const gaps = future_gap_values();
+    Object.entries(gaps).forEach(([key, value]) => {
+      future_gap_outputs.get(key).textContent = future_format_reduction(value);
+    });
+  }
+
+  future_load_metadata.addEventListener("click", () => future_metadata_file.click());
+  future_metadata_file.addEventListener("change", async () => {
+    const file = future_metadata_file.files?.[0];
+    if (!file) return;
+    try {
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Choose a Current State metadata CSV smaller than 5 MB.");
+      }
+      const records = future_parse_csv(await file.text());
+      const baseline = new Map();
+      records.forEach((record) => {
+        const component = record.component.trim();
+        const timestamp = Date.parse(record.timestamp);
+        if (!component || !Number.isFinite(timestamp)) return;
+        const existing = baseline.get(component);
+        if (!existing || timestamp > Date.parse(existing.timestamp)) {
+          baseline.set(component, record);
+        }
+      });
+      if (baseline.size === 0) {
+        throw new Error("No records have both a component and valid timestamp.");
+      }
+      future_state.baseline = baseline;
+      future_add_component_options([]);
+      if (!future_state.baseline.has(future_component.value.trim())) {
+        future_component.value = future_state.baseline.keys().next().value;
+      }
+      future_render_fields();
+      future_notify(
+        `Loaded latest baselines for ${future_state.baseline.size} process components.`
+      );
+    } catch (error) {
+      future_notify(error.message);
+    } finally {
+      future_metadata_file.value = "";
+    }
+  });
+
+  future_component.addEventListener("change", future_render_fields);
+
+  function future_render_history() {
+    future_history.textContent = future_state.history.length
+      ? future_state.history
+          .map((record) => `${record.timestamp} — ${record.component}`)
+          .join("\n")
+      : "No target metadata records saved yet.";
+  }
+
+  future_save_metadata.addEventListener("click", () => {
+    const component = future_component.value.trim();
+    if (!component) {
+      future_notify("Select or enter a process component before saving targets.");
+      future_component.focus();
+      return;
+    }
+    const baseline = future_state.baseline.get(component);
+    const targets = future_values("[data-target-key]", "targetKey");
+    const gaps = future_gap_values();
+    const record = {
+      timestamp: new Date().toISOString(),
+      component,
+      baseline_timestamp: baseline?.timestamp ?? "",
+      ...targets,
+      ...Object.fromEntries(
+        Object.entries(gaps).map(([key, value]) => [
+          key,
+          value === null ? "" : value.toFixed(1)
+        ])
+      )
+    };
+    future_state.history.push(record);
+    future_add_component_options([component]);
+    future_render_history();
+    future_workspace.dispatchEvent(new Event("input", {bubbles: true}));
+    future_notify(`Appended target metadata for ${component}.`);
+  });
+
+  function future_csv_value(value) {
+    return `"${String(value ?? "").replaceAll('"', '""')}"`;
+  }
+
+  future_export_metadata.addEventListener("click", () => {
+    if (future_state.history.length === 0) {
+      future_notify("Append at least one target metadata record before exporting.");
+      return;
+    }
+    const columns = [
+      "timestamp",
+      "component",
+      "baseline_timestamp",
+      ...future_fields.map((field) => field.key),
+      "cycle_time_reduction",
+      "lead_time_reduction",
+      "defect_error_reduction"
+    ];
+    const lines = [
+      columns.map(future_csv_value).join(","),
+      ...future_state.history.map((record) =>
+        columns.map((column) => future_csv_value(record[column])).join(",")
+      )
+    ];
+    future_download_blob(
+      new Blob([lines.join("\r\n")], {type: "text/csv;charset=utf-8"}),
+      "future_state_target_metadata.csv"
+    );
+    future_notify("Target metadata history CSV ready. Save or move it into output/.");
+  });
+
+  Object.defineProperty(future_workspace, "value", {
+    get: () => ({
+      xml: future_state.xml,
+      baseline: Object.fromEntries(future_state.baseline),
+      history: structuredClone(future_state.history)
+    })
+  });
+
+  future_render_fields();
+  return future_workspace;
+}
+```
