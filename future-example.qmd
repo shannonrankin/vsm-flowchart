@@ -11,8 +11,8 @@ format:
 ## Learn by comparing Current and Future States
 
 1. Choose a scenario to compare its baseline flow with a measurable Future State design.
-2. Find the 💥 Kaizen bursts that mark changes to test—not improvements that are already guaranteed.
-3. Compare each baseline with its target using the same units.
+2. Compare the process layout, queues, and pull signals in the two maps.
+3. Review the target metadata recorded for the proposed flow.
 4. When you are ready, [open the interactive builder](./future-primary.qmd) to load your Current State files and design your own map.
 :::
 
@@ -28,8 +28,7 @@ These simplified examples show how pull signals, automation, and quality at the 
 .future-example-control,
 .future-example-panel,
 .future-example-map-card,
-.future-example-metric-card,
-.future-example-kaizen-card {
+.future-example-metric-card {
   background: var(--bs-body-bg, #fff);
   border: 1px solid var(--bs-border-color, #d8dee2);
   border-radius: .5rem;
@@ -54,13 +53,11 @@ These simplified examples show how pull signals, automation, and quality at the 
   padding: .55rem;
 }
 .future-example-panel h3,
-.future-example-map-card h4,
-.future-example-kaizen-card h4 {
+.future-example-map-card h4 {
   margin-top: 0;
 }
 .future-example-map-grid,
-.future-example-metric-grid,
-.future-example-kaizen-grid {
+.future-example-metric-grid {
   display: grid;
   gap: .75rem;
   grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
@@ -100,17 +97,6 @@ These simplified examples show how pull signals, automation, and quality at the 
 .future-example-metric-card td:not(:first-child) {
   text-align: right;
 }
-.future-example-gap {
-  color: var(--bs-success-text-emphasis, #146c43);
-  font-weight: 700;
-}
-.future-example-kaizen-card {
-  border-left: .35rem solid #d97706;
-  padding: .8rem;
-}
-.future-example-kaizen-card p {
-  margin-bottom: 0;
-}
 .future-example-status {
   min-height: 1.5rem;
 }
@@ -144,11 +130,6 @@ viewof future_example_tutorial = {
         ["Total flow", "Lead time (hr)", 18, 7],
         ["Total flow", "Value-added time (hr)", 2.5, 2.2],
         ["Quality", "Defect rate (%)", 8.5, 3]
-      ],
-      kaizens: [
-        ["Pull scheduling", "Use kanban signals so downstream demand authorizes replenishment; reduce physical WIP from 102 to 14 units."],
-        ["Balanced flow cell", "Combine and rebalance assembly work to target a 55-second cycle time."],
-        ["Quality at source", "Move checks upstream and stop defects before they enter the next process."]
       ]
     },
     software: {
@@ -165,11 +146,6 @@ viewof future_example_tutorial = {
         ["Total flow", "Lead time (days)", 8.5, 2],
         ["Total flow", "Value-added time (days)", 1.1, 1],
         ["Quality", "Code error/rework rate (%)", 7, 2]
-      ],
-      kaizens: [
-        ["Automated CI/CD", "Run tests and security checks on each pull request instead of waiting for a release batch."],
-        ["Approval policy", "Remove the duplicate manual deployment gate when automated controls pass."],
-        ["Fast feedback", "Use small changes and immediate test results to reduce code-error rework."]
       ]
     },
     administrative: {
@@ -186,11 +162,6 @@ viewof future_example_tutorial = {
         ["Total flow", "Lead time (days)", 13, 4],
         ["Total flow", "Value-added time (days)", 0.3, 0.25],
         ["Quality", "Data entry error rate (%)", 11, 2]
-      ],
-      kaizens: [
-        ["Funding triage", "Route complete, eligible requests directly to the appropriate funding reviewer."],
-        ["Permission provisioning", "Trigger role-based access automatically after one accountable approval."],
-        ["Validated entry", "Check required fields and allowed values before the request enters the workflow."]
       ]
     }
   };
@@ -343,16 +314,6 @@ viewof future_example_tutorial = {
       }
       future_example_svg.append(future_example_box, future_example_name);
 
-      if (future_example_is_future && future_example_index > 0) {
-        const future_example_burst = future_example_svg_element("text", {
-          x: String(future_example_x + 112),
-          y: "35",
-          "text-anchor": "middle",
-          "font-size": "28"
-        });
-        future_example_burst.textContent = "💥";
-        future_example_svg.append(future_example_burst);
-      }
     });
 
     const future_example_legend = future_example_svg_element("text", {
@@ -362,7 +323,7 @@ viewof future_example_tutorial = {
       "font-size": "14"
     });
     future_example_legend.textContent = future_example_is_future
-      ? "Pull signals appear below the arrows; 💥 marks proposed experiments."
+      ? "Target pull signals appear below the arrows."
       : "Baseline queues appear below the arrows and expose waiting work.";
     future_example_svg.append(future_example_legend);
     future_example_map.append(future_example_svg);
@@ -370,18 +331,14 @@ viewof future_example_tutorial = {
     return future_example_card;
   }
 
-  function future_example_reduction(future_example_baseline, future_example_target) {
-    return ((future_example_baseline - future_example_target) / future_example_baseline) * 100;
-  }
-
   function future_example_render_metrics(future_example_scenario) {
     const future_example_section = document.createElement("section");
     future_example_section.className = "future-example-panel";
     const future_example_heading = document.createElement("h3");
-    future_example_heading.textContent = "Current baseline vs. Future target";
+    future_example_heading.textContent = "Future target metadata";
     const future_example_help = document.createElement("p");
     future_example_help.textContent =
-      "Targets are hypotheses. Confirm matching units, assign an owner, and test each change.";
+      "Use the Current State values as a reference and record targets with the same units.";
     const future_example_grid = document.createElement("div");
     future_example_grid.className = "future-example-metric-grid";
 
@@ -402,7 +359,7 @@ viewof future_example_tutorial = {
       const future_example_table = document.createElement("table");
       const future_example_head = document.createElement("thead");
       const future_example_head_row = document.createElement("tr");
-      for (const future_example_text of ["Metric", "Baseline", "Target", "Reduction"]) {
+      for (const future_example_text of ["Metric", "Baseline", "Target"]) {
         const future_example_cell = document.createElement("th");
         future_example_cell.scope = "col";
         future_example_cell.textContent = future_example_text;
@@ -420,18 +377,11 @@ viewof future_example_tutorial = {
         const future_example_values = [
           future_example_metric_name,
           String(future_example_baseline),
-          String(future_example_target),
-          `${future_example_reduction(
-            future_example_baseline,
-            future_example_target
-          ).toFixed(1)}%`
+          String(future_example_target)
         ];
-        future_example_values.forEach((future_example_value, future_example_index) => {
+        future_example_values.forEach((future_example_value) => {
           const future_example_cell = document.createElement("td");
           future_example_cell.textContent = future_example_value;
-          if (future_example_index === 3) {
-            future_example_cell.className = "future-example-gap";
-          }
           future_example_row.append(future_example_cell);
         });
         future_example_body.append(future_example_row);
@@ -445,27 +395,6 @@ viewof future_example_tutorial = {
       future_example_help,
       future_example_grid
     );
-    return future_example_section;
-  }
-
-  function future_example_render_kaizens(future_example_scenario) {
-    const future_example_section = document.createElement("section");
-    future_example_section.className = "future-example-panel";
-    const future_example_heading = document.createElement("h3");
-    future_example_heading.textContent = "💥 Kaizen experiments";
-    const future_example_grid = document.createElement("div");
-    future_example_grid.className = "future-example-kaizen-grid";
-    for (const [future_example_name, future_example_description] of future_example_scenario.kaizens) {
-      const future_example_card = document.createElement("article");
-      future_example_card.className = "future-example-kaizen-card";
-      const future_example_title = document.createElement("h4");
-      future_example_title.textContent = future_example_name;
-      const future_example_text = document.createElement("p");
-      future_example_text.textContent = future_example_description;
-      future_example_card.append(future_example_title, future_example_text);
-      future_example_grid.append(future_example_card);
-    }
-    future_example_section.append(future_example_heading, future_example_grid);
     return future_example_section;
   }
 
@@ -501,8 +430,7 @@ viewof future_example_tutorial = {
     );
     future_example_content.replaceChildren(
       future_example_intro,
-      future_example_render_metrics(future_example_scenario),
-      future_example_render_kaizens(future_example_scenario)
+      future_example_render_metrics(future_example_scenario)
     );
     future_example_status.textContent =
       `Showing ${future_example_scenario.label}.`;
@@ -514,48 +442,17 @@ viewof future_example_tutorial = {
 }
 ```
 
-## Guided gap analysis
+## Prepare the Gap Analysis inputs
 
-::: {.callout-tip}
-## 📉 Lead Time Reduction
-
-Add the elapsed lead time across the map, including queues and approvals. Then calculate:
-
-$$
-\text{Lead time reduction} =
-\frac{\text{Current lead time} - \text{Future lead time}}
-{\text{Current lead time}} \times 100
-$$
-
-For the manufacturing example, $(18 - 7) / 18 \times 100 = 61.1\%$.
-:::
-
-::: {.callout-tip}
-## ⚡ Process Efficiency Gain
-
-Process cycle efficiency is Value-Added Time divided by total lead time. Compare both states rather than reducing value-added work:
-
-$$
-\text{Process cycle efficiency} =
-\frac{\text{Value-Added Time}}{\text{Lead Time}} \times 100
-$$
-
-Manufacturing improves from $2.5 / 18 = 13.9\%$ to $2.2 / 7 = 31.4\%$, a gain of 17.5 percentage points.
-:::
-
-::: {.callout-tip}
-## 💥 Kaizen Identification
-
-Place a burst next to a specific constraint, delay, or quality source that must change to reach a target. Give each burst an owner, expected measure, and review date. A burst is a proposed experiment, not proof that the target will be achieved.
-:::
+The Future State workspace exports the target metadata shown in these examples as `future-primary.csv`. Preserve it with `current_state_metadata.csv`; the upcoming **Gap Analysis** section uses both files to calculate variances. Improvement experiments are planned later in the dedicated **Kaizen Experiments** section.
 
 ## Take the walkthrough into the builder
 
 1. Export the `.drawio` diagram and timestamped metadata CSV from the [Current State builder](./current-primary.qmd), then keep both files in `output/`.
 2. Open the Future State builder and load the `.drawio` file as the visual baseline.
 3. Load the Current State CSV; the latest timestamped record for each component becomes its baseline.
-4. Redesign the flow, add Kaizen bursts, and enter targets in the same units as their baselines.
-5. Review the live reductions, save target history, and export the revised map and metadata to `output/`.
+4. Redesign the flow and enter targets in the same units as their baselines.
+5. Save the target history, then export the revised map and `future-primary.csv` to `output/`.
 
 ::: {.future-example-actions}
 [Build your Future State Map](./future-primary.qmd){.btn .btn-primary role="button"}

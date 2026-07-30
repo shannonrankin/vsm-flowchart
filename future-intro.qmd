@@ -18,7 +18,7 @@ Use these concepts to decide how work should move:
 | **Continuous Flow** | Work moves directly from one step to the next in small units, with little waiting or work in progress. | Which steps can be connected without a queue? |
 | **Pull System (Kanban)** | A downstream need signals when upstream work should begin or be replenished, rather than work being produced in advance. | Where could a visual or digital signal limit excess work? |
 | **Pacemaker Process** | One process sets the production rhythm for the value stream and is scheduled to match customer demand. | At which step can the team reliably control pace and sequence? |
-| **Kaizen Burst (💥)** | A visible marker for a focused improvement that must be planned, tested, and tracked. | What specific change is needed here to achieve the target flow? |
+| **Quality at the Source** | Problems are detected and corrected where they occur rather than passed downstream. | Where should the flow stop when a requirement is not met? |
 
 These ideas apply to physical, scientific, software, and administrative work. For example, a Kanban may be a card, a sample-bin limit, a ticket status, or an approved request that authorizes the next step.
 
@@ -38,11 +38,10 @@ Keep the source files unchanged in `output/` so the team can compare the propose
 
 The [Future State workspace](./future-primary.qmd) produces:
 
-- a Future State visual flowchart with proposed flow changes and 💥 Kaizen bursts, exported as `.drawio`, editable `.drawio.svg`, and `.png`;
-- a complete, append-only target process metadata log exported as `.csv`; and
-- gap analysis metrics for Cycle Time Reduction, Lead Time Reduction, and Defect/Error Reduction.
+- a Future State visual flowchart with the proposed layout, exported as `.drawio`, editable `.drawio.svg`, and `.png`; and
+- a complete, append-only target process metadata log exported as `future-primary.csv`.
 
-Your browser will prompt you to download each export. Save or move the files into `output/` for implementation planning and later comparison.
+Your browser will prompt you to download each export. Save or move the files into `output/`. The upcoming **Gap Analysis** section imports `current_state_metadata.csv` and `future-primary.csv` to calculate differences between observed and target performance. **Kaizen Experiments** then uses those analyzed gaps for improvement planning.
 
 ## Set measurable goals
 

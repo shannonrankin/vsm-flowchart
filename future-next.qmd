@@ -3,66 +3,40 @@ title: "Future State Map"
 subtitle: "Next Steps"
 ---
 
-## From map to action
+## Prepare for Gap Analysis
 
-A Future State Map is useful only when the team acts on it. Review the map, gap analysis, and target metadata log with the people who perform and receive the work. Then create a **Value Stream Implementation Plan** that connects every priority 💥 Kaizen burst to an owner, milestone, measure, and review date.
+Review the proposed flowchart and target process metadata with the people who perform and receive the work. Confirm that the layout is feasible and that each target uses the same definition, scope, and units as its Current State baseline.
 
-Start with validated gaps rather than trying to change the entire value stream at once. Record assumptions, test changes on a manageable scale, and update the plan when evidence does not support the proposed design.
+The Future State Map defines the proposed process; it does not calculate performance gaps or track improvement experiments. Those activities occur in the dedicated **Gap Analysis** and **Kaizen Experiments** sections.
 
-## Plan implementation loops
+## Preserve the mapping outputs
 
-Divide the value stream into manageable loops so related changes can be tested and reviewed together.
+Keep these browser downloads in `output/`:
 
-1. **Pacemaker Loop.** Stabilize the process that controls pace and sequence. Align its Cycle Time with Takt Time and define how customer demand reaches it.
-2. **Downstream Loops.** Improve the path from the pacemaker to the customer. Remove delivery delays, prevent defects from moving forward, and confirm that finished work is pulled by real demand.
-3. **Upstream Loops.** Connect earlier suppliers and processes to the pacemaker with clear replenishment signals, smaller queues, and reliable handoffs.
+- `future_state.drawio`, the editable Future State diagram;
+- `future_state.drawio.svg`, the editable vector export;
+- `future_state.png`, the image export; and
+- `future-primary.csv`, the timestamped target process metadata log.
 
-Choose the order that fits the value stream's dependencies and risk. For each loop, define the expected result, the Kaizen bursts it contains, and the evidence required before expanding the change.
+Do not overwrite `current_state.drawio` or `current_state_metadata.csv`. The Current and Future State files represent different points of comparison.
 
-## Turn Kaizen bursts into milestones
+## Check the handoff
 
-A burst such as **“Automate Approval Gate”** describes an improvement opportunity but is not yet a project milestone. Break it into observable, trackable results.
+Before moving downstream:
 
-| Work-plan field | Example |
-|---|---|
-| **Loop and burst** | Upstream Loop — 💥 Automate Approval Gate |
-| **Milestone** | Pilot rules-based approval for eligible requests |
-| **Owner** | Process owner and system administrator |
-| **Due date** | Agreed pilot completion date |
-| **Success measure** | Approval wait time reduced from the baseline toward the target |
-| **Dependencies and safeguards** | Approved rules, permission controls, exception route, and audit review |
-| **Review point** | Compare pilot results with the baseline before wider release |
+- [ ] Confirm the Future State layout supports customer demand and required quality, safety, scientific, policy, and security needs.
+- [ ] Validate each process node and connection with the people who perform and receive the work.
+- [ ] Check that target metadata uses the same field definitions and units as Current State metadata.
+- [ ] Export the Future State diagram in `.drawio`, `.drawio.svg`, and `.png` formats.
+- [ ] Export the target metadata log as `future-primary.csv`.
+- [ ] Preserve `current_state_metadata.csv` for comparison.
 
-Use several small milestones when a burst requires policy, technology, training, and process changes. A milestone should describe a result that the team can verify, not only an activity such as “hold a meeting.”
+## Continue to Gap Analysis
 
-## Track the exported KPIs
-
-The target metadata exported from the [Future State workspace](./future-primary.qmd) defines the intended results. Its gap analysis fields can become implementation Key Performance Indicators (KPIs):
-
-- **Cycle Time Reduction %** tracks whether a process step is moving toward its target completion time and, where relevant, toward Takt Time.
-- **Lead Time Reduction %** tracks whether end-to-end waiting and delay are shrinking.
-- **Defect/Error Reduction %** tracks whether scrap, code errors, data errors, or rework are decreasing.
-
-Use the same definitions, scope, and units for baseline, target, and follow-up measurements. Assign each KPI an owner, data source, review frequency, target date, and response if results move in the wrong direction. Percentage reduction is meaningful only when the baseline is valid; retain the underlying values with the percentage.
-
-## Complete the mapping phase
-
-Before beginning implementation:
-
-- [ ] Confirm the Future State flow meets customer demand and required quality, safety, scientific, policy, and security needs.
-- [ ] Validate the map and targets with the people who perform and receive the work.
-- [ ] Check that baseline, target, and follow-up values use the same definitions and units.
-- [ ] Identify the pacemaker and divide the implementation into manageable loops.
-- [ ] Convert each priority 💥 Kaizen burst into milestones with an owner, due date, success measure, dependencies, and review point.
-- [ ] Assign owners and review dates to Cycle Time, Lead Time, and Defect/Error Reduction KPIs.
-- [ ] Preserve the Future State `.drawio`, `.drawio.svg`, `.png`, and target metadata `.csv` exports in `output/`.
-- [ ] Schedule follow-up measurements and a date to revise the map and implementation plan.
+The upcoming **Gap Analysis** workspace imports `current_state_metadata.csv` and `future-primary.csv`. It calculates the differences between baseline and target values and produces the structured summary that feeds the later **Kaizen Experiments** section.
 
 ::: {.callout-note}
-## Continue to implementation
-
-Revise the Future State Map if the team needs to correct the proposed flow or targets. When the checklist is complete, carry the implementation loops, milestones, and KPIs into the repository's broader VSM roadmap for execution and recurring review.
+If the target layout or metadata needs correction, return to the Future State workspace before beginning Gap Analysis.
 
 [Revise the Future State Map](./future-primary.qmd){.btn .btn-outline-secondary role="button"}
-[Continue to the VSM roadmap](./index.qmd){.btn .btn-primary role="button"}
 :::
