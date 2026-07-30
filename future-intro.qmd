@@ -3,21 +3,74 @@ title: "Future State Map"
 subtitle: "Overview"
 ---
 
-## Design a better flow
+## What is a Future State Map?
 
-A Future State Map turns evidence from the Current State Map into a practical design for improved flow. Preserve the current-state files as a baseline, then remove unnecessary steps, reduce queues and rework, introduce pull where demand should trigger work, and mark proposed improvements with Kaizen bursts.
+A Future State Map is a practical blueprint for how a product, service, or information request **should** flow after improvement. It starts with the evidence in the Current State Map: delays, queues, rework, unnecessary handoffs, and other waste. The team then designs a leaner flow that can meet customer demand and sets measurable targets for testing that design.
 
-Set measurable targets rather than drawing an idealized process. Compare target cycle time, lead time, and defect or error measures with the latest timestamped observation for each process component.
+The map is a proposal, not a promise. Preserve the Current State files as the baseline, involve the people who perform and receive the work, and validate each proposed change before treating it as an improvement.
+
+## Design the future flow
+
+Use these concepts to decide how work should move:
+
+| Concept | Plain-language meaning | Question to ask |
+|---|---|---|
+| **Continuous Flow** | Work moves directly from one step to the next in small units, with little waiting or work in progress. | Which steps can be connected without a queue? |
+| **Pull System (Kanban)** | A downstream need signals when upstream work should begin or be replenished, rather than work being produced in advance. | Where could a visual or digital signal limit excess work? |
+| **Pacemaker Process** | One process sets the production rhythm for the value stream and is scheduled to match customer demand. | At which step can the team reliably control pace and sequence? |
+| **Kaizen Burst (💥)** | A visible marker for a focused improvement that must be planned, tested, and tracked. | What specific change is needed here to achieve the target flow? |
+
+These ideas apply to physical, scientific, software, and administrative work. For example, a Kanban may be a card, a sample-bin limit, a ticket status, or an approved request that authorizes the next step.
 
 ## Inputs and outputs
 
-Bring the `.drawio` source and metadata `.csv` exported by the [Current State workspace](./current-primary.qmd). The Future State workspace produces:
+### Inputs required
 
-- an updated diagram in `.drawio`, editable `.drawio.svg`, and `.png` formats;
-- an append-only, timestamped target metadata log; and
-- live cycle-time, lead-time, and defect/error reduction summaries.
+Bring:
+
+- the Current State `.drawio` file exported from the [Current State workspace](./current-primary.qmd);
+- the Current State `.csv` metadata log, including the latest timestamped observation for each process component; and
+- organizational improvement goals such as customer demand, required quality, delivery expectations, staffing constraints, or compliance needs.
+
+Keep the source files unchanged in `output/` so the team can compare the proposed design with the observed baseline.
+
+### Outputs generated
+
+The [Future State workspace](./future-primary.qmd) produces:
+
+- a Future State visual flowchart with proposed flow changes and 💥 Kaizen bursts, exported as `.drawio`, editable `.drawio.svg`, and `.png`;
+- a complete, append-only target process metadata log exported as `.csv`; and
+- gap analysis metrics for Cycle Time Reduction, Lead Time Reduction, and Defect/Error Reduction.
+
+Your browser will prompt you to download each export. Save or move the files into `output/` for implementation planning and later comparison.
+
+## Set measurable goals
+
+### Align Cycle Time with Takt Time
+
+**Cycle Time ($C/T$)** is the time a process takes to complete one unit. **Takt Time** is the pace needed to satisfy customer demand:
+
+$$
+\text{Takt Time} = \frac{\text{Available Work Time}}{\text{Customer Demand}}
+$$
+
+Use the same time period and units for both values. A Future State design should aim for a stable Cycle Time at or below Takt Time at the pacemaker process without compromising safety or quality. If Cycle Time is longer than Takt Time, the process cannot consistently keep pace with demand.
+
+### Reduce waiting while protecting value
+
+Total Lead Time includes both value-added work and non-value-added time:
+
+$$
+\text{Total Lead Time} = \text{Value-Added Time} + \text{Non-Value-Added Time}
+$$
+
+The goal is to shrink the gap between Total Lead Time and Value-Added Time by reducing waits, queues, rework, movement, and unnecessary approvals—not by removing work the customer, science, safety, or policy requires.
+
+## Choose your next step
 
 ::: {.callout-note}
+Use the tutorial to compare worked Current and Future State examples, or launch the editor to import your baseline files and set targets.
+
 [View the Future State tutorial](./future-example.qmd){.btn .btn-outline-secondary role="button"}
 [Launch the Future State editor](./future-primary.qmd){.btn .btn-primary role="button"}
 :::

@@ -3,20 +3,66 @@ title: "Future State Map"
 subtitle: "Next Steps"
 ---
 
-## Turn the map into an implementation plan
+## From map to action
 
-Review the Future State Map and target log with the people who perform and receive the work. Prioritize changes that address the largest validated gaps, then convert each Kaizen burst into a small action with an owner, due date, expected measure, and review point.
+A Future State Map is useful only when the team acts on it. Review the map, gap analysis, and target metadata log with the people who perform and receive the work. Then create a **Value Stream Implementation Plan** that connects every priority 💥 Kaizen burst to an owner, milestone, measure, and review date.
 
-Before implementation:
+Start with validated gaps rather than trying to change the entire value stream at once. Record assumptions, test changes on a manageable scale, and update the plan when evidence does not support the proposed design.
 
-- [ ] Confirm the proposed flow meets customer demand and required quality.
-- [ ] Check that baseline and target values use the same units.
-- [ ] Assign owners to pull-system, quality, and handoff changes.
-- [ ] Sequence dependencies and choose short experiments.
-- [ ] Preserve all Future State diagram and target metadata exports in `output/`.
-- [ ] Schedule follow-up measurements and update the map when evidence changes.
+## Plan implementation loops
+
+Divide the value stream into manageable loops so related changes can be tested and reviewed together.
+
+1. **Pacemaker Loop.** Stabilize the process that controls pace and sequence. Align its Cycle Time with Takt Time and define how customer demand reaches it.
+2. **Downstream Loops.** Improve the path from the pacemaker to the customer. Remove delivery delays, prevent defects from moving forward, and confirm that finished work is pulled by real demand.
+3. **Upstream Loops.** Connect earlier suppliers and processes to the pacemaker with clear replenishment signals, smaller queues, and reliable handoffs.
+
+Choose the order that fits the value stream's dependencies and risk. For each loop, define the expected result, the Kaizen bursts it contains, and the evidence required before expanding the change.
+
+## Turn Kaizen bursts into milestones
+
+A burst such as **“Automate Approval Gate”** describes an improvement opportunity but is not yet a project milestone. Break it into observable, trackable results.
+
+| Work-plan field | Example |
+|---|---|
+| **Loop and burst** | Upstream Loop — 💥 Automate Approval Gate |
+| **Milestone** | Pilot rules-based approval for eligible requests |
+| **Owner** | Process owner and system administrator |
+| **Due date** | Agreed pilot completion date |
+| **Success measure** | Approval wait time reduced from the baseline toward the target |
+| **Dependencies and safeguards** | Approved rules, permission controls, exception route, and audit review |
+| **Review point** | Compare pilot results with the baseline before wider release |
+
+Use several small milestones when a burst requires policy, technology, training, and process changes. A milestone should describe a result that the team can verify, not only an activity such as “hold a meeting.”
+
+## Track the exported KPIs
+
+The target metadata exported from the [Future State workspace](./future-primary.qmd) defines the intended results. Its gap analysis fields can become implementation Key Performance Indicators (KPIs):
+
+- **Cycle Time Reduction %** tracks whether a process step is moving toward its target completion time and, where relevant, toward Takt Time.
+- **Lead Time Reduction %** tracks whether end-to-end waiting and delay are shrinking.
+- **Defect/Error Reduction %** tracks whether scrap, code errors, data errors, or rework are decreasing.
+
+Use the same definitions, scope, and units for baseline, target, and follow-up measurements. Assign each KPI an owner, data source, review frequency, target date, and response if results move in the wrong direction. Percentage reduction is meaningful only when the baseline is valid; retain the underlying values with the percentage.
+
+## Complete the mapping phase
+
+Before beginning implementation:
+
+- [ ] Confirm the Future State flow meets customer demand and required quality, safety, scientific, policy, and security needs.
+- [ ] Validate the map and targets with the people who perform and receive the work.
+- [ ] Check that baseline, target, and follow-up values use the same definitions and units.
+- [ ] Identify the pacemaker and divide the implementation into manageable loops.
+- [ ] Convert each priority 💥 Kaizen burst into milestones with an owner, due date, success measure, dependencies, and review point.
+- [ ] Assign owners and review dates to Cycle Time, Lead Time, and Defect/Error Reduction KPIs.
+- [ ] Preserve the Future State `.drawio`, `.drawio.svg`, `.png`, and target metadata `.csv` exports in `output/`.
+- [ ] Schedule follow-up measurements and a date to revise the map and implementation plan.
 
 ::: {.callout-note}
+## Continue to implementation
+
+Revise the Future State Map if the team needs to correct the proposed flow or targets. When the checklist is complete, carry the implementation loops, milestones, and KPIs into the repository's broader VSM roadmap for execution and recurring review.
+
 [Revise the Future State Map](./future-primary.qmd){.btn .btn-outline-secondary role="button"}
-[Review the tutorial](./future-example.qmd){.btn .btn-primary role="button"}
+[Continue to the VSM roadmap](./index.qmd){.btn .btn-primary role="button"}
 :::
