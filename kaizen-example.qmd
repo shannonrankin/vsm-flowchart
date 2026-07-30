@@ -1,35 +1,544 @@
 ---
 title: "Kaizen Experiments"
-subtitle: "Tutorial and Example"
+subtitle: "Tutorial and Examples"
+page-layout: full
+format:
+  html:
+    code-copy: false
 ---
 
 ::: {.callout-note}
-## Practice designing a focused experiment
+## Practice before building your roadmap
 
-1. Choose a verified gap with a measurable baseline and target.
-2. Describe one change and the result you expect from it.
-3. Break the test into small action steps and assign one owner.
-4. Move the experiment to verification only after collecting evidence.
+1. Move the sample experiments across the board and notice what evidence is needed at each stage.
+2. Use the hypothesis guide to turn a process gap into a measurable prediction.
+3. Compare effort and impact before deciding which experiment to run first.
+4. When you are ready, [launch the interactive workspace](./kaizen-primary.qmd) with your own `gap-analysis.csv`.
 :::
 
-## Example experiment
+<style>
+.kaizen-example-stack {
+  display: grid;
+  gap: 1rem;
+}
+.kaizen-example-panel {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #d8dee2);
+  border-radius: .5rem;
+  padding: 1rem;
+}
+.kaizen-example-panel h3 {
+  margin-top: 0;
+}
+.kaizen-example-board {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(4, minmax(15rem, 1fr));
+  overflow-x: auto;
+}
+.kaizen-example-column {
+  background: var(--bs-tertiary-bg, #f4f6f7);
+  border-radius: .45rem;
+  min-height: 12rem;
+  padding: .65rem;
+}
+.kaizen-example-column h3 {
+  font-size: 1rem;
+}
+.kaizen-example-card {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #cbd3d8);
+  border-left: .35rem solid #0d6efd;
+  border-radius: .35rem;
+  display: grid;
+  gap: .45rem;
+  margin-bottom: .65rem;
+  padding: .7rem;
+}
+.kaizen-example-card p {
+  margin: 0;
+}
+.kaizen-example-card button,
+.kaizen-example-controls button,
+.kaizen-example-form input,
+.kaizen-example-form select {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid #65727a;
+  border-radius: .3rem;
+  color: var(--bs-body-color, #222);
+  padding: .45rem .6rem;
+}
+.kaizen-example-card button:hover,
+.kaizen-example-card button:focus,
+.kaizen-example-controls button:hover,
+.kaizen-example-controls button:focus {
+  box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2);
+}
+.kaizen-example-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+  margin-bottom: .75rem;
+}
+.kaizen-example-form {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(2, minmax(14rem, 1fr));
+}
+.kaizen-example-form label {
+  display: grid;
+  font-weight: 600;
+  gap: .25rem;
+}
+.kaizen-example-wide {
+  grid-column: 1 / -1;
+}
+.kaizen-example-result {
+  border-left: .35rem solid #0d6efd;
+  margin: 0;
+  padding: .75rem;
+}
+.kaizen-example-checklist {
+  margin-bottom: 0;
+}
+.kaizen-example-matrix {
+  display: grid;
+  gap: .4rem;
+  grid-template-columns: 2.5rem repeat(2, minmax(12rem, 1fr));
+}
+.kaizen-example-quadrant {
+  border: 1px solid var(--bs-border-color, #cbd3d8);
+  border-radius: .35rem;
+  min-height: 9rem;
+  padding: .75rem;
+}
+.kaizen-example-quadrant[data-rank="first"] {
+  background: color-mix(in srgb, #198754 16%, transparent);
+}
+.kaizen-example-quadrant[data-rank="plan"] {
+  background: color-mix(in srgb, #0d6efd 12%, transparent);
+}
+.kaizen-example-quadrant[data-rank="later"] {
+  background: color-mix(in srgb, #ffc107 18%, transparent);
+}
+.kaizen-example-quadrant[data-rank="avoid"] {
+  background: color-mix(in srgb, #dc3545 12%, transparent);
+}
+.kaizen-example-quadrant button {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid #65727a;
+  border-radius: 1rem;
+  color: var(--bs-body-color, #222);
+  display: block;
+  margin: .4rem 0;
+  padding: .3rem .6rem;
+  text-align: left;
+}
+.kaizen-example-axis {
+  align-self: center;
+  font-weight: 700;
+  text-align: center;
+}
+.kaizen-example-axis-vertical {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+.kaizen-example-priority-detail {
+  min-height: 3rem;
+  padding-top: .75rem;
+}
+@media (max-width: 700px) {
+  .kaizen-example-form {
+    grid-template-columns: 1fr;
+  }
+  .kaizen-example-wide {
+    grid-column: auto;
+  }
+  .kaizen-example-matrix {
+    grid-template-columns: 1.75rem repeat(2, minmax(10rem, 1fr));
+    overflow-x: auto;
+  }
+}
+</style>
 
-| Attribute | Example |
-|---|---|
-| Experiment title | Reduce intake data errors |
-| Target gap | Data error rate: 8% baseline → 3% target |
-| Hypothesis | If we add a required-field check at intake, then data error rate will improve by 5 percentage points. |
-| Action steps | Define required fields; pilot the check for one week; review rejected records |
-| Owner | Intake coordinator |
-| Success metric | Data error rate at or below 3% during the pilot |
-| Priority | High |
-| Status | Backlog / Proposed |
+## 1. Explore a sample Kanban board
 
-Keep the hypothesis specific enough to disprove. A completed action is not evidence of improvement; compare the observed success metric with the baseline and target before marking an experiment completed.
+Each card represents a small test, not a permanent implementation. Select **Advance** to move work through the same stages used in the main workspace. A card should enter verification only when the team is ready to collect its success metric.
 
-## Try your own roadmap
+```{ojs}
+//| echo: false
 
-Export `gap-analysis.csv` from Gap Analysis, then import it into the workspace. Critical or high gaps become starting cards that you can edit in either board or table view.
+viewof kaizen_example_board = {
+  const kaizen_example_statuses = [
+    "Backlog / Proposed",
+    "In Progress",
+    "Testing / Verification",
+    "Completed"
+  ];
+  const kaizen_example_initial_experiments = [
+    {
+      title: "5S Workplace Setup",
+      target: "Reduce time spent locating shared sampling gear",
+      hypothesis: "If the team labels and shadows the gear station, retrieval time will fall from 12 to 5 minutes within two weeks.",
+      metric: "Median retrieval time ≤ 5 minutes",
+      status: "Backlog / Proposed"
+    },
+    {
+      title: "Automated Code Linting Gate",
+      target: "Reduce formatting defects found during review",
+      hypothesis: "If lint checks run before merge, formatting defects will fall from 8 to 2 per release during the next four releases.",
+      metric: "≤ 2 formatting defects per release",
+      status: "In Progress"
+    },
+    {
+      title: "Single-Piece Flow Trial",
+      target: "Reduce sample-processing lead time",
+      hypothesis: "If samples move one at a time through intake and validation, median lead time will fall from 3 days to 1 day during a 20-sample pilot.",
+      metric: "Median lead time ≤ 1 day",
+      status: "Testing / Verification"
+    }
+  ];
+  let kaizen_example_experiments = kaizen_example_initial_experiments.map(
+    kaizen_example_experiment => ({...kaizen_example_experiment})
+  );
+
+  const kaizen_example_root = document.createElement("div");
+  kaizen_example_root.className = "kaizen-example-panel";
+  const kaizen_example_controls = document.createElement("div");
+  kaizen_example_controls.className = "kaizen-example-controls";
+  const kaizen_example_reset = document.createElement("button");
+  kaizen_example_reset.type = "button";
+  kaizen_example_reset.textContent = "Reset sample board";
+  const kaizen_example_status = document.createElement("span");
+  kaizen_example_status.setAttribute("role", "status");
+  kaizen_example_status.setAttribute("aria-live", "polite");
+  kaizen_example_controls.append(kaizen_example_reset, kaizen_example_status);
+  const kaizen_example_board_element = document.createElement("div");
+  kaizen_example_board_element.className = "kaizen-example-board";
+  kaizen_example_root.append(
+    kaizen_example_controls,
+    kaizen_example_board_element
+  );
+
+  function kaizen_example_render_board() {
+    kaizen_example_board_element.replaceChildren();
+    for (const kaizen_example_column_status of kaizen_example_statuses) {
+      const kaizen_example_column = document.createElement("section");
+      kaizen_example_column.className = "kaizen-example-column";
+      const kaizen_example_heading = document.createElement("h3");
+      const kaizen_example_cards = kaizen_example_experiments.filter(
+        kaizen_example_experiment =>
+          kaizen_example_experiment.status === kaizen_example_column_status
+      );
+      kaizen_example_heading.textContent =
+        `${kaizen_example_column_status} (${kaizen_example_cards.length})`;
+      kaizen_example_column.append(kaizen_example_heading);
+
+      for (const kaizen_example_experiment of kaizen_example_cards) {
+        const kaizen_example_card = document.createElement("article");
+        kaizen_example_card.className = "kaizen-example-card";
+        const kaizen_example_title = document.createElement("strong");
+        kaizen_example_title.textContent = kaizen_example_experiment.title;
+        const kaizen_example_target = document.createElement("p");
+        kaizen_example_target.textContent =
+          `Target gap: ${kaizen_example_experiment.target}`;
+        const kaizen_example_hypothesis = document.createElement("p");
+        kaizen_example_hypothesis.textContent =
+          `Hypothesis: ${kaizen_example_experiment.hypothesis}`;
+        const kaizen_example_metric = document.createElement("p");
+        kaizen_example_metric.textContent =
+          `Success: ${kaizen_example_experiment.metric}`;
+        kaizen_example_card.append(
+          kaizen_example_title,
+          kaizen_example_target,
+          kaizen_example_hypothesis,
+          kaizen_example_metric
+        );
+
+        const kaizen_example_index = kaizen_example_statuses.indexOf(
+          kaizen_example_experiment.status
+        );
+        if (kaizen_example_index < kaizen_example_statuses.length - 1) {
+          const kaizen_example_advance = document.createElement("button");
+          kaizen_example_advance.type = "button";
+          kaizen_example_advance.textContent = "Advance →";
+          kaizen_example_advance.setAttribute(
+            "aria-label",
+            `Advance ${kaizen_example_experiment.title}`
+          );
+          kaizen_example_advance.addEventListener("click", () => {
+            kaizen_example_experiment.status =
+              kaizen_example_statuses[kaizen_example_index + 1];
+            kaizen_example_status.textContent =
+              `${kaizen_example_experiment.title} moved to ${kaizen_example_experiment.status}.`;
+            kaizen_example_render_board();
+          });
+          kaizen_example_card.append(kaizen_example_advance);
+        }
+        kaizen_example_column.append(kaizen_example_card);
+      }
+      kaizen_example_board_element.append(kaizen_example_column);
+    }
+  }
+
+  kaizen_example_reset.addEventListener("click", () => {
+    kaizen_example_experiments = kaizen_example_initial_experiments.map(
+      kaizen_example_experiment => ({...kaizen_example_experiment})
+    );
+    kaizen_example_status.textContent = "The sample board was reset.";
+    kaizen_example_render_board();
+  });
+  kaizen_example_render_board();
+  kaizen_example_root
+}
+```
+
+## 2. Build a measurable hypothesis
+
+A useful hypothesis connects one deliberate change to one expected result, with a baseline, target, and test period. Adjust the fields below to see that structure assembled.
+
+```{ojs}
+//| echo: false
+
+viewof kaizen_example_hypothesis_guide = {
+  const kaizen_example_guide_root = document.createElement("div");
+  kaizen_example_guide_root.className =
+    "kaizen-example-panel kaizen-example-stack";
+  const kaizen_example_guide_form = document.createElement("div");
+  kaizen_example_guide_form.className = "kaizen-example-form";
+
+  function kaizen_example_make_field(
+    kaizen_example_id,
+    kaizen_example_label_text,
+    kaizen_example_value,
+    kaizen_example_type = "text"
+  ) {
+    const kaizen_example_label = document.createElement("label");
+    kaizen_example_label.htmlFor = kaizen_example_id;
+    kaizen_example_label.textContent = kaizen_example_label_text;
+    const kaizen_example_input = document.createElement("input");
+    kaizen_example_input.id = kaizen_example_id;
+    kaizen_example_input.type = kaizen_example_type;
+    kaizen_example_input.value = kaizen_example_value;
+    kaizen_example_label.append(kaizen_example_input);
+    kaizen_example_guide_form.append(kaizen_example_label);
+    return kaizen_example_input;
+  }
+
+  const kaizen_example_gap = kaizen_example_make_field(
+    "kaizen-example-gap",
+    "Observed gap",
+    "formatting defects are found during review"
+  );
+  const kaizen_example_change = kaizen_example_make_field(
+    "kaizen-example-change",
+    "Change to test",
+    "run automated lint checks before merge"
+  );
+  const kaizen_example_metric_input = kaizen_example_make_field(
+    "kaizen-example-metric",
+    "Metric",
+    "formatting defects per release"
+  );
+  const kaizen_example_baseline = kaizen_example_make_field(
+    "kaizen-example-baseline",
+    "Baseline",
+    "8"
+  );
+  const kaizen_example_target_input = kaizen_example_make_field(
+    "kaizen-example-target",
+    "Target",
+    "2"
+  );
+  const kaizen_example_period = kaizen_example_make_field(
+    "kaizen-example-period",
+    "Test period or sample",
+    "the next four releases"
+  );
+
+  const kaizen_example_hypothesis_result = document.createElement("p");
+  kaizen_example_hypothesis_result.className =
+    "kaizen-example-result kaizen-example-wide";
+  kaizen_example_hypothesis_result.setAttribute("role", "status");
+  kaizen_example_hypothesis_result.setAttribute("aria-live", "polite");
+  const kaizen_example_guide_checklist = document.createElement("ul");
+  kaizen_example_guide_checklist.className =
+    "kaizen-example-checklist kaizen-example-wide";
+  kaizen_example_guide_form.append(
+    kaizen_example_hypothesis_result,
+    kaizen_example_guide_checklist
+  );
+  kaizen_example_guide_root.append(kaizen_example_guide_form);
+
+  function kaizen_example_render_hypothesis() {
+    kaizen_example_hypothesis_result.textContent =
+      `If we ${kaizen_example_change.value.trim()}, then ` +
+      `${kaizen_example_metric_input.value.trim()} will change from ` +
+      `${kaizen_example_baseline.value.trim()} to ` +
+      `${kaizen_example_target_input.value.trim()} during ` +
+      `${kaizen_example_period.value.trim()}.`;
+    const kaizen_example_checks = [
+      ["Names the process problem", kaizen_example_gap.value.trim()],
+      ["Tests one specific change", kaizen_example_change.value.trim()],
+      [
+        "Includes a measurable baseline and target",
+        kaizen_example_metric_input.value.trim() &&
+          kaizen_example_baseline.value.trim() &&
+          kaizen_example_target_input.value.trim()
+      ],
+      ["Defines a test boundary", kaizen_example_period.value.trim()]
+    ];
+    kaizen_example_guide_checklist.replaceChildren();
+    for (const [kaizen_example_check, kaizen_example_complete] of
+      kaizen_example_checks) {
+      const kaizen_example_item = document.createElement("li");
+      kaizen_example_item.textContent =
+        `${kaizen_example_complete ? "✓" : "○"} ${kaizen_example_check}`;
+      kaizen_example_guide_checklist.append(kaizen_example_item);
+    }
+  }
+
+  for (const kaizen_example_input of [
+    kaizen_example_gap,
+    kaizen_example_change,
+    kaizen_example_metric_input,
+    kaizen_example_baseline,
+    kaizen_example_target_input,
+    kaizen_example_period
+  ]) {
+    kaizen_example_input.addEventListener(
+      "input",
+      kaizen_example_render_hypothesis
+    );
+  }
+  kaizen_example_render_hypothesis();
+  kaizen_example_guide_root
+}
+```
+
+The observed gap explains *why* the experiment matters. The hypothesis itself must remain falsifiable: if the result misses the target, record what happened rather than rewriting the prediction.
+
+## 3. Prioritize by effort and impact
+
+Start with high-impact, low-effort experiments when they are safe and their success measures are trustworthy. High-impact, high-effort ideas need planning; low-impact, high-effort ideas should usually wait. Select an experiment in the matrix to review its ranking.
+
+```{ojs}
+//| echo: false
+
+viewof kaizen_example_priority_matrix = {
+  const kaizen_example_priority_items = [
+    {
+      title: "5S Workplace Setup",
+      effort: "Low",
+      impact: "High",
+      reason: "Run first: the test is contained and can quickly reduce retrieval delay."
+    },
+    {
+      title: "Automated Code Linting Gate",
+      effort: "High",
+      impact: "High",
+      reason: "Plan carefully: the potential impact is high, but pipeline setup and team adoption require coordination."
+    },
+    {
+      title: "Single-Piece Flow Trial",
+      effort: "Low",
+      impact: "Low",
+      reason: "Consider later: the pilot is easy to run, but its expected reach is limited."
+    },
+    {
+      title: "Replace All Lab Equipment",
+      effort: "High",
+      impact: "Low",
+      reason: "Avoid for now: the expected benefit does not justify the cost and disruption."
+    }
+  ];
+  const kaizen_example_quadrants = [
+    ["High", "Low", "first", "Run first"],
+    ["High", "High", "plan", "Plan"],
+    ["Low", "Low", "later", "Consider later"],
+    ["Low", "High", "avoid", "Avoid"]
+  ];
+  const kaizen_example_matrix_root = document.createElement("div");
+  kaizen_example_matrix_root.className = "kaizen-example-panel";
+  const kaizen_example_matrix = document.createElement("div");
+  kaizen_example_matrix.className = "kaizen-example-matrix";
+  const kaizen_example_blank = document.createElement("span");
+  const kaizen_example_low_effort = document.createElement("strong");
+  kaizen_example_low_effort.className = "kaizen-example-axis";
+  kaizen_example_low_effort.textContent = "Low effort";
+  const kaizen_example_high_effort = document.createElement("strong");
+  kaizen_example_high_effort.className = "kaizen-example-axis";
+  kaizen_example_high_effort.textContent = "High effort";
+  kaizen_example_matrix.append(
+    kaizen_example_blank,
+    kaizen_example_low_effort,
+    kaizen_example_high_effort
+  );
+
+  const kaizen_example_high_impact = document.createElement("strong");
+  kaizen_example_high_impact.className =
+    "kaizen-example-axis kaizen-example-axis-vertical";
+  kaizen_example_high_impact.textContent = "High impact";
+  kaizen_example_matrix.append(kaizen_example_high_impact);
+
+  const kaizen_example_detail = document.createElement("p");
+  kaizen_example_detail.className = "kaizen-example-priority-detail";
+  kaizen_example_detail.setAttribute("role", "status");
+  kaizen_example_detail.setAttribute("aria-live", "polite");
+
+  function kaizen_example_add_quadrant(
+    kaizen_example_impact,
+    kaizen_example_effort,
+    kaizen_example_rank,
+    kaizen_example_heading_text
+  ) {
+    const kaizen_example_quadrant = document.createElement("section");
+    kaizen_example_quadrant.className = "kaizen-example-quadrant";
+    kaizen_example_quadrant.dataset.rank = kaizen_example_rank;
+    const kaizen_example_heading = document.createElement("strong");
+    kaizen_example_heading.textContent = kaizen_example_heading_text;
+    kaizen_example_quadrant.append(kaizen_example_heading);
+    for (const kaizen_example_item of kaizen_example_priority_items.filter(
+      kaizen_example_candidate =>
+        kaizen_example_candidate.impact === kaizen_example_impact &&
+        kaizen_example_candidate.effort === kaizen_example_effort
+    )) {
+      const kaizen_example_button = document.createElement("button");
+      kaizen_example_button.type = "button";
+      kaizen_example_button.textContent = kaizen_example_item.title;
+      kaizen_example_button.addEventListener("click", () => {
+        kaizen_example_detail.textContent =
+          `${kaizen_example_item.title} — ${kaizen_example_item.reason}`;
+      });
+      kaizen_example_quadrant.append(kaizen_example_button);
+    }
+    kaizen_example_matrix.append(kaizen_example_quadrant);
+  }
+
+  kaizen_example_add_quadrant(...kaizen_example_quadrants[0]);
+  kaizen_example_add_quadrant(...kaizen_example_quadrants[1]);
+  const kaizen_example_low_impact = document.createElement("strong");
+  kaizen_example_low_impact.className =
+    "kaizen-example-axis kaizen-example-axis-vertical";
+  kaizen_example_low_impact.textContent = "Low impact";
+  kaizen_example_matrix.append(kaizen_example_low_impact);
+  kaizen_example_add_quadrant(...kaizen_example_quadrants[2]);
+  kaizen_example_add_quadrant(...kaizen_example_quadrants[3]);
+  kaizen_example_detail.textContent =
+    "Select an experiment to see why it belongs in that quadrant.";
+  kaizen_example_matrix_root.append(
+    kaizen_example_matrix,
+    kaizen_example_detail
+  );
+  kaizen_example_matrix_root
+}
+```
+
+Effort and impact are relative estimates, not precise scores. Confirm them with the people doing the work, consider safety and dependencies, and revisit the ranking as evidence changes.
+
+## Continue with your own experiments
+
+Import `gap-analysis.csv` into the workspace to seed experiment cards, refine their hypotheses, and export the resulting roadmap to `output/`.
 
 [Launch the Kaizen Experiments workspace](./kaizen-primary.qmd){.btn .btn-primary role="button"}
 [Review experiment next steps](./kaizen-next.qmd){.btn .btn-outline-secondary role="button"}
