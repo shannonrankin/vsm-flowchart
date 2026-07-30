@@ -391,15 +391,12 @@ viewof kaizen_experiment_workspace = {
     const metric = String(record.metric).trim();
     const baseline = String(record.baseline_value).trim();
     const target = String(record.target_value).trim();
-    const amount = String(
-      record.percentage_improvement || record.absolute_change || target
-    ).trim();
     return {
       id: kaizen_id(),
       title: `${process_node}: improve ${metric}`,
       target_gap: `${metric}: ${baseline} baseline → ${target} target`,
       hypothesis:
-        `If we [action], then ${metric} will improve by ${amount || "[amount]"}.`,
+        `If we [action], then ${metric} will improve by [amount].`,
       action_steps: [],
       owner: "",
       success_metric: `${metric} reaches ${target}`,
