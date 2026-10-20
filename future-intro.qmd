@@ -1,30 +1,99 @@
 ---
 title: "Future State Map"
 subtitle: "Overview"
+editor: 
+  markdown: 
+    wrap: sentence
 ---
 
 ## What is a Future State Map?
 
-A Future State Map is a practical blueprint for how a product, service, or information request **should** flow after improvement. It starts with the evidence in the Current State Map: delays, queues, rework, unnecessary handoffs, and other waste. The team then designs a leaner flow that can meet customer demand and sets measurable targets for testing that design.
+A Future State Map defines how data, field resources, and scientific analysis should move through workflow.
+While the Current State Map captures present operational reality—including analyst validation backlogs, custom hardware assembly bottlenecks, and manual QA/QC loops—the Future State Map visualizes a streamlined, more automated pipeline designed to eliminate waste and accelerate scientific delivery.
 
-The map is a proposal, not a promise. Preserve the Current State files as the baseline, involve the people who perform and receive the work, and validate each proposed change before treating it as an improvement.
+The goal is not to draft an idealized, unachievable workflow, but rather to establish a practical, measurable target that expands program capacity, reduces scientist burnout, and speeds up product delivery to resource managers and scientific partners.
 
-## Design the future flow
+## 1. Key Considerations & Strategic Questions
 
-Use these concepts to decide how work should move:
+Before redrawing your data flow, convene your field technicians, bioacousticians, software engineers, and project leads to evaluate the current baseline.
+Use these targeted questions to guide your future-state design:
 
-| Concept | Plain-language meaning | Question to ask |
-|---|---|---|
-| **Continuous Flow** | Work moves directly from one step to the next in small units, with little waiting or work in progress. | Which steps can be connected without a queue? |
-| **Pull System (Kanban)** | A downstream need signals when upstream work should begin or be replenished, rather than work being produced in advance. | Where could a visual or digital signal limit excess work? |
-| **Pacemaker Process** | One process sets the production rhythm for the value stream and is scheduled to match customer demand. | At which step can the team reliably control pace and sequence? |
-| **Quality at the Source** | Problems are detected and corrected where they occur rather than passed downstream. | Where should the flow stop when a requirement is not met? |
+### ⚙️ Automation & Tooling
 
-These ideas apply to physical, scientific, software, and administrative work. For example, a Kanban may be a card, a sample-bin limit, a ticket status, or an approved request that authorizes the next step.
+- **Where can manual visual/auditory inspection be replaced or augmented by AI?** Can deep learning classifiers or cloud-based edge detectors handle first-pass screening so analysts only review low-confidence detections?
 
-## Inputs and outputs
+- **Which routine data handling tasks can be scripted?** Can raw audio ingest, metadata extraction, spatial geotagging, and NetCDF conversion be unified into automated containerized pipelines (e.g., Docker/Airflow)?
 
-### Inputs required
+### 🛠️ Hardware & Procurement
+
+- **Should we build or buy?** Which custom hydrophone or deployment housing components are consuming skilled staff time that could instead be standardized or outsourced to commercial vendors?
+
+- **Is real-time telemetry viable?** For critical monitoring areas, can real-time or decimated telemetered feeds reduce the reliance on physical hard drive recovery cruises?
+
+### ⏱️ Flow & Batch Sizes
+
+- **Can we reduce batch sizes?** Instead of waiting for a 6-month vessel charter to end before starting processing, can audio be ingested and validated in continuous or cruise-leg increments?
+
+- **Where are the approval gates holding up science?** Can QA/QC sign-offs or multi-reviewer approvals be parallelized or streamlined with clear error thresholds?
+
+## 2. Core Inputs & Expected Outputs
+
+### 📥 Inputs Required to Build the Map
+
+- **Current State Baseline Data:** Verified Process Times ($PT$), Lead Times ($LT$), and First-Pass Accuracy rates (%C&A) from your process data boxes.
+
+- **Management Mandates & Scientific Demand:** Required delivery timelines for marine mammal stock assessments, noise monitoring summaries, or regulatory compliance feeds.
+
+- **Resource Constraints:** Available compute infrastructure (local GPU nodes, cloud credits), analyst FTE allocations, and expected operating budgets.
+
+- **Technology Readiness:** Evaluated software packages (e.g., PAMGuard, Triton, custom Python packages) and mature deep learning models ready for production deployment.
+
+### 📤 Future State Outputs & Deliverables
+
+- **Target Future State Value Stream Map:** A visual schematic showing modernized data pathways, automated processing triggers, reduced inventory queues, and consolidated review steps.
+
+- **Target Metric Summary Table:** Expected improvements in total lead time, processing capacity (TB/month), and Process Cycle Efficiency ($PCE$).
+
+- **Implementation Action Plan:** A prioritized, step-by-step roadmap detailing the specific kaizen events, script developments, vendor procurements, or workflow changes needed to reach the future state.
+
+## 3. Recommended Mapping Method & Steps
+
+Building a Future State Map is an iterative, consensus-driven process.
+Follow this 5-step method:
+
+\[Step 1: Set Demand Pace\] ──► \[Step 2: Eliminate Waste\] ──► \[Step 3: Introduce Automation\] │ \[Step 5: Define Implementation\] ◄── \[Step 4: Balance Workload\] ─────────┘
+
+1.  **Calculate the Pace of Scientific Demand (Takt Time Equivalent):** Determine the required output frequency needed by management or scientific consumers (e.g., "We must deliver quarterly stock assessment noise metrics within 30 days of cruise completion").
+
+2.  **Eliminate Non-Value-Added Steps:** Identify steps in the Current State Map that can be cut entirely—such as duplicate metadata entry across disparate spreadsheets or redundant manual file format conversions.
+
+3.  **Insert Automated & Standardized Buffers:** Design automated triggers where work moves directly from one stage to the next (e.g., an automated cloud upload triggering immediate GPU cluster detection).
+
+4.  **Balance the Analyst Workload:** Distribute tasks so senior bioacousticians focus on high-complexity analysis (species localization, novel call identification, model training) while automated systems and junior staff handle standardized QA/QC screening.
+
+5.  **Establish the Execution Target:** Finalize the map boundaries and assign clear ownership for every proposed process change.
+
+## 4. Setting Reasonable & Measurable Goals
+
+Avoid setting vague goals like *"make analysis faster."* Establish specific, measurable targets across three core operational dimensions:
+
+|  |  |  |
+|------------------------|------------------------|------------------------|
+| **Dimension** | **Typical Current State Problem** | **Target Future State Metric (Goal Example)** |
+| **Lead Time Reduction** | Audio waits 60+ days on hard drives before ingest. | $\ge$ 50% reduction in Lead Time: Ingest audio within 7 calendar days of port arrival. |
+| **Capacity & Throughput** | Analysts manually review 100% of detection files. | **3x Throughput Increase:** Implement AI pre-screening to reduce analyst review load to 20% low-confidence flag audits. |
+| **First-Pass Quality (%C&A)** | 20% of dataset records fail metadata validation at NCEI archival upload. | $\ge$ 95% First-Pass %C&A: Automate schema validation at ingestion so metadata errors are caught immediately. |
+| **Resource Allocation** | Staff spend 30% of time fabricating custom hydrophone cables. | **100% Outsourcing of Standard Hardware:** Commercialize cable/housing builds to reclaim 400 analyst hours/year. |
+
+## 5. Standard Formula for Future State Efficiency
+
+To prove the impact of your proposed Future State Map, re-calculate the **Process Cycle Efficiency (**$PCE$) using your projected metrics and compare it to your Current State baseline:
+
+$${Process Cycle Efficiency (PCE)} = ( {{Value-Added Processing Time}}{{Total Elapsed Lead Time}}) x 100%$$
+
+> **Rule of Thumb:** A successful future-state design for scientific data streams typically aims to increase $PCE$ by eliminating long queue wait times and non-value-added file transfers, even if the pure active analysis time ($PT$) remains relatively stable.
+
+## What Inputs do you need to build your Future State Map?
 
 Bring:
 
@@ -41,35 +110,15 @@ The [Future State workspace](./future-primary.qmd) produces:
 - a Future State visual flowchart with the proposed layout, exported as `.drawio`, editable `.drawio.svg`, and `.png`; and
 - a complete, append-only target process metadata log exported as `future-primary.csv`.
 
-Your browser will prompt you to download each export. Save or move the files into `output/`. The upcoming **Gap Analysis** section imports `current_state_metadata.csv` and `future-primary.csv` to calculate differences between observed and target performance. **Kaizen Experiments** then uses those analyzed gaps for improvement planning.
-
-## Set measurable goals
-
-### Align Cycle Time with Takt Time
-
-**Cycle Time ($C/T$)** is the time a process takes to complete one unit. **Takt Time** is the pace needed to satisfy customer demand:
-
-$$
-\text{Takt Time} = \frac{\text{Available Work Time}}{\text{Customer Demand}}
-$$
-
-Use the same time period and units for both values. A Future State design should aim for a stable Cycle Time at or below Takt Time at the pacemaker process without compromising safety or quality. If Cycle Time is longer than Takt Time, the process cannot consistently keep pace with demand.
-
-### Reduce waiting while protecting value
-
-Total Lead Time includes both value-added work and non-value-added time:
-
-$$
-\text{Total Lead Time} = \text{Value-Added Time} + \text{Non-Value-Added Time}
-$$
-
-The goal is to shrink the gap between Total Lead Time and Value-Added Time by reducing waits, queues, rework, movement, and unnecessary approvals—not by removing work the customer, science, safety, or policy requires.
+Your browser will prompt you to download each export.
+Save or move the files into `output/`.
+The upcoming **Gap Analysis** section imports `current_state_metadata.csv` and `future-primary.csv` to calculate differences between observed and target performance.
+**Kaizen Experiments** then uses those analyzed gaps for improvement planning.
 
 ## Choose your next step
 
-::: {.callout-note}
+::: callout-note
 Use the tutorial to compare worked Current and Future State examples, or launch the editor to import your baseline files and set targets.
 
-[View the Future State tutorial](./future-example.qmd){.btn .btn-outline-secondary role="button"}
-[Launch the Future State editor](./future-primary.qmd){.btn .btn-primary role="button"}
+[View the Future State tutorial](./future-example.qmd){.btn .btn-outline-secondary role="button"} [Launch the Future State editor](./future-primary.qmd){.btn .btn-primary role="button"}
 :::
