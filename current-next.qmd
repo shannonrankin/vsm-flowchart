@@ -5,13 +5,13 @@ subtitle: "Next Steps"
 
 ## Interpret the current state
 
-Review the exported diagram and metadata log with the people who perform and receive the work. Confirm that the map shows what normally happens as well as important exceptions.
+Review the exported diagram and metadata log with the people who perform and receive the work in the passive acoustics data life cycle. Confirm that the map shows what normally happens as well as important exceptions, from field recording and media retrieval through analysis, archival, and scientific use. The "Customer" is the downstream scientific and management stakeholder who needs the data or its outputs, such as Fishery Management Councils, Stock Assessment Scientists, National Centers for Environmental Information (NCEI) Archival Repositories, and Marine Mammal Protection Act regulatory bodies.
 
 Open `current_state_metadata.csv` from `output/` and group records by process component. Because each saved observation has a timestamp, compare the latest record with earlier records instead of assuming one observation is typical. Check for missing values, confirm that time fields use the same unit, and trace unusual values back to the matching process block in the diagram.
 
 ### Compare lead time with value-added time
 
-For one complete trip through the value stream, classify each interval as either active work that changes the product or service in a way the customer needs, or non-value-added time such as waiting, movement, rework, or approval delay. Then calculate:
+For one complete trip through the value stream, classify each interval as either active analytical processing that changes the data or its interpretation in a way downstream stakeholders need, or non-value-added time such as waiting, movement, rework, or approval delay. In scientific data streams, Value-Added Time includes active analytical processing, automated detector runs, species identification, and scientific QA/QC review. Then calculate:
 
 $$
 \text{Total Lead Time} = \text{Value-Added Time} + \text{Non-Value-Added Time}
@@ -21,36 +21,37 @@ $$
 \text{Process Cycle Efficiency} = \frac{\text{Value-Added Time}}{\text{Total Lead Time}} \times 100\%
 $$
 
-Add the value-added portions of the relevant cycle times rather than treating every recorded cycle time as value-added. Use the map timeline, queue observations, and approval or delay fields to calculate total elapsed lead time. A large gap between the two totals identifies the greatest opportunity; it does not by itself identify the cause.
+Add the value-added portions of the relevant cycle times rather than treating every recorded cycle time as value-added. Use the map timeline, queue observations, and approval or delay fields to calculate total elapsed lead time from field collection through usable scientific outputs. A large gap between the two totals identifies the greatest opportunity; it does not by itself identify the cause.
 
 ## Spot the eight wastes
 
-The classic eight wastes can appear in physical, administrative, scientific, and software workflows.
+The classic eight wastes can appear throughout passive acoustics research programs, from field equipment and recording retrieval to data processing and scientific review.
 
-| Waste | What to look for |
+| Waste | What to look for (Passive Acoustics Focus) |
 |---|---|
-| 🔄 **Defects and rework** | Scrapped material, failed quality checks, code errors, incorrect data, or repeated submissions. |
-| 📦 **Overproduction** | Producing batches, reports, analyses, or features before they are requested or can be used. |
-| ⏳ **Waiting and delays** | Idle equipment or people, pending funding, unnecessary approvals, permission requests, or queued reviews. |
-| 🧠 **Non-utilized talent** | Decisions made without the people who know the work, or skilled staff occupied by avoidable manual tasks. |
-| 🚚 **Transportation** | Unnecessary movement of samples, equipment, files, or records between locations or systems. |
-| 🗃️ **Inventory** | Excess supplies, samples, work in progress, support tickets, datasets, or unreviewed code. |
-| 🚶 **Motion** | Repeated searching, walking, clicking, copying, or switching between tools to complete one task. |
-| 🛑 **Over-processing** | Redundant checks, duplicate data entry, unnecessary reviews, or work performed at greater detail than needed. |
+| 🔄 **Defects and rework** | False-positive detector bursts, corrupted audio header metadata, miscalibrated hydrophone sensitivity curves, or re-running detection models due to missed clock-drift corrections. |
+| 📦 **Overproduction** | Generating broad-spectrum soundscape metrics or high-resolution spectrogram outputs before scientific end-users or stock assessment leads request them. |
+| ⏳ **Waiting and delays** | Raw audio files waiting on local hard drives for computing cluster access, analyst review backlogs, or waiting on multi-week vessel charter schedules to retrieve field media. |
+| 🧠 **Non-utilized talent** | Senior bioacousticians and research scientists spending hundreds of hours on manual visual/auditory call verification or routine manual metadata data entry that could be automated with deep learning pipelines. |
+| 🚚 **Transportation** | Physical shipping of heavy hard drive enclosures from remote field ports to regional science centers, or unnecessary large audio file transfers between fragmented network storage servers. |
+| 🗃️ **Inventory** | Terabytes to petabytes of raw `.wav` recordings sitting uningested on local NAS buffers or physical drives awaiting initial QA/QC. |
+| 🚶 **Motion** | Repeated manual file searching, switching between separate analytical software tools (e.g., MATLAB, PAMGuard, Triton, custom Python scripts), or manual cross-referencing of vessel GPS logs with hydrophone timestamps. |
+| 🛑 **Over-processing** | Building and hand-assembling custom in-house hydrophone deployment hardware that could be standardized or outsourced to commercial vendors, or performing redundant 100% manual visual audits on low-priority audio bands where automated detectors suffice. |
 
 Treat these patterns as prompts for investigation. Validate the reason for each delay or activity before deciding that it can be removed.
 
 ## Prepare the Future State Map
 
-The Current State Map supplies the evidence for designing a Future State Map. Bottlenecks, rework loops, excess queues, and governance delays show where a future flow should reduce interruptions, improve quality, or simplify a handoff. Agree on the customer need and a small number of measurable improvements rather than redrawing every step at once.
+The Current State Map supplies the evidence for designing a Future State Map. Bottlenecks, rework loops, excess queues, and governance delays show where a future passive acoustics data flow should reduce interruptions, improve quality, or simplify a handoff. Identify manual effort that could be replaced by script automation, such as automated data ingest and cloud AI detection, and custom hardware builds that could be standardized or outsourced. Agree on downstream stakeholder needs and a small number of measurable improvements before redrawing the data flow.
 
 Before moving forward:
 
-- [ ] Validate the map and metadata with the people who perform and receive the work.
-- [ ] Confirm the map boundary, customer need, demand, and required quality.
+- [ ] Validate the map and metadata with passive acoustics field, data, and science teams and downstream stakeholders.
+- [ ] Confirm the map boundary, downstream scientific or management need, demand, and required data quality.
 - [ ] Calculate Total Lead Time, Value-Added Time, and Process Cycle Efficiency using consistent units.
 - [ ] Mark the bottlenecks, queues, defects, approval gates, and other observed wastes.
-- [ ] Identify likely causes and note where more evidence is needed.
+- [ ] Identify likely causes and opportunities for scripted ingest, cloud AI detection, and reduced manual review; note where more evidence is needed.
+- [ ] Identify custom hydrophone hardware that could be standardized or outsourced.
 - [ ] Choose measurable improvement targets and assign an owner to each.
 - [ ] Preserve the `.csv`, `.drawio`, `.drawio.svg`, and `.png` Current State exports in `output/`.
 - [ ] Copy the source diagram before testing Future State ideas.
