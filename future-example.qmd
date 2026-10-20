@@ -8,17 +8,17 @@ format:
 ---
 
 ::: {.callout-note}
-## Learn by comparing Current and Future States
+## Learn by improving passive acoustics data streams
 
-1. Choose a scenario to compare its baseline flow with a measurable Future State design.
-2. Compare the process layout, queues, and pull signals in the two maps.
-3. Review the target metadata recorded for the proposed flow.
+1. Choose a scenario that matches a Current State acoustic data pipeline.
+2. Compare baseline queues with Future State pull signals and automated metadata feeds.
+3. Review how AI pre-screening can focus analyst validation targets.
 4. When you are ready, [open the interactive builder](./future-primary.qmd) to load your Current State files and design your own map.
 :::
 
-## Explore three Future State scenarios
+## Explore three Future State passive acoustics pipelines
 
-These simplified examples show how pull signals, automation, and quality at the source can change flow in physical production, software delivery, and shared services.
+These simplified NOAA Fisheries Passive Acoustics Research examples build on the bottom-mounted mooring, mobile glider, and towed hydrophone workflows in the Current State tutorial. They show how automated ingestion, AI pre-screening, targeted analyst validation, and automated metadata feeds can improve acoustic data streams.
 
 <style>
 .future-example-tutorial {
@@ -116,52 +116,52 @@ These simplified examples show how pull signals, automation, and quality at the 
 
 viewof future_example_tutorial = {
   const future_example_scenarios = {
-    manufacturing: {
-      label: "Manufacturing / Assembly Line",
+    moorings: {
+      label: "Long-Term Bottom-Mounted Moorings (e.g., HARP / PAMGuard)",
       summary:
-        "Replace push scheduling and large physical buffers with a paced pull system and kanban replenishment.",
-      current_steps: ["Cut", "Assembly", "Inspection", "Pack"],
-      future_steps: ["Cut", "Flow cell", "Quality at source", "Pack"],
-      current_queues: ["32 units", "46 units", "24 units"],
-      future_signals: ["Kanban: 8", "One-piece flow", "Kanban: 6"],
+        "Transition from manual drive shipping and 100% visual inspection to automated cloud ingestion, AI pre-screening, and targeted analyst validation.",
+      current_steps: ["Drive Ingest", "AI Detection", "100% Analyst Review", "NCEI Archiving"],
+      future_steps: ["Auto Cloud Ingest", "AI Pre-Screening", "Targeted Audit", "NCEI Archiving"],
+      current_queues: ["12 TB drive backlog", "18 TB detector queue", "46 TB review backlog"],
+      future_signals: ["Automated trigger", "Low-confidence pull", "Auto-schema pass"],
       metrics: [
-        ["Assembly", "Cycle time (sec)", 72, 55],
-        ["Inspection", "Cycle time (sec)", 110, 60],
-        ["Total flow", "Lead time (hr)", 18, 7],
-        ["Total flow", "Value-added time (hr)", 2.5, 2.2],
-        ["Quality", "Defect rate (%)", 8.5, 3]
+        ["Analyst Review", "Process time (hr / TB)", 6.5, 1.2],
+        ["AI Detection", "First-pass accuracy (%C/A)", 78, 92],
+        ["Total Pipeline", "Lead time (days)", 62.5, 11.5],
+        ["Total Pipeline", "Value-added time (hr / TB)", 9.05, 3.75],
+        ["Quality", "Metadata error rate (%)", 7.5, 0.5]
       ]
     },
-    software: {
-      label: "Software Development & Deployment",
+    gliders: {
+      label: "Autonomous Mobile Gliders & AUVs",
       summary:
-        "Integrate automated CI/CD checks, remove redundant manual gates, and shorten code-error rework loops.",
-      current_steps: ["Develop", "Code review", "Manual approval", "Deploy"],
-      future_steps: ["Develop", "Peer review", "Automated CI/CD", "Deploy"],
-      current_queues: ["8 changes", "6 reviews", "4 releases"],
-      future_signals: ["Pull request", "Auto trigger", "Auto deploy"],
+        "Streamline acoustic timestamps and flight telemetry synchronization through containerized scripts and automated soundscape extraction.",
+      current_steps: ["Manual GPS Sync", "Soundscape Ingest", "Deep Learning AI", "Product Review"],
+      future_steps: ["Auto Telemetry Sync", "Streamed Ingestion", "Deep Learning AI", "Auto-Product Gen"],
+      current_queues: ["8 surveys pending sync", "5 datasets queued", "3 report reviews"],
+      future_signals: ["Auto-log match", "Continuous buffer", "Single-click sign-off"],
       metrics: [
-        ["Peer review", "Cycle time (min)", 45, 30],
-        ["Pipeline", "Cycle time (min)", 90, 20],
-        ["Total flow", "Lead time (days)", 8.5, 2],
-        ["Total flow", "Value-added time (days)", 1.1, 1],
-        ["Quality", "Code error/rework rate (%)", 7, 2]
+        ["GPS Sync", "Lead time (days)", 5.0, 0.5],
+        ["Product Review", "Lead time (days)", 3.0, 0.5],
+        ["Total Pipeline", "Lead time (days)", 11.5, 2.5],
+        ["Total Pipeline", "Value-added time (hr / TB)", 4.6, 3.1],
+        ["Quality", "Sync error rate (%)", 14, 1]
       ]
     },
-    administrative: {
-      label: "Administrative / Shared Services",
+    towed_arrays: {
+      label: "Towed Hydrophone Survey Arrays",
       summary:
-        "Streamline funding review, automate permission provisioning, and validate information at entry.",
-      current_steps: ["Request", "Funding review", "Approvals", "Provision"],
-      future_steps: ["Validated request", "Funding triage", "Single approval", "Auto provision"],
-      current_queues: ["14 requests", "9 requests", "7 awards"],
-      future_signals: ["Rules check", "Priority pull", "Approved trigger"],
+        "Reduce vessel post-cruise processing backlogs by deploying automated bearing trackers and standardized commercial hardware components.",
+      current_steps: ["Vessel Real-Time", "Manual Bearing Verify", "Track QA/QC", "Stock Report Entry"],
+      future_steps: ["Vessel Real-Time", "Auto 3D Localization", "Targeted QA/QC", "Auto NetCDF Entry"],
+      current_queues: ["14 cruise legs pending", "120 hr audio backlog", "6 track files queued"],
+      future_signals: ["Vessel auto-upload", "High-uncertainty pull", "Validated NetCDF feed"],
       metrics: [
-        ["Funding triage", "Cycle time (min)", 35, 20],
-        ["Provisioning", "Cycle time (min)", 120, 15],
-        ["Total flow", "Lead time (days)", 13, 4],
-        ["Total flow", "Value-added time (days)", 0.3, 0.25],
-        ["Quality", "Data entry error rate (%)", 11, 2]
+        ["Bearing Verify", "Process time (hr / hr audio)", 3.5, 0.8],
+        ["Track QA/QC", "Lead time (days)", 4.0, 1.0],
+        ["Total Pipeline", "Lead time (days)", 19.0, 3.5],
+        ["Total Pipeline", "Value-added time (hr / hr audio)", 5.7, 2.2],
+        ["Quality", "Tracking hold rate (%)", 15, 2]
       ]
     }
   };
@@ -442,16 +442,16 @@ viewof future_example_tutorial = {
 }
 ```
 
-## Prepare the Gap Analysis inputs
+## Prepare the passive acoustics Gap Analysis inputs
 
-The Future State workspace exports the target metadata shown in these examples as `future-primary.csv`. Preserve it with `current_state_metadata.csv`; the upcoming **Gap Analysis** section uses both files to calculate variances. Improvement experiments are planned later in the dedicated **Kaizen Experiments** section.
+The Future State workspace exports the target metadata shown in these examples as `future-primary.csv`. Preserve it with `current_state_metadata.csv` in `output/`; the upcoming **Gap Analysis** section uses both files to calculate variances in acoustic data streams. Improvement experiments are planned later in the dedicated **Kaizen Experiments** section.
 
 ## Take the walkthrough into the builder
 
 1. Export the `.drawio` diagram and timestamped metadata CSV from the [Current State builder](./current-primary.qmd), then keep both files in `output/`.
-2. Open the Future State builder and load the `.drawio` file as the visual baseline.
-3. Load the Current State CSV; the latest timestamped record for each component becomes its baseline.
-4. Redesign the flow and enter targets in the same units as their baselines.
+2. Open the Future State builder and load the `.drawio` file as the visual baseline for the acoustic data stream.
+3. Load the Current State CSV; the latest timestamped record for each component becomes its baseline for analyst validation targets.
+4. Redesign the flow with AI pre-screening, targeted validation, and automated metadata feeds, and enter targets in the same units as their baselines.
 5. Save the target history, then export the revised map and `future-primary.csv` to `output/`.
 
 ::: {.future-example-actions}
