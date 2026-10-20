@@ -86,6 +86,33 @@ format:
 .gap-status {
   min-height: 1.5rem;
 }
+.gap-summary-cards {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  margin: 1rem 0;
+}
+.gap-summary-card {
+  background: var(--bs-secondary-bg, #eef2f5);
+  border-radius: .4rem;
+  padding: .8rem;
+}
+.gap-summary-card strong,
+.gap-summary-card span {
+  display: block;
+}
+.gap-summary-card span {
+  font-size: 1.4rem;
+  margin-top: .25rem;
+}
+.gap-chart {
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+.gap-group-row th {
+  background: var(--bs-tertiary-bg, #e2e6ea);
+  text-align: left;
+}
 </style>
 
 ```{ojs}
@@ -98,7 +125,9 @@ viewof gap_analysis_workspace = {
     "process_node",
     "node",
     "template",
-    "baseline_timestamp"
+    "baseline_timestamp",
+    "direction",
+    "metric_category"
   ]);
   const gap_state = {
     current_records: [],
@@ -140,7 +169,26 @@ viewof gap_analysis_workspace = {
   gap_results_heading.textContent = "Gap comparison";
   const gap_results_help = document.createElement("p");
   gap_results_help.textContent =
-    "Improvement assumes lower values are better: (baseline − target) ÷ |baseline|. Yellow cells are directly editable.";
+    "Positive improvement always means progress toward the target. Direction and yellow cells are directly editable.";
+  const gap_filter_label = document.createElement("label");
+  gap_filter_label.textContent = "Metric category";
+  const gap_category_filter = document.createElement("select");
+  [
+    "All Metrics",
+    "Time & Throughput",
+    "AI & Model Quality",
+    "Hardware & Compliance"
+  ].forEach((label) => {
+    const option = document.createElement("option");
+    option.value = label;
+    option.textContent = label;
+    gap_category_filter.append(option);
+  });
+  gap_filter_label.append(gap_category_filter);
+  const gap_summary_cards = document.createElement("div");
+  gap_summary_cards.className = "gap-summary-cards";
+  const gap_chart = document.createElement("div");
+  gap_chart.className = "gap-chart";
   const gap_table_wrap = document.createElement("div");
   gap_table_wrap.className = "gap-table-wrap";
   const gap_table = document.createElement("table");
@@ -150,6 +198,8 @@ viewof gap_analysis_workspace = {
   [
     "Process node",
     "Metric",
+    "Direction",
+    "Category",
     "Baseline value",
     "Target value",
     "Absolute change (Δ)",
@@ -165,7 +215,14 @@ viewof gap_analysis_workspace = {
   const gap_body = document.createElement("tbody");
   gap_table.append(gap_head, gap_body);
   gap_table_wrap.append(gap_table);
-  gap_results_card.append(gap_results_heading, gap_results_help, gap_table_wrap);
+  gap_results_card.append(
+    gap_results_heading,
+    gap_results_help,
+    gap_filter_label,
+    gap_summary_cards,
+    gap_chart,
+    gap_table_wrap
+  );
 
   const gap_custom_card = document.createElement("section");
   gap_custom_card.className = "gap-card";
@@ -177,12 +234,23 @@ viewof gap_analysis_workspace = {
   const gap_custom_metric = gap_labeled_input("Metric", "text");
   const gap_custom_baseline = gap_labeled_input("Baseline value", "text");
   const gap_custom_target = gap_labeled_input("Target value", "text");
+  const gap_custom_direction = gap_labeled_select("Direction", [
+    ["lower", "Lower is better (e.g., Lead Time)"],
+    ["higher", "Higher is better (e.g., Accuracy)"]
+  ]);
+  const gap_custom_category = gap_labeled_select("Metric category", [
+    ["Time & Throughput", "Time & Throughput"],
+    ["AI & Model Quality", "AI & Model Quality"],
+    ["Hardware & Compliance", "Hardware & Compliance"]
+  ]);
   const gap_add_custom = gap_button("Add Custom Metric");
   gap_custom_controls.append(
     gap_custom_component.label,
     gap_custom_metric.label,
     gap_custom_baseline.label,
     gap_custom_target.label,
+    gap_custom_direction.label,
+    gap_custom_category.label,
     gap_add_custom
   );
   gap_custom_card.append(gap_custom_heading, gap_custom_controls);
@@ -226,6 +294,20 @@ viewof gap_analysis_workspace = {
     input.type = type;
     label.append(input);
     return {label, input};
+  }
+
+  function gap_labeled_select(label_text, options) {
+    const label = document.createElement("label");
+    label.textContent = label_text;
+    const select = document.createElement("select");
+    options.forEach(([value, text]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = text;
+      select.append(option);
+    });
+    label.append(select);
+    return {label, select};
   }
 
   function gap_notify(message) {
@@ -327,6 +409,36 @@ viewof gap_analysis_workspace = {
       : String(Math.round((number + Number.EPSILON) * 100) / 100);
   }
 
+  function gap_direction(metric, explicit_direction = "") {
+    const direction = String(explicit_direction).toLowerCase();
+    if (direction.includes("higher")) return "higher";
+    if (direction.includes("lower")) return "lower";
+    return /(accuracy|complete.?accurate|%?c\s*&?\s*a|precision|recall|coverage)/i.test(metric)
+      ? "higher"
+      : "lower";
+  }
+
+  function gap_metric_category(metric) {
+    if (/(lead time|process time|\bpt\b|backlog|throughput|cycle time)/i.test(metric)) {
+      return "Time & Throughput";
+    }
+    if (/(accuracy|complete.?accurate|%?c\s*&?\s*a|precision|recall|coverage|model|detect)/i.test(metric)) {
+      return "AI & Model Quality";
+    }
+    return "Hardware & Compliance";
+  }
+
+  function gap_group(row) {
+    const value = `${row.process_node} ${row.metric}`;
+    if (/(mooring)/i.test(value)) return "PAM Data Family: Moorings";
+    if (/(glider)/i.test(value)) return "PAM Data Family: Gliders";
+    if (/(towed)/i.test(value)) return "PAM Data Family: Towed Arrays";
+    if (/(ingest|upload|receive)/i.test(value)) return "Pipeline: Data Ingestion";
+    if (/(detect|model|classif|ai)/i.test(value)) return "Pipeline: AI Signal Detection";
+    if (/(analyst|review|validat)/i.test(value)) return "Pipeline: Analyst Validation";
+    return "Pipeline: NCEI Archiving";
+  }
+
   function gap_calculate(row) {
     const baseline = gap_number(row.baseline_value);
     const target = gap_number(row.target_value);
@@ -337,9 +449,11 @@ viewof gap_analysis_workspace = {
       return;
     }
     row.absolute_change = gap_format(target - baseline);
+    row.direction = gap_direction(row.metric, row.direction);
     const improvement = baseline === 0
       ? (target === 0 ? 0 : null)
-      : ((baseline - target) / Math.abs(baseline)) * 100;
+      : (row.direction === "higher" ? target - baseline : baseline - target) /
+        Math.abs(baseline) * 100;
     row.percentage_improvement =
       improvement === null ? "" : gap_format(improvement);
     row.gap_status = improvement === null
@@ -375,6 +489,11 @@ viewof gap_analysis_workspace = {
             absolute_change: "",
             percentage_improvement: "",
             gap_status: "",
+            direction: gap_direction(
+              metric,
+              baseline_record?.direction ?? target_record?.direction
+            ),
+            metric_category: gap_metric_category(metric),
             current_timestamp: baseline_record?.timestamp ?? "",
             future_timestamp: target_record?.timestamp ?? "",
             is_custom: "false"
@@ -395,7 +514,7 @@ viewof gap_analysis_workspace = {
       row[field] = cell.textContent.trim();
       gap_workspace.dispatchEvent(new Event("input", {bubbles: true}));
     });
-    if (field === "baseline_value" || field === "target_value") {
+    if (["baseline_value", "target_value", "direction"].includes(field)) {
       cell.addEventListener("blur", () => {
         gap_calculate(row);
         gap_render();
@@ -404,9 +523,107 @@ viewof gap_analysis_workspace = {
     return cell;
   }
 
+  function gap_summary_card(label, value) {
+    const card = document.createElement("div");
+    card.className = "gap-summary-card";
+    const title = document.createElement("strong");
+    title.textContent = label;
+    const result = document.createElement("span");
+    result.textContent = value;
+    card.append(title, result);
+    return card;
+  }
+
+  function gap_render_summaries() {
+    const numeric_rows = gap_state.rows.filter((row) =>
+      gap_number(row.baseline_value) !== null && gap_number(row.target_value) !== null
+    );
+    const lead_time_days = numeric_rows
+      .filter((row) => /lead time/i.test(row.metric))
+      .reduce((sum, row) => sum + gap_number(row.baseline_value) - gap_number(row.target_value), 0);
+    const manual_pt = numeric_rows.filter((row) =>
+      /process time|\bpt\b/i.test(row.metric) &&
+      /analyst|review|validat/i.test(row.process_node)
+    );
+    const validation_efficiency = manual_pt.length
+      ? manual_pt.reduce((sum, row) => sum + Number(row.percentage_improvement), 0) / manual_pt.length
+      : null;
+    const first_pass_rows = numeric_rows.filter((row) =>
+      /first.?pass.*(?:complete|accurate)|(?:complete|accurate).*first.?pass|%?c\s*&?\s*a/i.test(row.metric)
+    );
+    const quality_gain = first_pass_rows.length
+      ? first_pass_rows.reduce((sum, row) =>
+        sum + gap_number(row.target_value) - gap_number(row.baseline_value), 0
+      )
+      : null;
+    gap_summary_cards.replaceChildren(
+      gap_summary_card("Overall Lead Time Delta", `${gap_format(lead_time_days)} calendar days`),
+      gap_summary_card(
+        "Analyst Validation Efficiency",
+        validation_efficiency === null ? "No manual PT data" : `${gap_format(validation_efficiency)}%`
+      ),
+      gap_summary_card(
+        "First-Pass Quality Gain",
+        quality_gain === null ? "No %C&A data" : `${gap_format(quality_gain)} percentage points`
+      )
+    );
+  }
+
+  function gap_render_chart(rows) {
+    gap_chart.replaceChildren();
+    const chart_rows = rows
+      .filter((row) => row.percentage_improvement !== "")
+      .map((row) => ({
+        label: `${row.process_node}: ${row.metric}`,
+        improvement: Number(row.percentage_improvement),
+        status: row.gap_status
+      }));
+    if (!chart_rows.length) return;
+    gap_chart.append(Plot.plot({
+      height: Math.max(180, chart_rows.length * 28),
+      marginLeft: 180,
+      x: {label: "Percentage Improvement (%)", grid: true},
+      y: {label: null},
+      color: {
+        domain: ["🟢 On Target", "🟡 Moderate Gap", "🔴 Critical Gap"],
+        range: ["#198754", "#ffc107", "#dc3545"]
+      },
+      marks: [
+        Plot.ruleX([0]),
+        Plot.barX(chart_rows, {
+          x: "improvement",
+          y: "label",
+          fill: "status",
+          sort: {y: "x", reverse: true},
+          title: (row) => `${row.label}: ${gap_format(row.improvement)}%`
+        })
+      ]
+    }));
+  }
+
   function gap_render() {
     gap_body.replaceChildren();
-    gap_state.rows.forEach((row) => {
+    const selected_category = gap_category_filter.value;
+    const rows = gap_state.rows
+      .filter((row) =>
+        selected_category === "All Metrics" || row.metric_category === selected_category
+      )
+      .sort((left, right) => gap_group(left).localeCompare(gap_group(right)) ||
+        left.process_node.localeCompare(right.process_node) ||
+        left.metric.localeCompare(right.metric));
+    let previous_group = "";
+    rows.forEach((row) => {
+      const group = gap_group(row);
+      if (group !== previous_group) {
+        const group_row = document.createElement("tr");
+        group_row.className = "gap-group-row";
+        const group_cell = document.createElement("th");
+        group_cell.colSpan = 9;
+        group_cell.textContent = group;
+        group_row.append(group_cell);
+        gap_body.append(group_row);
+        previous_group = group;
+      }
       const table_row = document.createElement("tr");
       const component = document.createElement("td");
       component.textContent = row.process_node;
@@ -415,6 +632,8 @@ viewof gap_analysis_workspace = {
       table_row.append(
         component,
         metric,
+        gap_editable_cell(row, "direction"),
+        gap_editable_cell(row, "metric_category"),
         gap_editable_cell(row, "baseline_value"),
         gap_editable_cell(row, "target_value"),
         gap_editable_cell(row, "absolute_change"),
@@ -423,7 +642,11 @@ viewof gap_analysis_workspace = {
       );
       gap_body.append(table_row);
     });
+    gap_render_summaries();
+    gap_render_chart(rows);
   }
+
+  gap_category_filter.addEventListener("change", gap_render);
 
   gap_compare.addEventListener("click", async () => {
     try {
@@ -463,6 +686,8 @@ viewof gap_analysis_workspace = {
       absolute_change: "",
       percentage_improvement: "",
       gap_status: "",
+      direction: gap_custom_direction.select.value,
+      metric_category: gap_custom_category.select.value,
       current_timestamp: "",
       future_timestamp: "",
       is_custom: "true"
@@ -495,6 +720,8 @@ viewof gap_analysis_workspace = {
       "future_timestamp",
       "process_node",
       "metric",
+      "direction",
+      "metric_category",
       "baseline_value",
       "target_value",
       "absolute_change",
