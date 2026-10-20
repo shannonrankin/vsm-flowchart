@@ -10,9 +10,9 @@ format:
 ::: {.callout-note}
 ## Practice before building your roadmap
 
-1. Move the sample experiments across the board and notice what evidence is needed at each stage.
-2. Use the hypothesis guide to turn a process gap into a measurable prediction.
-3. Compare effort and impact before deciding which experiment to run first.
+1. Move the sample bioacoustic data pipeline experiments across the board and notice what evidence is needed at each stage.
+2. Use the hypothesis guide to turn an analyst review hours gap into a measurable prediction.
+3. Compare effort and impact before deciding which pilot cruise leg experiment to run first.
 4. When you are ready, [launch the interactive workspace](./kaizen-primary.qmd) with your own `gap-analysis.csv`.
 :::
 
@@ -163,7 +163,7 @@ format:
 
 ## 1. Explore a sample Kanban board
 
-Each card represents a small test, not a permanent implementation. Select **Advance** to move work through the same stages used in the main workspace. A card should enter verification only when the team is ready to collect its success metric.
+Each card represents a small bioacoustic data pipeline test, not a permanent implementation. Select **Advance** to move work through the same stages used in the main workspace. A card should enter verification only when the team is ready to collect its analyst review hours or other success metric.
 
 ```{ojs}
 //| echo: false
@@ -177,24 +177,24 @@ viewof kaizen_example_board = {
   ];
   const kaizen_example_initial_experiments = [
     {
-      title: "5S Workplace Setup",
-      target: "Reduce time spent locating shared sampling gear",
-      hypothesis: "If the team labels and shadows the gear station, retrieval time will fall from 12 to 5 minutes within two weeks.",
-      metric: "Median retrieval time ≤ 5 minutes",
+      title: "AI Model Baleen Whale Pre-Screening",
+      target: "Reduce manual review backlog on bottom-mounted moorings (46 TB)",
+      hypothesis: "If we deploy a pre-trained deep learning classifier for baleen whale calls, analyst review time will drop from 6.5 to 1.2 hr/TB while maintaining >90% recall.",
+      metric: "Analyst review process time ≤ 1.2 hr/TB with recall ≥ 90%",
       status: "Backlog / Proposed"
     },
     {
-      title: "Automated Code Linting Gate",
-      target: "Reduce formatting defects found during review",
-      hypothesis: "If lint checks run before merge, formatting defects will fall from 8 to 2 per release during the next four releases.",
-      metric: "≤ 2 formatting defects per release",
+      title: "Automated Glider Telemetry & GPS Sync Script",
+      target: "Eliminate manual clock-drift alignment delay (5 days)",
+      hypothesis: "If we run containerized log-parser scripts upon glider recovery, GPS clock sync lead time will drop from 5 days to 0.5 days.",
+      metric: "Telemetry sync lead time ≤ 0.5 days and sync error rate < 1%",
       status: "In Progress"
     },
     {
-      title: "Single-Piece Flow Trial",
-      target: "Reduce sample-processing lead time",
-      hypothesis: "If samples move one at a time through intake and validation, median lead time will fall from 3 days to 1 day during a 20-sample pilot.",
-      metric: "Median lead time ≤ 1 day",
+      title: "Automated 3D Call Localization Verification",
+      target: "Reduce towed array bearing verification bottleneck (120 audio hours)",
+      hypothesis: "If we run automated 3D beamforming algorithms on cruise audio legs, bearing verification time will decrease from 3.5 to 0.8 hr/hr audio.",
+      metric: "Bearing verification time ≤ 0.8 hr/hr audio",
       status: "Testing / Verification"
     }
   ];
@@ -295,7 +295,7 @@ viewof kaizen_example_board = {
 
 ## 2. Build a measurable hypothesis
 
-A useful hypothesis connects one deliberate change to one expected result, with a baseline, target, and test period. Adjust the fields below to see that structure assembled.
+A useful hypothesis connects one deliberate bioacoustic data pipeline change to one expected result, with a baseline, target, and pilot cruise leg test period. Adjust the fields below to see that structure assembled.
 
 ```{ojs}
 //| echo: false
@@ -328,32 +328,32 @@ viewof kaizen_example_hypothesis_guide = {
   const kaizen_example_gap = kaizen_example_make_field(
     "kaizen-example-gap",
     "Observed gap",
-    "formatting defects are found during review"
+    "manual call validation creates a 46 TB backlog"
   );
   const kaizen_example_change = kaizen_example_make_field(
     "kaizen-example-change",
     "Change to test",
-    "run automated lint checks before merge"
+    "deploy a pre-trained deep learning classifier for pre-screening"
   );
   const kaizen_example_metric_input = kaizen_example_make_field(
     "kaizen-example-metric",
     "Metric",
-    "formatting defects per release"
+    "analyst review time (hr / TB)"
   );
   const kaizen_example_baseline = kaizen_example_make_field(
     "kaizen-example-baseline",
     "Baseline",
-    "8"
+    "6.5"
   );
   const kaizen_example_target_input = kaizen_example_make_field(
     "kaizen-example-target",
     "Target",
-    "2"
+    "1.2"
   );
   const kaizen_example_period = kaizen_example_make_field(
     "kaizen-example-period",
     "Test period or sample",
-    "the next four releases"
+    "a 2-mooring pilot deployment (2 TB)"
   );
 
   const kaizen_example_hypothesis_result = document.createElement("p");
@@ -416,11 +416,11 @@ viewof kaizen_example_hypothesis_guide = {
 }
 ```
 
-The observed gap explains *why* the experiment matters. The hypothesis itself must remain falsifiable: if the result misses the target, record what happened rather than rewriting the prediction.
+The observed gap explains *why* the species call classifier experiment matters. The hypothesis itself must remain falsifiable: if analyst review hours miss the target, record what happened rather than rewriting the prediction.
 
 ## 3. Prioritize by effort and impact
 
-Start with high-impact, low-effort experiments when they are safe and their success measures are trustworthy. High-impact, high-effort ideas need planning; low-impact, high-effort ideas should usually wait. Select an experiment in the matrix to review its ranking.
+Start with high-impact, low-effort bioacoustic data pipeline experiments when they are safe and their success measures are trustworthy. High-impact, high-effort species call classifier ideas need planning; low-impact, high-effort ideas should usually wait. Select an experiment in the matrix to review its ranking.
 
 ```{ojs}
 //| echo: false
@@ -428,28 +428,28 @@ Start with high-impact, low-effort experiments when they are safe and their succ
 viewof kaizen_example_priority_matrix = {
   const kaizen_example_priority_items = [
     {
-      title: "5S Workplace Setup",
+      title: "Containerized Glider Telemetry Sync Script",
       effort: "Low",
       impact: "High",
-      reason: "Run first: the test is contained and can quickly reduce retrieval delay."
+      reason: "Quick win using Python scripts to automate GPS clock log matching."
     },
     {
-      title: "Automated Code Linting Gate",
+      title: "AI Deep Learning Classifier Deployment",
       effort: "High",
       impact: "High",
-      reason: "Plan carefully: the potential impact is high, but pipeline setup and team adoption require coordination."
+      reason: "High capacity savings, but requires model validation and cluster integration."
     },
     {
-      title: "Single-Piece Flow Trial",
+      title: "Standardized Metadata Header Template",
       effort: "Low",
       impact: "Low",
-      reason: "Consider later: the pilot is easy to run, but its expected reach is limited."
+      reason: "Easy to implement, but addresses minor administrative delay."
     },
     {
-      title: "Replace All Lab Equipment",
+      title: "Custom Fabrication of In-House Cable Housings",
       effort: "High",
       impact: "Low",
-      reason: "Avoid for now: the expected benefit does not justify the cost and disruption."
+      reason: "High labor cost and risk; candidate for commercial vendor outsourcing."
     }
   ];
   const kaizen_example_quadrants = [
@@ -534,11 +534,11 @@ viewof kaizen_example_priority_matrix = {
 }
 ```
 
-Effort and impact are relative estimates, not precise scores. Confirm them with the people doing the work, consider safety and dependencies, and revisit the ranking as evidence changes.
+Effort and impact are relative estimates, not precise scores. Confirm them with the people processing pilot cruise legs, consider safety and dependencies, and revisit the ranking as bioacoustic data pipeline evidence changes.
 
 ## Continue with your own experiments
 
-Import `gap-analysis.csv` into the workspace to seed experiment cards, refine their hypotheses, and export the resulting roadmap to `output/`.
+Import `gap-analysis.csv` into the workspace to seed bioacoustic data pipeline experiment cards, refine their hypotheses, and export the resulting roadmap to `output/`.
 
 [Launch the Kaizen Experiments workspace](./kaizen-primary.qmd){.btn .btn-primary role="button"}
 [Review experiment next steps](./kaizen-next.qmd){.btn .btn-outline-secondary role="button"}
