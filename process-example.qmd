@@ -3,15 +3,24 @@ title: "Family Process Matrix"
 subtitle: "Example"
 ---
 
-## Example: Marine sample processing
+## Example: Passive Acoustic Data Processing Pipelines
 
-| Product family | Receive samples | Log metadata | Laboratory analysis | Quality review |
-|---|---:|---:|---:|---:|
-| Passive acoustic recordings | 🟩 🔁 | 🟩 🔁 | 🟦 Custom detector | 🟩 🔁 |
-| eDNA samples | 🟩 🔁 | 🟩 🔁 | 🟨 ⚠️ Changeover | 🟩 🔁 |
-| Visual survey records | 🟩 🔁 | 🟩 🔁 | 🟦 Manual annotation | 🛑 Rework |
+| Data Family | Intake & Extraction | Metadata & Spatial Tagging | Signal Processing & Detection | Validation & QA/QC | Archival & Public Delivery |
+|----|:--:|:--:|:--:|:--:|:--:|
+| **Long-Term Moorings** *(e.g., HARP/PAMGuard)* | 🟩 Standard | 🟩 Standard | 🟦 Automated AI Model | 🟨 ⚠️ Analyst Review Loop | 🟩 Standard |
+| **Mobile Platforms** *(e.g., Gliders/AUVs)* | 🟩 Standard | 🟨 ⚠️ GPS/Datalog Sync | 🟦 Automated AI Model | 🟨 ⚠️ Analyst Review Loop | 🟩 Standard |
+| **Towed Array Surveys** *(e.g., Visual/Acoustic)* | 🟩 Standard | 🟩 Standard | 🟦 Real-Time Localization | 🛑 Manual Bearing Verification | 🟩 Standard |
+| **Telemetered Buoys** *(e.g., Near Real-Time)* | 🟨 ⚠️ Bandwidth Compression | 🟩 Standard | 🟦 Cloud/Edge Detector | 🟩 Standard | 🟦 Specialized NCEI Feed |
 
-Green cells reveal the high-volume shared flow. Blue cells distinguish family-specific analysis, yellow draws attention to setup time, and the stop marker identifies a likely improvement target.
+### Key Matrix Takeaways
+
+- **Shared Baseline (🟩):** Standard intake, spatial tagging, and NCEI archiving form the high-volume shared value stream across most acoustic datasets.
+- **Family-Specific Steps (🟦):** Detection and analysis vary widely depending on the hardware platform—from cloud-based edge processing on buoys to real-time 3D localization during towed surveys.
+- **Setup & Complexity Markers (🟨):**
+  - *Gliders:* Require complex cross-referencing between acoustic timestamps and vehicle flight/navigational logs.
+  - *Moorings/Gliders:* Feature high-volume manual verification loops where analysts must visually validate model detection flags.
+  - *Telemetered Buoys:* Face data-handling constraints from low-bandwidth satellite links that require onboard decimated audio processing.
+- **Improvement Targets (🛑):** Manual bearing and localization verification for towed arrays represents a severe operational bottleneck, making it a prime candidate for a dedicated VSM deep-dive and automation effort.
 
 ## Try it yourself
 

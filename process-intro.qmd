@@ -5,27 +5,33 @@ subtitle: "Overview"
 
 ## What is a Family Process Matrix?
 
-A Family Process Matrix is a simple grid that compares the routes different products or services take through a workplace. Product families are listed in rows, and the steps, equipment, or work areas they use are listed in columns. Marking where a family uses a step makes similarities and differences visible at a glance.
+A Family Process Matrix is a structural grid that maps different pathways for data streams and analytical deliverables within a research program. Data products and analysis goals are listed in rows, while process steps, hardware/software tools, compute environments, or lab work areas are listed in columns. Marking where each data family interacts with a step makes operational similarities, technical dependencies, and workflow differences visible at a glance.
 
-The matrix is a conversation tool, not a performance scorecard. Build it with the people who do the work, and use it to agree on which flows should be studied next.
+The matrix is a collaborative planning tool, not an individual performance scorecard. Build it alongside field technicians, analysts, data managers, and research scientists to reach consensus on which data pipelines should be optimized next.
 
 ## Where it fits in Value Stream Mapping
 
-Value Stream Mapping (VSM) follows work from the request or incoming material through delivery to the customer. Before drawing one detailed current-state map, a team can use a Family Process Matrix to see which products follow similar routes. Families with a similar sequence can be mapped together; families with substantially different routes may need separate maps.
+Value Stream Mapping (VSM) tracks a research project from the initial project request, field deployment planning, and raw data recovery through processing, QA/QC, archiving, and final science delivery to management or scientific partners. Before drafting a detailed current-state map, a team can use a Family Process Matrix to group projects and data types that follow similar analytical pipelines.
 
-This makes the matrix an early VSM decision point. It narrows a large set of products into one or more target value streams, while also highlighting shared resources, branch points, and likely constraints for later analysis.
+For instance, high-duty-cycle mooring data for baleen whale detection and continuous mobile glider recordings may follow similar detection pipelines, while real-time telemetered audio requires a substantially different workflow.
+
+This makes the matrix an essential early decision point in VSM. It helps the program condense dozens of individual monitoring projects into manageable target value streams while highlighting shared resources (e.g., specialized GPU clusters, deep-learning detector models, manual validation time) and potential processing bottlenecks.
 
 ## Prepare the inputs
 
 Gather the following information before filling in the matrix:
 
-- a current list of products, services, sample types, or other items that should be compared;
-- a practical grouping of those items into product families;
-- the process steps or equipment areas used from intake through delivery;
-- the order of those steps, including rework loops, queues, inspections, and handoffs; and
-- notes about volume, timing, changeovers, defects, or known constraints when they are available.
+***Data Products & Deliverables:*** A comprehensive list of incoming data types, sample runs, or target deliverables (e.g., long-term noise trend reports, marine mammal occurrence time-series, automated detector outputs, regulatory compliance assessments).
 
-Use names that the people doing the work recognize. If the process is not yet well understood, mark uncertain steps for validation rather than guessing.
+***Logical Data Families:*** A practical grouping of projects or data streams based on deployment type (e.g., bottom-mounted moorings, towed hydrophone arrays, drifting buoys) or analysis depth (e.g., broad-scale soundscape metrics vs. fine-scale call localization).
+
+***Pipeline Steps & Work Areas:*** Process steps, computing infrastructure, software suites (e.g., PAMGuard, Triton, custom Python packages), and storage repositories used from field recovery through archival and publication.
+
+***Workflow Order:*** The precise sequence of steps, including manual verification loops, QA/QC flags, metadata tagging, reprocessing steps, and data handoffs between field teams, analysts, and national repositories (e.g., NCEI).
+
+***Operational Metrics:*** Notes on data volume (terabytes/petabytes), processing time ratios (e.g., hours of analysis per hour of audio), model runtimes, analyst availability, storage capacity, or known technical constraints.
+
+*Tip:* *Use operational terms that research staff, field teams, and analysts use daily. If a legacy pipeline or custom script workflow is not well understood, mark uncertain steps for validation rather than making assumptions.*
 
 ## What the completed matrix provides
 
@@ -37,8 +43,22 @@ A completed matrix can help the team:
 - decide where separate detailed current-state maps are needed; and
 - create a documented starting point for the next VSM workshop.
 
+## What the Completed Matrix Provides
+
+A completed matrix helps the research team:
+
+1.  **Identify Shared Pipelines:** Group data streams that can follow a standardized processing and QA/QC pipeline.
+
+2.  **Distinguish Infrastructure Requirements:** Differentiate core, shared processes (like metadata creation or NCEI archiving) from specialized workflows (like species-specific deep learning models).
+
+3.  **Pinpoint Bottlenecks & Handoff Risks:** Locate manual validation backlogs, storage transfer delays, repeated processing loops, and compute bottlenecks.
+
+4.  **Determine Mapping Scope:** Decide where separate, detailed current-state maps are necessary versus where a single consolidated value stream map is sufficient.
+
+5.  **Establish a Baseline:** Create a documented, agreed-upon baseline to guide VSM workshops and continuous improvement initiatives across research projects.
+
 ## Workflow
 
-1. Review the [worked example](./process-example.qmd) to see how a matrix can reveal shared and dedicated work.
-2. Build and export your own matrix in the [interactive workspace](./process-primary.qmd).
-3. Use the [next steps](./process-next.qmd) to select a target process for detailed value stream analysis.
+1.  Review the [worked example](./process-example.qmd) to see how a matrix can reveal shared and dedicated work.
+2.  Build and export your own matrix in the [interactive workspace](./process-primary.qmd).
+3.  Use the [next steps](./process-next.qmd) to select a target process for detailed value stream analysis.

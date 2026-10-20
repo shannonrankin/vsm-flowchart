@@ -3,57 +3,158 @@ title: "Current State Map"
 subtitle: "Overview"
 ---
 
-## What is a Current State Map?
+## What is a Data & Analysis Current-State Map?
 
-A Current State Map is a visual record of how one product, service, or information request moves through work **today**. It combines the flow of materials or information with process data, queues, handoffs, decisions, and rework. The goal is a shared, evidence-based picture—not an idealized procedure.
+A Current-State Map is a visual model of how data actually moves through your workflow today—not how it was originally designed to flow, or how documented standard operating procedures (SOPs) say it should flow.
 
-This map is the foundation of Value Stream Mapping (VSM). It makes the time spent creating value visible alongside delays and problems, so a team can agree on what to improve before designing a Future State Map.
+The map details the full lifecycle of your data, tracking work from field deployment and hardware recovery through storage ingestion, signal processing, analyst QA/QC, data management, and delivery to scientific repositories or end-users (e.g., regional fisheries management council reports, NCEI long-term archives, or real-time alert systems).
 
-## Start with the selected process family
+It is developed by a cross-functional team (e.g., field engineers, acoustic analysts, data managers, research scientists, and program leads). The goal is to establish a shared, objective understanding of current data operations, identify processing bottlenecks, and quantify delays or manual rework loops.
 
-The [Family Process Matrix](./process-intro.qmd) groups products or services that follow similar routes. Bring the selected family and route from that section into this activity; they define which flow to map and where the map begins and ends. Confirm those boundaries with the people who perform the work, then observe the flow and collect enough data to describe each process block.
+## Key Elements of a Passive Acoustics Current-State Map
 
-## Inputs and outputs
+A complete acoustic value stream map typically includes five core components:
 
-### Inputs required
+1.  **Science & Management Demand (The Customer):**
 
-Useful inputs include:
+    - Who requested the analysis? (e.g., NOAA Fisheries Regional Offices, BOEM, Navy, academic partners, or internal stock assessment teams).
 
-- the selected product or process family and its expected route;
-- operational cycle times and changeover times;
-- delay sources, queues, and handoff points;
-- defect, scrap, code-error, and data-error rates; and
-- approval checkpoints, funding holds, and access restrictions.
+    - What is the required deliverable, format, and delivery schedule? (e.g., annual noise trend reports, real-time whale detection alerts, published detection time-series).
 
-### Outputs generated
+2.  **Data Pipeline Steps (Process Blocks):**
 
-The interactive workspace produces:
+    - The sequential steps taken to process raw audio files into actionable science.
 
-- a visual flowchart showing processes, decisions, queues, and information flow;
-- a complete, timestamped process metadata log exported as `.csv`; and
-- reusable diagram files in `.drawio`, editable `.drawio.svg`, and `.png` formats.
+    - *Examples:* Disk extraction/decryption -\> Metadata creation & spatial tagging -\> Automated detector execution (e.g., PAMGuard, Triton, custom ML/AI algorithms) -\> Manual analyst verification -\> Peer QA/QC review -\> Database submission -\> Report/publication writing.
 
-Your browser will prompt you to download each export. Save or move the files into `output/` so the team can review and reuse them.
+3.  **Operational & Performance Metrics (Data Boxes):** Underneath each process step, record operational metrics, such as:
+
+    - ***Processing Time (PT):*** Active time spent working on the data at that step (e.g., 4 hours of analyst time to review AI detection outputs).
+
+    - ***Lead Time (LT) / Queue Time:*** Total elapsed calendar time the dataset waits before or during that step (e.g., 6 weeks in a drive-ingestion queue awaiting storage server space).
+
+    - ***Data Volume & Ratio:*** File sizes (e.g., 10 TB raw WAV files) and processing ratio (e.g., 0.5x real-time).
+
+    - ***Percent Complete & Accurate (%C&A):*** The percentage of datasets that move to the next step without needing to be returned for fixes (e.g., missing metadata, wrong timestamps, or re-running failed detector scripts).
+
+4.  **Information & Technical Flow:**
+
+    - Data Transfer Methods: How audio files and metadata move between steps (e.g., physical hard drive shipping, cloud transfers, localized NAS networks, automated API feeds).
+
+    - Software & Scripts: Tools used at each stage (e.g., custom Python scripts, SQL databases, R packages).
+
+5.  **Operational Friction & Bottlenecks (Kaikaku / Kaizen Bursts):**
+
+    - Visual icons pointing out pain points, such as single-analyst dependencies, manual spreadsheet metadata tracking, compute server overload, high false-positive detector rates, or unstandardized file formats.
+
+## Step-by-Step Guidance for Mapping
+
+1.  **Define the Scope:** Select a single target "Data Family" identified in your Process Family Matrix (e.g., Bottom-mounted long-term mooring datasets for baleen whale monitoring).
+
+2.  **Start at Delivery & Work Backwards (or Forwards from Field Recovery)**: Follow the physical and digital trail of raw audio from field recovery to final data archival at NCEI.
+
+3.  **Walk the Flow ("Gemba Walk")**: Observe actual data ingestion and analysis workflows. Talk directly to the analysts reviewing spectrograms and the data managers handling file transfers.
+
+4.  **Quantify the Timeline**: Build a time ladder at the bottom of the map comparing Total Lead Time (elapsed time from instrument retrieval to public delivery) against Total Processing Time (actual hands-on work time).
+
+5.  **Identify Waste ("Muda")**: Look specifically for data-centric wastes:
+
+    - **Waiting**: Datasets sitting on physical hard drives waiting for analyst availability.
+
+    - **Over-processing**: Manually checking 100% of automated detections when a statistical sample would suffice.
+
+    - **Defects/Rework**: Having to re-process weeks of audio because deployment depth or hydrophone sensitivity metadata was mislabeled.
+
+    - **Motion/Transport**: Repeatedly transferring terabytes of raw audio back and forth between local drives and network storage.
+
+## What the Current-State Map Achieves
+
+- **Exposes Hidden Delays:** Highlights why analysis reports take months (or years) to reach managers, even if the algorithm only takes 12 hours to run.
+
+- **Builds Consensus:** Aligns software developers, field teams, and scientific leadership on operational realities.
+
+- **Establishes a Metric Baseline:** Creates quantitative metrics (Lead Time, PT, %C&A) to measure the impact of future automation, cloud migration, or procedural changes.
+
+- **Prepares for the Future-State Map:** Directly informs where automation, streamlined QA/QC protocols, or infrastructure investments will provide the highest return on effort. Map.
+
+## Focusing on the Target Process Family & Mapping Data Flow
+
+**1. Starting with the Selected Process Family**
+
+A common pitfall in Value Stream Mapping is trying to map all laboratory and field workflows at once. Once your **Family Process Matrix** is complete, select **one target data family** to map first (for example, *Long-Term Bottom-Mounted Moorings* or *Glider Audio Streams*).
+
+Starting with a single family establishes a clear boundary and prevents team overwhelm:
+
+- **Define the Trigger (Demand):** Identify the specific scientific requirement or management mandate that initiates the data stream (e.g., an annual marine mammal stock assessment, regulatory noise monitoring request, or vessel noise impact study).
+
+- **Define the Boundaries:** Clearly set the **Start Point** (e.g., hydrophone deployment or physical hard drive recovery) and **End Point** (e.g., NCEI archival upload, peer-reviewed publication, or management dashboard delivery).
+
+- **Walk the Flow (Go to the "Gemba"):** Trace the actual path of the data chronologically through hardware retrieval, ingestion, detection algorithms, analyst validation, metadata tagging, and publishing. Interview the field personnel, analysts, and software engineers who execute each step rather than relying on assumed or ideal procedures.
+
+**2. Key Inputs & Outputs for the Current State Map**
+
+When mapping your target passive acoustics value stream, gather and document the following specific inputs and outputs at each stage of the pipeline:
+
+**📥 Core Inputs**
+
+- **Project Specifications & Metadata:** Deployment logs, sampling schedules, hydrophone callibration curves, hydrophone serial numbers, gain settings, and spatial coordinates.
+
+- **Raw Audio Files:** High-volume raw data formats (e.g., `.wav`, `.x3f`, or proprietary hydrophone formats) retrieved via physical hard drive swaps, cellular telemetry, or satellite bursts.
+
+- **Algorithm & Detection Resources:** Pre-trained machine learning models (e.g., whistle/click classifiers, vessel noise detectors), configuration files (`.ini`), and species-specific threshold parameters.
+
+- **Hardware & Compute Infrastructure:** Local workstation storage, network-attached storage (NAS) bandwidth, cloud compute credits, and GPU allocation.
+
+- **Human Effort:** Analyst time allocated for visual/auditory validation, manual call logging, and QA/QC verification.
+
+**📤 Key Outputs**
+
+- **Standardized Acoustic Datasets:** Reconstructed, clock-corrected, and channel-calibrated continuous audio or soundscape files formatted for long-term storage.
+
+- **Detections & Call Logs:** Species occurrence time-series, automated detection timestamps, call counts, sound level metrics (e.g., Sound Exposure Level, SPL metrics), and localization tracks.
+
+- **Quality-Controlled Metadata:** Standardized metadata records (e.g., ISO-compliant records, NetCDF header files) populated for public repositories.
+
+- **Management & Science Products:** Annual stock assessment summary reports, real-time alerting feeds, public web visualizers, and peer-reviewed scientific manuscripts.
+
+- **Operational Metrics for VSM:**
+
+  - **Process Time (PT):** Active time an analyst or computer script spends processing a unit of data (e.g., 2 hours of analyst validation per 24 hours of audio).
+
+  - **Lead Time (LT):** Total elapsed calendar time from field retrieval to final report delivery (e.g., 6 months).
+
+  - **Percent Complete & Accurate (%C&A):** The percentage of data batches or detection files that move to the next stage without requiring reprocessing or QA rework.
 
 ## Key metrics and data boxes
 
-A data box records evidence for one process block. Use consistent units and record when and how each value was observed.
+This table demonstrates how to structure data boxes to record evidence for individual process blocks with consistent units, observation methods, and dates:
 
-| Measure | What it describes | Example question |
-|---|---|---|
-| **Cycle Time ($C/T$)** | Time to complete one unit at a process while work is actively being performed. | How long does one sample, request, or code change take at this step? |
-| **Changeover Time ($C/O$)** | Time needed to switch a process from one product, batch, dataset, or task type to another. | How long does setup or context switching take? |
-| **Lead Time** | Total elapsed time from one point in the flow to another, including work and waiting. | How long does the customer wait from request to delivery? |
-| **Quality** | Defects and rework, including scrap, code errors, and incorrect or incomplete data. | What share of work must be corrected, repeated, or discarded? |
-| **Administrative and governance** | Delays caused by funding holds, security or permission needs, and approval gates. | How long does work wait for authority, access, or a decision? |
+| Process Block | Metric | Value | Units | Measurement Method & Source | Date Recorded |
+|:-----------|:-----------|:----------:|:----------:|:-----------|:----------:|
+| **01. Raw Audio Ingestion** | Process Time ($PT$) | 0.25 | hours / TB | Automated server script execution logs (*Ingest_v2.py*) | 2026-10-12 |
+|  | Lead Time ($LT$) | 14.0 | calendar days | Hard drive shipping tracking logs (Field site $\rightarrow$ Lab) | 2026-10-12 |
+|  | First-Pass Accuracy (%C&A) | 92.5 | \% | Ingest QA log (% of hard drives without corruption/re-reads) | 2026-10-12 |
+| **02. Machine Learning Detection** | Process Time ($PT$) | 1.8 | hours / TB | GPU cluster job completion metadata (*PAMGuard AI Run*) | 2026-10-14 |
+|  | Lead Time ($LT$) | 3.5 | calendar days | Job queue timestamp log (Submission $\rightarrow$ Output generation) | 2026-10-14 |
+|  | First-Pass Accuracy (%C&A) | 78.0 | \% | Automated detector validation against bench benchmark dataset | 2026-10-14 |
+| **03. Analyst QA/QC & Validation** | Process Time ($PT$) | 6.5 | hours / TB | Analyst time-tracking entries (Visual/auditory review log) | 2026-10-18 |
+|  | Lead Time ($LT$) | 45.0 | calendar days | Project management backlog tracker (Queue wait + review time) | 2026-10-18 |
+|  | First-Pass Accuracy (%C&A) | 98.0 | \% | Senior Scientist spot-check audit (Accepted without rework) | 2026-10-18 |
 
-Cycle time and changeover time describe activities within the flow; lead time describes elapsed time across the flow. Do not substitute one for another.
+Data Box Field Guidelines
+
+- ***Process Time (***$PT$***):*** Active work time spent by an analyst or computing system to process a standard unit of data (standardized here as hours per Terabyte).
+
+- ***Lead Time (***$LT$***):*** Total elapsed duration from the start of the step (including queue/wait time) to the completion of handoff (standardized as calendar days).
+
+- **% Complete & Accurate (%C&A):** The proportion of outputs from this step that pass directly to the next stage without requiring manual correction, re-running scripts, or re-ingesting audio.
+
+- ***Evidence Traceability:*** Always include the specific observation method (logs, audits, time tracking) and date recorded to establish an accurate baseline for Value Stream Mapping workshops.
 
 ## Choose your next step
 
-::: {.callout-note}
+::: callout-note
 Use the tutorial to see a completed example, or launch the editor to map your selected process family.
 
-[View the Current State tutorial](./current-example.qmd){.btn .btn-outline-secondary role="button"}
-[Launch the Current State editor](./current-primary.qmd){.btn .btn-primary role="button"}
+[View the Current State tutorial](./current-example.qmd){.btn .btn-outline-secondary role="button"} [Launch the Current State editor](./current-primary.qmd){.btn .btn-primary role="button"}
 :::
