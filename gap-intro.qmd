@@ -2,22 +2,60 @@
 title: "Gap Analysis"
 subtitle: "Overview"
 ---
+# Gap Analysis: From Current Baseline to Future Target
 
-## Compare current and future performance
+## Introduction & Context
 
-Gap Analysis in Value Stream Mapping (VSM) compares how a process performs now with how the team wants it to perform. It turns the difference between a Current State baseline and a Future State target into a list of measurable gaps. That list helps the team agree on where improvement is needed instead of choosing changes from assumptions alone.
+With both the **Current State Map** (capturing operational realities) and the **Future State Map** (establishing target capabilities) complete, the **Gap Analysis** step evaluates the performance, lead time, and accuracy differences between where the NOAA Passive Acoustics Research Program is today and where it needs to be.
 
-The comparison is a starting point for discussion, not an automatic priority list. Confirm the source data with the people who perform and receive the work before acting on the results.
+In passive acoustics research, operational bottlenecks—such as manual call validation backlogs, physical hard drive shipping delays, custom hardware fabrication, and multi-step QA/QC approvals—directly impact how quickly scientific deliverables, species occurrence time-series, soundscape trends, and stock assessment metrics reach resource managers and scientific partners. The Gap Analysis isolates these specific process disconnects, quantifies the performance shortfall, and identifies root causes before initiating kaizen improvement experiments.
 
-## Inputs and output
+---
 
-| File | Role in the comparison |
-|---|---|
-| `current-primary.csv` | Supplies the latest measured baseline for each Current State process node and metric. |
-| `future-primary.csv` | Supplies the latest target value for each matching Future State process node and metric. |
-| `gap-analysis.csv` | Records the joined baseline and target, calculated change and percentage improvement, gap status, source timestamps, reviewed overrides, and custom metrics. |
+## The Core Comparison: Why It Matters
 
-The [interactive workspace](./gap-primary.qmd) reads both input files in your browser and uses the most recent valid timestamped record for each process node. Use consistent process node names, metric definitions, and units in both files so the correct values are compared. Your browser will prompt you to download `gap-analysis.csv`; save or move it into `output/` for improvement planning.
+Comparing current baseline observations against future targets is essential for several reasons:
+
+1. **Quantifies Uncaptured Scientific Capacity:** Rather than relying on subjective impressions that processing is "slow," the comparison exposes exact metrics (e.g., a 46 TB analyst review backlog representing 51 days of lead time versus a target 7-day turnaround).
+2. **Distinguishes Active Work from Delays:** By comparing Process Time ($PT$) alongside total Lead Time ($LT$), the analysis highlights whether delays stem from computational complexity or from idle data waiting in queues and approval loops.
+3. **Validates Quality at the Source (%C&A):** High rework rates in automated detectors (low First-Pass % Complete & Accurate) force scientists into lengthy manual review loops. Comparing current vs. target %C&A reveals where model retraining or automated pre-screening yields the highest operational return.
+4. **Prevents Sub-Optimization:** Comparing the entire value stream end-to-end ensures that optimizing one step (e.g., faster GPU cluster runs) does not simply overload a downstream bottleneck (e.g., analyst validation or NCEI metadata archiving).
+
+---
+
+## Core Inputs & Expected Outputs
+
+### 📥 Key Inputs
+To conduct an effective Gap Analysis, gather and load the following baseline and target artifacts:
+
+* **Current State Metadata CSV (`current_state_metadata.csv`):** Historical, timestamped process records detailing baseline Process Times ($PT$), Lead Times ($LT$), % Complete & Accurate (%C&A), queue sizes, and observed waste markers.
+* **Future State Metadata CSV (`future-primary.csv`):** Target performance metrics, proposed processing pathways, automated triggers, and streamlined review thresholds established in the Future State workspace.
+* **Diagram Assets (`.drawio`, `.drawio.svg`):** Visual maps capturing structural flow changes, removed approval gates, and newly introduced automated steps (e.g., automated cloud audio ingestion or containerized telemetry synchronization).
+* **Operational Constraints & Demand Targets:** Required delivery schedules for marine mammal stock assessments, regulatory compliance reports, or public data repository deadlines.
+
+### 📤 Expected Outputs
+The Gap Analysis yields structured deliverables to guide program improvement:
+
+* **Variance Table & Delta Analysis:** A quantitative breakdown comparing current baseline values against future targets, explicitly calculating absolute deltas ($\Delta$) and percentage improvements for lead time, process time, and quality metrics.
+* **Root Cause & Waste Identification Summary:** A prioritized list of identified constraints categorized by the 8 Wastes (e.g., manual clock drift correction, redundant metadata entry, in-house hydrophone fabrication).
+* **Prioritized Improvement Focus Areas:** Clear, evidence-backed focus areas identifying which pipeline stages require process redesign, deep-learning integration, hardware outsourcing, or workflow automation.
+* **Inputs for Kaizen Experiments:** Formulated hypotheses and baseline metrics ready to feed directly into small-scale improvement experiments and implementation planning.
+
+---
+
+## Formula for Calculating Metric Variances
+
+When evaluating process blocks during Gap Analysis, calculate absolute and relative deltas for each metric:
+
+$$\text{Absolute Delta } (\Delta) = \text{Target Value} - \text{Baseline Value}$$
+
+$$\text{Percentage Improvement } (\%) = \left( \frac{\text{Baseline Value} - \text{Target Value}}{\text{Baseline Value}} \right) \times 100\%$$
+
+*(Note: For metrics like First-Pass Accuracy %C&A, an increase represents improvement; for Lead Time and Process Time, a decrease represents improvement.)*
+
+
+
+The [interactive workspace](./gap-primary.qmd) reads input files in your browser and uses the most recent valid timestamped record for each process node. Use consistent process node names, metric definitions, and units in both files so the correct values are compared. Your browser will prompt you to download `gap-analysis.csv`; save or move it into `output/` for improvement planning.
 
 ## What the comparison shows
 
