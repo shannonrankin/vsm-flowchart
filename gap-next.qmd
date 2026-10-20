@@ -3,42 +3,49 @@ title: "Gap Analysis"
 subtitle: "Next Steps"
 ---
 
-## Prioritize the gaps
+## Prioritize the Acoustic Pipeline Gaps
 
-Treat `gap-analysis.csv` as a structured conversation guide rather than a ranked answer. Review it with process owners and the people who perform and receive the work. Confirm each baseline, target, unit, timestamp, and direction of improvement before committing resources.
+Treat `gap-analysis.csv` as a structured decision guide rather than a rigid ranking list. Review the calculated metric variances with field technicians, acoustic analysts, software developers, and research scientists. Confirm each baseline, target, unit, source timestamp, and direction of improvement (e.g., lower lead times vs. higher %C&A accuracy) before committing development time or budget.
 
-Use the gap status as a first filter:
+Use the gap status as an initial filter:
 
-- **Critical Gap (red):** the proposed target is worse than the baseline. Check the data and target first, then address a confirmed regression.
-- **Moderate Gap (yellow):** the target improves performance by less than 20%. Decide whether the remaining shortfall is important enough to test.
-- **On Target (green):** the proposed improvement is 20% or greater. Confirm that the target is realistic and that achieving it will improve the whole value stream.
-- **Not calculated:** a value is missing, nonnumeric, or has a zero baseline. Resolve the data issue before ranking the gap.
+- **Critical Gap (red):** The proposed Future State target regresses compared to the baseline (or a higher-is-better metric drops). Re-examine the data inputs first, then address any confirmed performance regression.
+- **Moderate Gap (yellow):** The target improves operational performance by less than 20%. Evaluate whether closing this remaining shortfall is critical to meeting management deadlines.
+- **On Target (green):** The proposed target achieves an improvement of 20% or greater. Confirm that the target is realistic and that optimizing this step won't create a new downstream bottleneck.
+- **Not calculated:** A metric value is missing, non-numeric, or has a zero baseline. Resolve the data gap before ranking.
 
-Status alone does not measure impact. Among verified gaps, give more weight to work that affects customers, safety, scientific quality, compliance, security, delivery, or a downstream constraint. Consider the size of the change, how often the problem occurs, the number of people or products affected, available evidence, and whether the team can test the idea at a manageable scale.
+Status alone does not dictate scientific priority. Give weight to gaps that directly impact:
+* **Regulatory & Management Mandates:** Datasets tied to marine mammal stock assessment deadlines or biological opinions.
+* **Analyst Capacity:** High-volume visual/auditory inspection tasks causing multi-month backlogs.
+* **Data Integrity & Risk:** Raw acoustic files residing on unbacked-up physical media or field drives.
+* **Downstream Delivery:** Metadata errors blocking archival ingest into national repositories (e.g., NCEI).
 
-## Turn a gap into a Kaizen experiment
+---
 
-Each prioritized row can become the starting point for a focused experiment in the upcoming **Kaizen Experiments** section:
+## Turn an Acoustic Gap into a Kaizen Experiment
 
-1. **Target Gap:** identify the process node, metric, baseline, and target from `gap-analysis.csv`.
-2. **Hypothesis:** state why a specific change is expected to close the gap.
-3. **Action Items:** define the smallest safe test and the work needed to run it.
-4. **Owner:** assign one person to coordinate the test and report results.
-5. **Success Metric:** use the gap metric to define what success means and when it will be measured.
-6. **Status and Priority:** place the experiment in the work queue based on impact, urgency, dependencies, and capacity.
+Each prioritized gap serves as the foundation for a focused, small-scale test in the **Kaizen Experiments** workspace:
 
-Keep `gap-analysis.csv` in `output/`. It preserves the source timestamps, reviewed overrides, custom metrics, and calculated results that will seed experiment cards. Preserve the original Current and Future State exports as evidence, and update the gap log if the source values or targets change.
+1. **Target Gap:** Identify the specific process node (e.g., *AI Detection*, *Glider Telemetry Sync*), metric, baseline, and target from `gap-analysis.csv`.
+2. **PAM Hypothesis:** Formulate a testable prediction (e.g., *"Integrating a pre-trained deep-learning model for baleen whale call pre-screening will reduce analyst validation time by 50% without dropping call recall below 90%"*).
+3. **Action Items:** Define the smallest safe pilot test (e.g., run the model on 2 cruise legs before scaling program-wide).
+4. **Owner:** Assign a lead bioacoustician or data engineer to manage the test and evaluate results.
+5. **Success Metric:** Use the gap metric (e.g., $PT$ in hr/TB or First-Pass %C&A) to define success criteria and measurement timelines.
+6. **Queue & Priority:** Rank the experiment based on scientific impact, compute availability, analyst bandwidth, and deployment schedules.
 
-## Check the handoff
+---
 
-- [ ] Validate high-priority baselines, targets, units, and gap statuses with process owners.
-- [ ] Select gaps with meaningful impact and a measurable outcome.
-- [ ] Record assumptions or dependencies that could affect each test.
+## Check the Handoff
+
+- [ ] Validate high-priority baselines, targets, units, and directional statuses with process owners and analysts.
+- [ ] Ensure "higher-is-better" metrics (e.g., AI accuracy, schema compliance) are correctly interpreted.
+- [ ] Confirm that selected gaps directly address major processing bottlenecks or management deadlines.
 - [ ] Save or move `gap-analysis.csv` into `output/`.
-- [ ] Carry each selected gap forward as a Kaizen experiment with a hypothesis, owner, action items, success metric, status, and priority.
+- [ ] Carry each prioritized gap forward into the Kaizen Experiments workspace with a defined hypothesis, owner, pilot action items, and success metrics.
 
 ::: {.callout-note}
-If a source value is incorrect, update and re-export the Current or Future State metadata before repeating the comparison.
+If a baseline or target value requires adjustment, update and re-export the Current or Future State metadata before repeating the comparison.
 
 [Return to the Gap Analysis workspace](./gap-primary.qmd){.btn .btn-outline-secondary role="button"}
+[Launch Kaizen Experiments](./kaizen-primary.qmd){.btn .btn-primary role="button"}
 :::
