@@ -10,15 +10,15 @@ format:
 ::: {.callout-note}
 ## Learn from a completed map
 
-1. Choose a scenario to see how work, queues, and handoffs appear on a Current State Map.
-2. Compare the data boxes below the map; they contain the evidence used to find waste.
-3. Follow the walkthrough to identify bottlenecks, quality failures, and delays.
-4. When you are ready, open the [interactive workspace](./current-primary.qmd) to map your own process.
+1. Choose a passive acoustics scenario to see how acoustic datasets, detection queues, and handoffs appear on a Current State Map.
+2. Compare the data boxes below the map; they contain the evidence used to find waste in each data pipeline.
+3. Follow the walkthrough to identify analyst validation bottlenecks, quality issues, and delays.
+4. When you are ready, open the [interactive workspace](./current-primary.qmd) to map your own acoustic data pipeline.
 :::
 
-## Explore three current-state scenarios
+## Explore three passive acoustics data pipelines
 
-Use the scenario selector to compare examples from physical production, software delivery, and shared services. Each map is a simplified teaching example rather than a future-state recommendation.
+Use the scenario selector to compare bottom-mounted moorings, autonomous mobile gliders, and towed hydrophone surveys. Each map is a simplified NOAA Fisheries passive acoustics teaching example rather than a future-state recommendation.
 
 <style>
 .current-example-tutorial {
@@ -128,151 +128,151 @@ Use the scenario selector to compare examples from physical production, software
 
 viewof current_example_tutorial = {
   const current_example_scenarios = {
-    manufacturing: {
-      label: "Manufacturing / Assembly Line",
+    moorings: {
+      label: "Long-Term Bottom-Mounted Moorings (e.g., HARP / PAMGuard)",
       summary:
-        "A four-step assembly line where finished work accumulates before inspection.",
+        "A high-volume continuous recording pipeline where large hard drive archives are retrieved, ingested, run through automated AI detectors, and manually validated by analysts.",
       nodes: [
         {
-          name: "Cut components",
+          name: "Data Ingestion & Extraction",
           metrics: {
-            "Cycle time (C/T)": "45 sec",
-            "Changeover (C/O)": "18 min",
-            "Uptime": "94%",
-            "%C/A defect rate": "1.2%"
+            "Process time (PT)": "0.25 hr / TB",
+            "Lead time (LT)": "14 days",
+            "Queue backlog": "12 TB",
+            "%C/A accuracy": "92.5%"
           }
         },
         {
-          name: "Assemble",
+          name: "AI Signal Detection",
           metrics: {
-            "Cycle time (C/T)": "72 sec",
-            "Changeover (C/O)": "12 min",
-            "Operators": "2",
-            "%C/A defect rate": "2.8%"
+            "Process time (PT)": "1.8 hr / TB",
+            "Lead time (LT)": "3.5 days",
+            "Compute cluster": "GPU Node",
+            "%C/A accuracy": "78.0%"
           }
         },
         {
-          name: "Inspect",
+          name: "Analyst Validation",
           metrics: {
-            "Cycle time (C/T)": "110 sec",
-            "Queue inventory": "46 units",
-            "Operators": "1",
-            "%C/A defect rate": "8.5%"
+            "Process time (PT)": "6.5 hr / TB",
+            "Queue backlog": "46 TB",
+            "Analyst availability": "1 FTE",
+            "%C/A accuracy": "98.0%"
           }
         },
         {
-          name: "Pack",
+          name: "NCEI Archiving",
           metrics: {
-            "Cycle time (C/T)": "38 sec",
-            "Batch size": "24 units",
-            "Uptime": "97%",
-            "%C/A defect rate": "0.5%"
+            "Process time (PT)": "0.5 hr / TB",
+            "Batch size": "5 TB",
+            "Network upload": "1 Gbps",
+            "%C/A accuracy": "99.5%"
           }
         }
       ],
-      queues: ["12 units", "20 units", "46 units"],
+      queues: ["12 TB", "18 TB", "46 TB"],
       waste: {
-        bottleneck: "Inspection has the longest cycle time (110 seconds), and 46 units accumulate before it.",
-        quality: "Inspection finds an 8.5% defect rate, suggesting that defects originate upstream and require rework.",
-        wait: "An 18-minute cutting changeover interrupts flow and increases the first inventory buffer."
+        bottleneck: "Analyst Validation has the highest process time (6.5 hr/TB) and a 46 TB queue backlog, creating the primary project delay.",
+        quality: "Automated AI detection yields a 78% first-pass accuracy rate, requiring extensive analyst manual review loops to remove false positives.",
+        wait: "Physical hard drive transit and ingest scheduling add 14 days of lead time before automated processing can begin."
       }
     },
-    software: {
-      label: "Software Development & Deployment",
+    gliders: {
+      label: "Autonomous Mobile Gliders & AUVs",
       summary:
-        "A release flow where reviews, security checks, and approvals dominate elapsed time.",
+        "An autonomous glider workflow where acoustic timestamps must be cross-referenced and synchronized with flight/GPS telemetry before species detection.",
       nodes: [
         {
-          name: "Develop change",
+          name: "Telemetry & GPS Sync",
           metrics: {
-            "Touch time": "6 hr",
-            "Lead time": "2 days",
-            "Code error rate": "7%",
-            "Work in progress": "8 changes"
+            "Process time (PT)": "1.2 hr / TB",
+            "Lead time (LT)": "5 days",
+            "Sync errors": "14%",
+            "Work in progress": "8 surveys"
           }
         },
         {
-          name: "Code review",
+          name: "Soundscape Ingestion",
           metrics: {
-            "Touch time": "45 min",
-            "Lead time": "3 days",
-            "Code errors found": "5 / release",
-            "Reviewers": "1"
+            "Process time (PT)": "0.8 hr / TB",
+            "Lead time (LT)": "2 days",
+            "Storage": "NAS Buffer",
+            "%C/A accuracy": "95.0%"
           }
         },
         {
-          name: "Security check",
+          name: "Automated Classification",
           metrics: {
-            "Touch time": "25 min",
-            "Lead time": "1.5 days",
-            "Checks requiring retry": "12%",
-            "Permissions": "Security team"
+            "Process time (PT)": "2.1 hr / TB",
+            "Lead time (LT)": "1.5 days",
+            "Model type": "Deep Learning",
+            "%C/A accuracy": "82.0%"
           }
         },
         {
-          name: "Deploy",
+          name: "Product Generation",
           metrics: {
-            "Touch time": "20 min",
-            "Lead time": "2 days",
-            "Approvals": "2 required",
-            "Deployment error rate": "4%"
+            "Process time (PT)": "0.5 hr / TB",
+            "Lead time (LT)": "3 days",
+            "Reviewers": "2 Lead Scientists",
+            "%C/A accuracy": "96.0%"
           }
         }
       ],
-      queues: ["8 changes", "6 reviews", "4 releases"],
+      queues: ["8 surveys", "5 datasets", "3 reports"],
       waste: {
-        bottleneck: "Code review adds three days of lead time even though reviewers spend only 45 minutes on a change.",
-        quality: "A 7% code error rate and 12% security-check retry rate create avoidable loops.",
-        wait: "Two deployment approvals add two days after the technical checks are complete."
+        bottleneck: "Telemetry and GPS clock synchronization adds 5 days of lead time due to missing or offset vehicle navigation logs.",
+        quality: "A 14% GPS synchronization error rate requires manual clock drift correction before classification can run.",
+        wait: "Multi-reviewer scientific approvals add 3 days of lead time after detection maps and soundscape metrics are generated."
       }
     },
-    administrative: {
-      label: "Administrative / Shared Services",
+    towed_arrays: {
+      label: "Towed Hydrophone Survey Arrays",
       summary:
-        "A funding request crosses several departments before the approved record is entered.",
+        "A vessel survey pipeline requiring real-time visual and auditory localization of marine mammals with post-survey manual bearing verification.",
       nodes: [
         {
-          name: "Submit request",
+          name: "Real-Time Detection",
           metrics: {
-            "Touch time": "20 min",
-            "Lead time": "1 day",
-            "Data entry errors": "11%",
-            "Owner": "Program office"
+            "Process time (PT)": "1.0 hr / hr audio",
+            "Lead time (LT)": "1 day",
+            "Data entry errors": "8%",
+            "Platform": "Research Vessel"
           }
         },
         {
-          name: "Budget review",
+          name: "Bearing Verification",
           metrics: {
-            "Touch time": "35 min",
-            "Lead time": "6 days",
-            "Funding holds": "18%",
-            "Owner": "Finance"
+            "Process time (PT)": "3.5 hr / hr audio",
+            "Lead time (LT)": "12 days",
+            "Backlog": "120 hr audio",
+            "Analyst team": "Visual/Acoustic"
           }
         },
         {
-          name: "Department approval",
+          name: "QA/QC Track Review",
           metrics: {
-            "Touch time": "15 min",
-            "Lead time": "4 days",
-            "Approvals": "3 signatures",
-            "Owner": "Division leads"
+            "Process time (PT)": "0.8 hr / hr audio",
+            "Lead time (LT)": "4 days",
+            "Holds": "15%",
+            "Owner": "Senior Bioacoustician"
           }
         },
         {
-          name: "Enter award",
+          name: "Stock Report Entry",
           metrics: {
-            "Touch time": "30 min",
-            "Lead time": "2 days",
-            "Data entry errors": "6%",
-            "Owner": "Shared services"
+            "Process time (PT)": "0.4 hr / hr audio",
+            "Lead time (LT)": "2 days",
+            "Format": "NetCDF / Spatial",
+            "%C/A accuracy": "99.0%"
           }
         }
       ],
-      queues: ["14 requests", "9 requests", "7 awards"],
+      queues: ["14 cruise legs", "120 hr audio", "6 track files"],
       waste: {
-        bottleneck: "Budget review holds 14 requests and contributes six days—the largest portion of total lead time.",
-        quality: "Eleven percent of submitted requests contain data errors that are discovered after the first handoff.",
-        wait: "Three signatures and four department handoffs delay work without changing the request."
+        bottleneck: "Manual bearing and 3D call localization verification holds 120 hours of acoustic data and accounts for 12 days of lead time.",
+        quality: "A vessel noise interference rate of 15% causes tracking holds during QA/QC review, requiring re-filtering.",
+        wait: "Batch handoffs of post-cruise audio files delay track verification until the end of a multi-week vessel charter."
       }
     }
   };
@@ -532,38 +532,38 @@ viewof current_example_tutorial = {
 ## Guided walkthrough
 
 ::: {.callout-tip}
-## 1. Establish the map boundary
+## 1. Establish the acoustic dataset boundary
 
-Confirm the first and last process steps for one product or service family. Follow what happens today, including informal workarounds, rather than drawing the intended procedure.
+Confirm the first and last process steps for one acoustic dataset or survey workflow. Follow the data pipeline as it operates today, including informal workarounds, rather than drawing the intended procedure.
 :::
 
 ::: {.callout-tip}
-## 2. Compare queue size with process capacity
+## 2. Compare detection queues with process capacity
 
-Look immediately upstream of each process. A growing queue, long lead time, or cycle time above the pace of demand identifies a likely constraint.
+Look immediately upstream of each process. A growing detection queue, long lead time, or analyst validation bottleneck identifies a likely constraint in the data pipeline.
 :::
 
 ::: {.callout-tip}
-## 3. Trace quality problems to their source
+## 3. Trace acoustic data quality problems to their source
 
-High scrap, code-error, or data-error percentages show where quality is detected—not necessarily where the problem begins. Add rework loops and ask which earlier step creates the defect.
+Low detection accuracy, synchronization errors, or data-entry errors show where quality issues are detected—not necessarily where they begin. Add review and correction loops and ask which earlier step creates the problem.
 :::
 
 ::: {.callout-tip}
-## 4. Separate touch time from waiting
+## 4. Separate analyst time from waiting
 
-Compare the time spent actively working with total elapsed lead time. Approval gates, funding holds, permissions, batches, and departmental handoffs often explain the difference.
+Compare analyst processing time with total elapsed lead time. Hard drive transit, ingest scheduling, review approvals, batches, and handoffs often explain the difference.
 :::
 
 ::: {.callout-tip}
 ## 5. Validate before designing improvements
 
-Review the map with the people who perform the work. Confirm the observations, record missing evidence, and only then prioritize changes for a Future State Map.
+Review the map with the researchers and analysts who perform the work. Confirm the observations, record missing acoustic data, and only then prioritize changes for a Future State Map.
 :::
 
-## Map your own system
+## Map your own acoustic data pipeline
 
-Take the patterns you identified here into the interactive builder. Start from a simple process script, refine the flow in Draw.io, and record a timestamped data box for each process node.
+Take the patterns you identified here into the interactive builder. Start from a simple data pipeline script, refine the flow in Draw.io, and record a timestamped data box for each process node.
 
 ::: {.current-example-actions}
 [Open the Current State Map builder](./current-primary.qmd){.btn .btn-primary role="button"}
