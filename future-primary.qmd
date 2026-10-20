@@ -8,12 +8,12 @@ format:
 ---
 
 ::: {.callout-note}
-## Design the future flow
+## Design the future passive-acoustics flow
 
-1. Preserve your Current State exports, then load `current_state.drawio` and `current_state_metadata.csv` from `output/` to establish the baseline.
-2. Remove unnecessary work and queues, rearrange process nodes, and use pull signals where downstream demand should trigger work.
-3. Generate a revised layout from a simple `Step A -> Step B` doc2draw-style script, or edit the loaded baseline directly in Draw.io.
-4. Select a process component, enter its target metadata, and append each target update to the in-memory history.
+1. Preserve your Current State exports, then load `current_state.drawio` and `current_state_metadata.csv` from `output/` to establish the passive-acoustic pipeline baseline.
+2. Identify opportunities to reduce audio-processing queues, improve first-pass accuracy, and streamline QA/QC, analyst audit, and NCEI archiving.
+3. Generate a revised pipeline from a `Step A -> Step B` doc2draw-style script, or edit the loaded baseline directly in Draw.io.
+4. Select a process component, compare its baseline with editable Passive Acoustics Research Program targets, and append each target update to the in-memory history.
 5. Export all diagram formats and `future-primary.csv`. Your browser will prompt for downloads; save or move them into `output/`.
 
 The dedicated **Gap Analysis** and **Kaizen Experiments** sections use these exports for calculations and improvement planning.
@@ -79,6 +79,20 @@ The dedicated **Gap Analysis** and **Kaizen Experiments** sections use these exp
   grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
   margin: 1rem 0;
 }
+.future-timestamp-grid {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  margin: 1rem 0;
+}
+.future-timestamp-grid label {
+  display: grid;
+  font-weight: 600;
+  gap: .3rem;
+}
+.future-timestamp-grid input[readonly] {
+  background: var(--bs-secondary-bg, #eef2f5);
+}
 .future-field-row {
   border: 1px solid var(--bs-border-color, #d8dee2);
   border-radius: .35rem;
@@ -124,25 +138,29 @@ The dedicated **Gap Analysis** and **Kaizen Experiments** sections use these exp
 ```{ojs}
 //| echo: false
 
+// Customize Passive Acoustics Research Program metrics here without changing
+// the workspace, diagram, or CSV export logic below.
+const passive_acoustics_fields = [
+  {key: "process_time_hr_tb", label: "Process Time (hr / TB)", default: "1.2"},
+  {key: "lead_time_days", label: "Lead Time (calendar days)", default: "11.5"},
+  {key: "first_pass_accuracy_pct", label: "First-Pass Accuracy (%C&A)", default: "92.0"},
+  {key: "queue_backlog_tb", label: "Queue Backlog (TB or Audio Hours)", default: "5.0"},
+  {key: "analyst_effort_fte", label: "Analyst Effort (FTE)", default: "0.2"},
+  {key: "sync_error_rate_pct", label: "Sync / Clock Drift Error Rate (%)", default: "1.0"},
+  {key: "qa_qc_hold_rate_pct", label: "QA/QC Hold Rate (%)", default: "2.0"},
+  {key: "outsourced_hardware_flag", label: "Hardware Strategy (Outsourced vs In-House)", default: "Commercial Vendor"}
+];
+
 viewof future_map_workspace = {
   const future_drawio_origin = "https://embed.diagrams.net";
   const future_empty_xml =
     '<mxfile host="embed.diagrams.net"><diagram id="future-state" name="Page-1"><mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>';
-  const future_fields = [
-    {key: "cycle_time", label: "Cycle Time"},
-    {key: "changeover_time", label: "Changeover Time"},
-    {key: "lead_time", label: "Lead Time", aliases: ["lead_time_days"]},
-    {key: "scrap_defect_rate", label: "Scrap / Defect Rate (%)"},
-    {key: "funding", label: "Funding Holds", aliases: ["funding_holds"]},
-    {key: "code_errors", label: "Code Errors"},
-    {key: "data_errors", label: "Data Errors"},
-    {key: "security_permissions", label: "Security / Permissions"},
-    {key: "approvals", label: "Approvals"}
-  ];
+  const future_fields = passive_acoustics_fields;
   const future_state = {
     xml: future_empty_xml,
     baseline: new Map(),
     history: [],
+    target_timestamps: new Map(),
     export_queue: [],
     active_export: null
   };
@@ -156,12 +174,12 @@ viewof future_map_workspace = {
   future_script_heading.textContent = "Option A: Generate an updated flow from text";
   const future_script_help = document.createElement("p");
   future_script_help.textContent =
-    "Enter doc2draw-style process text, one step per line or connected with ->. Include pull signals as labeled steps or annotations, then refine the generated flow below.";
+    "Describe the passive-acoustic data pipeline one step per line or with ->, then refine the generated flow below.";
   const future_script = document.createElement("textarea");
   future_script.className = "future-script";
   future_script.setAttribute("aria-label", "Future State text-to-diagram script");
   future_script.value =
-    "Customer pull signal -> Validate request -> Perform streamlined process -> Quality at source -> Deliver";
+    "Cloud Audio Ingest -> AI Pre-Screening -> Targeted Analyst Audit -> Automated NCEI Archiving";
   const future_create_diagram = future_button("Create Future State diagram");
   future_script_card.append(
     future_script_heading,
@@ -176,7 +194,7 @@ viewof future_map_workspace = {
   future_editor_heading.textContent = "Option B: Load a baseline and edit in Draw.io";
   const future_editor_help = document.createElement("p");
   future_editor_help.textContent =
-    "Load the editable .drawio file exported by the Current State workspace, or begin with an empty canvas. Changes remain in this browser tab until exported.";
+    "Load the editable .drawio passive-acoustics baseline exported by the Current State workspace, or begin with an empty canvas. Changes remain in this browser tab until exported.";
   const future_editor_controls = document.createElement("div");
   future_editor_controls.className = "future-map-controls";
   const future_load_diagram = future_button("Load Current State Diagram");
@@ -215,7 +233,7 @@ viewof future_map_workspace = {
   future_metadata_summary.textContent = "Target process metadata";
   const future_metadata_help = document.createElement("p");
   future_metadata_help.textContent =
-    "Load the Current State CSV, then select a component. Its latest valid ISO timestamp supplies a read-only reference while you record target values for future-primary.csv.";
+    "Load the Current State CSV, then select a component from its metadata or the diagram. Compare the latest ISO-timestamped baseline with editable target values for future-primary.csv.";
   const future_metadata_controls = document.createElement("div");
   future_metadata_controls.className = "future-map-controls";
   const future_load_metadata = future_button("Load Current State Metadata CSV");
@@ -241,6 +259,24 @@ viewof future_map_workspace = {
 
   const future_baseline_note = document.createElement("p");
   future_baseline_note.textContent = "No Current State metadata loaded.";
+  const future_timestamp_grid = document.createElement("div");
+  future_timestamp_grid.className = "future-timestamp-grid";
+  const future_baseline_timestamp_label = document.createElement("label");
+  future_baseline_timestamp_label.textContent = "Baseline timestamp";
+  const future_baseline_timestamp = document.createElement("input");
+  future_baseline_timestamp.type = "text";
+  future_baseline_timestamp.readOnly = true;
+  const future_target_timestamp_label = document.createElement("label");
+  future_target_timestamp_label.textContent = "Target timestamp";
+  const future_target_timestamp = document.createElement("input");
+  future_target_timestamp.type = "text";
+  future_target_timestamp.readOnly = true;
+  future_baseline_timestamp_label.append(future_baseline_timestamp);
+  future_target_timestamp_label.append(future_target_timestamp);
+  future_timestamp_grid.append(
+    future_baseline_timestamp_label,
+    future_target_timestamp_label
+  );
   const future_field_grid = document.createElement("div");
   future_field_grid.className = "future-field-grid";
   const future_record_controls = document.createElement("div");
@@ -256,6 +292,7 @@ viewof future_map_workspace = {
     future_metadata_help,
     future_metadata_controls,
     future_baseline_note,
+    future_timestamp_grid,
     future_field_grid,
     future_record_controls,
     future_history
@@ -293,6 +330,7 @@ viewof future_map_workspace = {
 
   function future_load_xml(xml, title = "Future State Map") {
     future_state.xml = xml;
+    future_add_component_options(future_components_from_diagram(xml));
     future_post({
       action: "load",
       autosave: 1,
@@ -309,6 +347,29 @@ viewof future_map_workspace = {
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&apos;");
+  }
+
+  function future_label_text(value) {
+    const element = document.createElement("div");
+    element.innerHTML = value;
+    return element.textContent.trim();
+  }
+
+  function future_components_from_diagram(xml) {
+    const document_xml = new DOMParser().parseFromString(xml, "application/xml");
+    if (document_xml.querySelector("parsererror")) return [];
+    const svg_text = [...document_xml.querySelectorAll("text")]
+      .map((text) => text.textContent.trim())
+      .filter(Boolean);
+    const labels = [
+      ...[...document_xml.querySelectorAll('mxCell[vertex="1"]')]
+        .map((cell) => future_label_text(cell.getAttribute("value") || "")),
+      ...(svg_text.length
+        ? svg_text
+        : [...document_xml.querySelectorAll("tspan")]
+            .map((span) => span.textContent.trim()))
+    ];
+    return [...new Set(labels.filter(Boolean))];
   }
 
   function future_parse_script(script) {
@@ -447,7 +508,10 @@ viewof future_map_workspace = {
       future_load_xml(future_state.xml);
       future_notify("Draw.io editor ready.");
     } else if (message.event === "autosave" || message.event === "save") {
-      if (message.xml) future_state.xml = message.xml;
+      if (message.xml) {
+        future_state.xml = message.xml;
+        future_add_component_options(future_components_from_diagram(message.xml));
+      }
     } else if (message.event === "export" && message.data) {
       const filename =
         future_state.active_export === "xmlsvg"
@@ -537,6 +601,19 @@ viewof future_map_workspace = {
     );
   }
 
+  function future_target_value(record, field) {
+    return record?.[`target_${field.key}`] ?? record?.[field.key] ?? field.default;
+  }
+
+  function future_target_timestamp_for(component, latest_target) {
+    const timestamp = latest_target?.target_timestamp ?? latest_target?.timestamp;
+    if (timestamp) return timestamp;
+    if (!future_state.target_timestamps.has(component)) {
+      future_state.target_timestamps.set(component, new Date().toISOString());
+    }
+    return future_state.target_timestamps.get(component);
+  }
+
   function future_render_fields() {
     const component = future_component.value.trim();
     const baseline = future_state.baseline.get(component);
@@ -546,6 +623,10 @@ viewof future_map_workspace = {
       : component
         ? `No baseline record found for ${component}.`
         : "Load metadata and select a process component.";
+    future_baseline_timestamp.value = baseline?.timestamp ?? "";
+    future_target_timestamp.value = component
+      ? future_target_timestamp_for(component, latest_target)
+      : "";
     future_field_grid.replaceChildren();
     future_fields.forEach((field) => {
       const row = document.createElement("div");
@@ -564,7 +645,7 @@ viewof future_map_workspace = {
       target_label.textContent = "Target";
       const target_input = document.createElement("input");
       target_input.type = "text";
-      target_input.value = latest_target?.[field.key] ?? "";
+      target_input.value = future_target_value(latest_target, field);
       target_input.dataset.targetKey = field.key;
       target_label.append(target_input);
       row.append(heading, baseline_label, target_label);
@@ -620,6 +701,7 @@ viewof future_map_workspace = {
   });
 
   future_component.addEventListener("change", future_render_fields);
+  future_component.addEventListener("input", future_render_fields);
 
   function future_render_history() {
     future_history.textContent = future_state.history.length
@@ -638,13 +720,26 @@ viewof future_map_workspace = {
     }
     const baseline = future_state.baseline.get(component);
     const targets = future_values("[data-target-key]", "targetKey");
+    const baselines = Object.fromEntries(
+      future_fields.map((field) => [
+        `baseline_${field.key}`,
+        future_baseline_value(baseline, field)
+      ])
+    );
+    const paired_targets = Object.fromEntries(
+      future_fields.map((field) => [`target_${field.key}`, targets[field.key]])
+    );
+    const timestamp = future_target_timestamp.value || new Date().toISOString();
     const record = {
-      timestamp: new Date().toISOString(),
+      timestamp,
       component,
       baseline_timestamp: baseline?.timestamp ?? "",
-      ...targets
+      target_timestamp: timestamp,
+      ...baselines,
+      ...paired_targets
     };
     future_state.history.push(record);
+    future_state.target_timestamps.set(component, timestamp);
     future_add_component_options([component]);
     future_render_history();
     future_workspace.dispatchEvent(new Event("input", {bubbles: true}));
@@ -664,7 +759,11 @@ viewof future_map_workspace = {
       "timestamp",
       "component",
       "baseline_timestamp",
-      ...future_fields.map((field) => field.key)
+      "target_timestamp",
+      ...future_fields.flatMap((field) => [
+        `baseline_${field.key}`,
+        `target_${field.key}`
+      ])
     ];
     const lines = [
       columns.map(future_csv_value).join(","),
