@@ -1,652 +1,893 @@
 ---
-title: "Current State Map"
-subtitle: "Interactive workspace"
+title: "Interactive Workflow Survey"
 page-layout: full
-format:
-  html:
-    code-copy: false
 ---
 
 ::: {.callout-note}
-## Build and document the current flow
+## Complete the workflow survey
 
-1. Start with the downstream process family selected in the Family Process Matrix and confirm the map boundary.
-2. Paste a simple `Step A -> Step B` script to create a starting diagram, or work directly in the embedded Draw.io editor.
-3. Select a process block in Draw.io, then enter or choose its matching label in the metadata panel. Save each observation to append it to the history.
-4. Export all diagram formats and the metadata CSV. Your browser will prompt for downloads; save or move them into `output/`.
-5. To define reusable fields, edit `supplement/custom-vsm-schema.json`, render the site again, and select **Custom JSON Schema**.
+1. Upload the merged flowchart SVG from `output/` and, if needed, choose a survey definition from `supplement/`.
+2. Optionally upload the existing responses CSV from `output/`, then select **Build Survey Form**.
+3. Click a survey-linked shape, enter your username and password, and submit your answers. Each submission is saved in this browser.
+4. Download the updated CSV and commit it to your GitHub repository so the Decision Tool can use the responses.
 :::
 
+```{=html}
 <style>
-.current-map-workspace {
-  display: grid;
-  gap: 1rem;
-}
-.current-map-card {
-  background: var(--bs-body-bg, #fff);
-  border: 1px solid var(--bs-border-color, #d8dee2);
-  border-radius: .5rem;
-  padding: 1rem;
-}
-.current-map-card h2,
-.current-map-card h3 {
-  margin-top: 0;
-}
-.current-map-controls,
-.current-field-actions {
-  align-items: end;
-  display: flex;
-  flex-wrap: wrap;
-  gap: .6rem;
-}
-.current-map-controls label,
-.current-field-grid label {
-  font-weight: 600;
-}
-.current-map-workspace button,
-.current-map-workspace input,
-.current-map-workspace select,
-.current-map-workspace textarea {
-  border: 1px solid #65727a;
-  border-radius: .3rem;
-  padding: .45rem .65rem;
-}
-.current-map-workspace button {
-  background: var(--bs-body-bg, #fff);
-  color: var(--bs-body-color, #222);
-  min-height: 2.35rem;
-}
-.current-map-workspace button:hover,
-.current-map-workspace button:focus {
-  box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2);
-}
-.current-script {
-  box-sizing: border-box;
-  display: block;
-  min-height: 7rem;
-  width: 100%;
-}
-.current-drawio-frame {
-  border: 1px solid var(--bs-border-color, #d8dee2);
-  height: 680px;
-  margin-top: .75rem;
-  width: 100%;
-}
-.current-metadata-panel summary {
-  cursor: pointer;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-.current-field-grid {
-  display: grid;
-  gap: .75rem;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  margin: 1rem 0;
-}
-.current-field-grid label {
-  display: grid;
-  gap: .3rem;
-}
-.current-field-row {
-  border: 1px solid var(--bs-border-color, #d8dee2);
-  border-radius: .35rem;
-  padding: .65rem;
-}
-.current-status {
-  min-height: 1.5rem;
-}
-.current-history {
-  display: block;
-  max-height: 16rem;
-  overflow: auto;
-  white-space: pre-wrap;
-}
-@media (max-width: 700px) {
-  .current-drawio-frame {
-    height: 520px;
+  .survey-workspace { display: grid; gap: 1rem; }
+  .survey-card, .survey-location-card {
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid var(--bs-border-color, #d8dee2);
+    border-radius: .5rem;
+    padding: 1rem;
   }
-}
+  .survey-upload-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .survey-upload-grid label, .survey-question label { display: block; font-weight: 600; margin-bottom: .35rem; }
+  .survey-upload-grid input, .survey-question input:not([type="checkbox"]):not([type="radio"]),
+  .survey-question select, .survey-question textarea {
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: .45rem;
+    width: 100%;
+  }
+  .survey-action-row, .survey-controls { align-items: center; display: flex; flex-wrap: wrap; gap: .6rem; }
+  .survey-action-row { margin-top: 1rem; }
+  .survey-action-row button, .survey-controls button, .survey-submit {
+    border: 1px solid var(--bs-border-color, #aab2b8);
+    border-radius: .3rem;
+    padding: .5rem .8rem;
+  }
+  #build-survey, .survey-submit, #submit-github-issue {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  #build-survey:hover, .survey-submit:hover, #submit-github-issue:hover {
+    background-color: #ffca2c !important;
+    border-color: #ffc720 !important;
+  }
+  .survey-status { min-height: 1.5rem; }
+  .survey-viewer {
+    background: var(--bs-tertiary-bg, #f5f6f7);
+    border: 1px solid var(--bs-border-color, #d8dee2);
+    border-radius: .4rem;
+    cursor: grab;
+    height: min(72vh, 800px);
+    min-height: 360px;
+    overflow: hidden;
+    touch-action: none;
+  }
+  .survey-viewer svg { display: block; height: auto; max-height: none; max-width: none; transform-origin: 0 0; width: 100%; }
+  .survey-viewer a.survey-shape-completed { filter: drop-shadow(0 0 4px #198754); }
+  .survey-viewer a.survey-shape-incomplete { filter: drop-shadow(0 0 4px #dc3545); }
+  .survey-viewer a { cursor: pointer; }
+  .survey-completion { font-weight: 700; }
+  .survey-overlay {
+    background: transparent;
+    display: none;
+    inset: 0;
+    pointer-events: none;
+    position: fixed;
+    z-index: 1040;
+  }
+  .survey-overlay.visible { display: block; }
+  .survey-sidebar {
+    background: var(--bs-body-bg, #fff);
+    box-shadow: -2px 0 12px rgba(0, 0, 0, .25);
+    height: 100vh;
+    max-width: 100vw;
+    overflow-y: auto;
+    padding: 1.25rem 1.25rem 2rem;
+    position: fixed;
+    right: -540px;
+    top: 0;
+    transition: right .25s ease;
+    width: 500px;
+    z-index: 1041;
+  }
+  .survey-sidebar.open { right: 0; }
+  .survey-close { float: right; font-size: 1.6rem; }
+  .survey-question { border-bottom: 1px solid var(--bs-border-color, #d8dee2); margin: 1rem 0; padding-bottom: 1rem; }
+  .survey-question p, .survey-question small { display: block; margin: .35rem 0; }
+  .survey-choice { align-items: baseline; display: flex; gap: .4rem; margin: .35rem 0; }
+  .survey-choice label { font-weight: 400; margin: 0; }
+  .survey-other { margin-top: .5rem; }
+  .survey-message { margin-top: .75rem; }
+  .survey-message.error { color: #b02a37; }
+  .survey-message.success { color: #146c43; }
+  .survey-location-card code { overflow-wrap: anywhere; }
+  @media (max-width: 600px) {
+    .survey-sidebar { width: calc(100vw - 2.5rem); }
+    .survey-viewer { min-height: 280px; }
+  }
 </style>
 
-```{ojs}
-//| echo: false
+<section class="survey-workspace">
+  <div class="survey-card">
+    <h2>Build the survey</h2>
+    <div class="survey-upload-grid">
+      <div>
+        <label for="flowchart-upload">Merged flowchart SVG</label>
+        <input id="flowchart-upload" type="file" accept=".svg,.drawio.svg,image/svg+xml">
+        <small>Choose a merged `<filename>.drawio.svg` or `<filename>.svg` file from `output/`.</small>
+      </div>
+      <div>
+        <label for="schema-upload">Survey schema JSON</label>
+        <input id="schema-upload" type="file" accept=".json,application/json">
+        <small id="schema-default-help">Default: `supplement/pam_si_2026.json`. Choose another schema to override it.</small>
+      </div>
+      <div>
+        <label for="responses-upload">Existing responses CSV (optional)</label>
+        <input id="responses-upload" type="file" accept=".csv,text/csv">
+        <small>Choose a `<filename>_responses.csv` file from `output/` to pre-fill and retain prior responses.</small>
+      </div>
+    </div>
+    <div class="survey-action-row">
+      <button id="build-survey" type="button">Build Survey Form</button>
+      <span id="build-status" class="survey-status" role="status" aria-live="polite"></span>
+    </div>
+  </div>
 
-viewof current_map_workspace = {
-  const current_drawio_origin = "https://embed.diagrams.net";
-  const current_empty_xml =
-    '<mxfile host="embed.diagrams.net"><diagram id="current-state" name="Page-1"><mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>';
-  const current_templates = {
-    basic: [
-      {key: "description", label: "Description", type: "text"},
-      {key: "owner", label: "Owner", type: "text"},
-      {key: "handoff", label: "Next Handoff", type: "text"}
-    ],
-    standard: [
-      {key: "cycle_time", label: "Cycle Time", type: "text"},
-      {key: "changeover_time", label: "Changeover Time", type: "text"},
-      {key: "uptime_oee", label: "Uptime / OEE (%)", type: "number"},
-      {key: "scrap_defect_rate", label: "Scrap / Defect Rate (%)", type: "number"},
-      {key: "batch_size", label: "Batch Size", type: "number"},
-      {key: "operators", label: "Operators", type: "number"}
-    ],
-    software: [
-      {key: "funding", label: "Funding", type: "text"},
-      {key: "code_errors", label: "Code Errors", type: "text"},
-      {key: "data_errors", label: "Data Errors", type: "text"},
-      {key: "security_permissions", label: "Security / Permissions", type: "text"},
-      {key: "approvals", label: "Approvals", type: "text"}
-    ]
+  <div id="survey-app" hidden>
+    <div class="survey-card">
+      <h2 id="survey-heading">Workflow survey</h2>
+      <p id="completion-count" class="survey-completion" aria-live="polite">Completed: 0 / 0 shapes</p>
+      <div class="survey-controls" aria-label="Flowchart controls">
+        <button id="zoom-in" type="button">🔍 Zoom In</button>
+        <button id="zoom-out" type="button">🔍 Zoom Out</button>
+        <button id="reset-view" type="button">⟲ Reset View</button>
+        <span id="zoom-level">Zoom: 100%</span>
+      </div>
+      <div id="svg-viewer" class="survey-viewer" aria-label="Interactive workflow flowchart"></div>
+    </div>
+    <div class="survey-card">
+      <h2>Survey data</h2>
+      <p>Responses are stored locally in this browser. Download and commit the CSV to your repository regularly.</p>
+      <button id="download-csv" type="button">📥 Download Updated CSV</button>
+      <span id="response-count"></span>
+    </div>
+  </div>
+  <div class="survey-card">
+    <h2>Submit Workflow to Repository</h2>
+    <p>Pre-fill a GitHub Issue to submit your flowchart SVG and responses CSV to the team repository.</p>
+    <div class="survey-upload-grid">
+      <div>
+        <label for="submitter-name">Full Name</label>
+        <input id="submitter-name" type="text" required>
+      </div>
+      <div>
+        <label for="submitter-email">Email Address</label>
+        <input id="submitter-email" type="email" required>
+      </div>
+      <div>
+        <label for="submitter-comments">Comments / Notes</label>
+        <textarea id="submitter-comments" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="survey-action-row">
+      <button id="submit-github-issue" type="button">Submit Workflow as GitHub Issue</button>
+      <span id="submit-status" class="survey-status" role="status" aria-live="polite"></span>
+    </div>
+  </div>
+</section>
+
+<div id="survey-overlay" class="survey-overlay"></div>
+<aside id="survey-sidebar" class="survey-sidebar" aria-label="Shape survey" aria-modal="true" role="dialog" aria-hidden="true">
+  <button id="close-survey" class="survey-close" type="button" aria-label="Close survey">&times;</button>
+  <h2 id="survey-title">Workflow Survey</h2>
+  <p><strong>Shape:</strong> <span id="shape-info"></span></p>
+  <div id="previous-entry-display"></div>
+  <form id="survey-form">
+    <div class="survey-question">
+      <label for="username">Your name or user ID</label>
+      <input id="username" name="username" type="text" autocomplete="username" required>
+    </div>
+    <div class="survey-question">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <small>Required to submit. Your password is not saved with the response.</small>
+    </div>
+    <div id="dynamic-questions"></div>
+    <button class="survey-submit" type="submit">Submit Response</button>
+    <p id="form-message" class="survey-message" role="status" aria-live="polite"></p>
+  </form>
+</aside>
+
+<div class="survey-location-card">
+  <h2>Repository locations</h2>
+  <ul>
+    <li><strong>Flowchart SVG:</strong> <code id="flowchart-location">output/&lt;flowchart_base&gt;_&lt;survey_id&gt;.svg</code></li>
+    <li><strong>Survey schema:</strong> <code id="schema-location">supplement/&lt;survey_id&gt;.json</code></li>
+    <li><strong>Responses CSV:</strong> <code id="csv-location">output/&lt;flowchart_base&gt;_&lt;survey_id&gt;_responses.csv</code></li>
+  </ul>
+  <p>Commit your updated `_responses.csv` file to your GitHub repository so the Decision Tool can use the latest responses.</p>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const defaultSchemaPath = "../supplement/pam_si_2026.json";
+  const coreHeaders = ["timestamp", "username", "shape_id", "shape_text"];
+  const elements = Object.fromEntries([
+    "flowchart-upload", "schema-upload", "responses-upload", "build-survey",
+    "build-status", "survey-app", "survey-heading", "completion-count",
+    "svg-viewer", "zoom-level", "download-csv", "response-count",
+    "survey-overlay", "survey-sidebar", "survey-title", "shape-info",
+    "previous-entry-display", "survey-form", "username", "password",
+    "dynamic-questions", "form-message", "close-survey", "flowchart-location",
+    "schema-location", "csv-location", "submitter-name", "submitter-email",
+    "submitter-comments", "submit-github-issue", "submit-status"
+  ].map(id => [id, document.getElementById(id)]));
+
+  const state = {
+    schema: null,
+    flowchartBase: "",
+    shapes: new Map(),
+    importedResponses: [],
+    responses: [],
+    currentShape: null,
+    svg: null,
+    scale: 1,
+    x: 0,
+    y: 0,
+    dragging: false,
+    startX: 0,
+    startY: 0,
+    completedNotificationShown: false
   };
 
-  const current_state = {
-    xml: current_empty_xml,
-    history: [],
-    history_fields: new Map(),
-    fields: structuredClone(current_templates.basic),
-    scripted_components: [],
-    export_queue: []
-  };
-
-  const current_workspace = document.createElement("div");
-  current_workspace.className = "current-map-workspace";
-
-  const current_script_card = document.createElement("section");
-  current_script_card.className = "current-map-card";
-  const current_script_heading = document.createElement("h2");
-  current_script_heading.textContent = "Option A: Create a diagram from text";
-  const current_script_help = document.createElement("p");
-  current_script_help.textContent =
-    "Enter doc2draw-style process text. Put one step per line or connect labels with ->. The generated flow opens in the editor below.";
-  const current_script = document.createElement("textarea");
-  current_script.className = "current-script";
-  current_script.setAttribute("aria-label", "Text-to-diagram process script");
-  current_script.value =
-    "Receive work -> Validate inputs -> Perform process -> Review output -> Deliver";
-  const current_create_diagram = current_button("Create diagram from text");
-  current_script_card.append(
-    current_script_heading,
-    current_script_help,
-    current_script,
-    current_create_diagram
-  );
-
-  const current_editor_card = document.createElement("section");
-  current_editor_card.className = "current-map-card";
-  const current_editor_heading = document.createElement("h2");
-  current_editor_heading.textContent = "Option B: Edit directly in Draw.io";
-  const current_editor_help = document.createElement("p");
-  current_editor_help.textContent =
-    "Use the full editor to add process blocks, decisions, queues, connectors, and annotations. Changes remain in this browser tab until exported.";
-  const current_export_controls = document.createElement("div");
-  current_export_controls.className = "current-map-controls";
-  const current_export_all = current_button("Export all diagram formats");
-  const current_export_help = document.createElement("span");
-  current_export_help.textContent =
-    "Downloads current_state.drawio, current_state.drawio.svg, and current_state.png. Place them in output/.";
-  current_export_controls.append(current_export_all, current_export_help);
-  const current_frame = document.createElement("iframe");
-  current_frame.className = "current-drawio-frame";
-  current_frame.title = "Draw.io Current State Map editor";
-  current_frame.src =
-    `${current_drawio_origin}/?embed=1&proto=json&spin=1&autosave=1&saveAndExit=0&noSaveBtn=1&libraries=1`;
-  current_editor_card.append(
-    current_editor_heading,
-    current_editor_help,
-    current_export_controls,
-    current_frame
-  );
-
-  const current_metadata_card = document.createElement("section");
-  current_metadata_card.className = "current-map-card";
-  const current_metadata_details = document.createElement("details");
-  current_metadata_details.className = "current-metadata-panel";
-  const current_metadata_summary = document.createElement("summary");
-  current_metadata_summary.textContent = "Process block metadata";
-  const current_metadata_help = document.createElement("p");
-  current_metadata_help.textContent =
-    "Select a block in Draw.io, then use the same block label here. Choosing a saved component restores its most recent values.";
-
-  const current_component_list = document.createElement("datalist");
-  current_component_list.id = "current-component-options";
-  const current_metadata_controls = document.createElement("div");
-  current_metadata_controls.className = "current-map-controls";
-  const current_component_label = document.createElement("label");
-  current_component_label.textContent = "Selected process block";
-  const current_component = document.createElement("input");
-  current_component.type = "text";
-  current_component.required = true;
-  current_component.setAttribute("list", current_component_list.id);
-  current_component.setAttribute("aria-label", "Selected process block");
-  current_component_label.append(document.createElement("br"), current_component);
-
-  const current_template_label = document.createElement("label");
-  current_template_label.textContent = "Metadata template";
-  const current_template = document.createElement("select");
-  [
-    ["basic", "Basic Flow"],
-    ["standard", "Standard VSM Data Box"],
-    ["software", "Software/Administrative VSM"],
-    ["custom", "Custom JSON Schema"]
-  ].forEach(([value, label]) => {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = label;
-    current_template.append(option);
-  });
-  current_template_label.append(document.createElement("br"), current_template);
-  current_metadata_controls.append(
-    current_component_label,
-    current_template_label,
-    current_component_list
-  );
-
-  const current_field_grid = document.createElement("div");
-  current_field_grid.className = "current-field-grid";
-  const current_add_controls = document.createElement("div");
-  current_add_controls.className = "current-field-actions";
-  const current_new_label = document.createElement("input");
-  current_new_label.type = "text";
-  current_new_label.placeholder = "Additional field label";
-  current_new_label.setAttribute("aria-label", "Additional field label");
-  const current_new_type = document.createElement("select");
-  current_new_type.setAttribute("aria-label", "Additional field type");
-  [["text", "Text"], ["number", "Number"], ["date", "Date"]].forEach(([value, label]) => {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = label;
-    current_new_type.append(option);
-  });
-  const current_add_field = current_button("Add field");
-  current_add_controls.append(current_new_label, current_new_type, current_add_field);
-
-  const current_record_controls = document.createElement("div");
-  current_record_controls.className = "current-map-controls";
-  const current_save_metadata = current_button("Append metadata record");
-  const current_export_metadata = current_button("Export Metadata to CSV");
-  current_record_controls.append(current_save_metadata, current_export_metadata);
-  const current_history = document.createElement("code");
-  current_history.className = "current-history";
-  current_history.textContent = "No metadata records saved yet.";
-
-  current_metadata_details.append(
-    current_metadata_summary,
-    current_metadata_help,
-    current_metadata_controls,
-    current_field_grid,
-    current_add_controls,
-    current_record_controls,
-    current_history
-  );
-  current_metadata_card.append(current_metadata_details);
-
-  const current_status = document.createElement("p");
-  current_status.className = "current-status";
-  current_status.setAttribute("role", "status");
-  current_status.setAttribute("aria-live", "polite");
-  current_workspace.append(
-    current_script_card,
-    current_editor_card,
-    current_metadata_card,
-    current_status
-  );
-
-  function current_button(label) {
-    const element = document.createElement("button");
-    element.type = "button";
-    element.textContent = label;
-    return element;
+  function setBuildStatus(message, isError = false) {
+    elements["build-status"].textContent = message;
+    elements["build-status"].classList.toggle("text-danger", isError);
   }
 
-  function current_notify(message) {
-    current_status.textContent = message;
+  function setSubmitStatus(message, isError = false) {
+    elements["submit-status"].textContent = message;
+    elements["submit-status"].classList.toggle("text-danger", isError);
   }
 
-  function current_post(message) {
-    current_frame.contentWindow?.postMessage(
-      JSON.stringify(message),
-      current_drawio_origin
-    );
+  function safeStem(filename) {
+    return String(filename || "")
+      .replace(/\.drawio\.svg$/i, "")
+      .replace(/\.(?:svg|json|csv)$/i, "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "_")
+      .replace(/^[_-]+|[_-]+$/g, "");
   }
 
-  function current_escape_xml(value) {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&apos;");
+  function csvEscape(value) {
+    let text = value == null ? "" : Array.isArray(value) ? JSON.stringify(value) : String(value);
+    return `"${text.replaceAll('"', '""')}"`;
   }
 
-  function current_parse_script(script) {
-    const nodes = [];
-    const edges = [];
-    const node_index = new Map();
-    const add_node = (label) => {
-      const clean_label = label.trim();
-      if (!clean_label) return null;
-      if (!node_index.has(clean_label)) {
-        node_index.set(clean_label, nodes.length);
-        nodes.push(clean_label);
-      }
-      return node_index.get(clean_label);
-    };
-
-    script.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).forEach((line) => {
-      const labels = line.split(/\s*->\s*/).filter(Boolean);
-      labels.forEach(add_node);
-      for (let index = 0; index < labels.length - 1; index += 1) {
-        edges.push([add_node(labels[index]), add_node(labels[index + 1])]);
-      }
-    });
-    if (edges.length === 0) {
-      for (let index = 0; index < nodes.length - 1; index += 1) {
-        edges.push([index, index + 1]);
+  function parseCSV(text) {
+    const rows = [];
+    let row = [];
+    let field = "";
+    let quoted = false;
+    for (let index = 0; index < text.length; index += 1) {
+      const character = text[index];
+      if (quoted) {
+        if (character === '"' && text[index + 1] === '"') {
+          field += '"';
+          index += 1;
+        } else if (character === '"') {
+          quoted = false;
+        } else {
+          field += character;
+        }
+      } else if (character === '"' && field.length === 0) {
+        quoted = true;
+      } else if (character === ",") {
+        row.push(field);
+        field = "";
+      } else if (character === "\n" || character === "\r") {
+        if (character === "\r" && text[index + 1] === "\n") index += 1;
+        row.push(field);
+        if (row.some(value => value !== "")) rows.push(row);
+        row = [];
+        field = "";
+      } else {
+        field += character;
       }
     }
-    return {nodes, edges};
+    if (quoted) throw new Error("The uploaded CSV has an unclosed quoted field.");
+    row.push(field);
+    if (row.some(value => value !== "")) rows.push(row);
+    if (rows.length < 2) return [];
+    const headers = rows[0].map((header, index) => index === 0 ? header.replace(/^\uFEFF/, "") : header);
+    return rows.slice(1).map(values => Object.fromEntries(
+      headers.map((header, index) => [header, values[index] ?? ""])
+    ));
   }
 
-  function current_xml_from_script(script) {
-    const parsed = current_parse_script(script);
-    if (parsed.nodes.length === 0) {
-      throw new Error("Enter at least one process step.");
+  function getQuestionHeaders() {
+    return state.schema.questions.map(question => question.short_name);
+  }
+
+  function getResponses() {
+    return [...state.importedResponses, ...state.responses];
+  }
+
+  function readStoredResponses() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(state.storageKey) || "[]");
+      return Array.isArray(stored) ? stored : [];
+    } catch {
+      return [];
     }
-    const cells = parsed.nodes.map((label, index) => {
-      const x = 60 + (index % 4) * 240;
-      const y = 80 + Math.floor(index / 4) * 150;
-      return `<mxCell id="node-${index}" value="${current_escape_xml(label)}" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="${x}" y="${y}" width="160" height="60" as="geometry"/></mxCell>`;
-    });
-    parsed.edges.forEach(([source, target], index) => {
-      cells.push(`<mxCell id="edge-${index}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="node-${source}" target="node-${target}"><mxGeometry relative="1" as="geometry"/></mxCell>`);
-    });
-    current_state.scripted_components = parsed.nodes;
-    current_component_list.replaceChildren(
-      ...parsed.nodes.map((label) => {
-        const option = document.createElement("option");
-        option.value = label;
-        return option;
-      })
-    );
-    return `<mxfile host="embed.diagrams.net"><diagram id="current-state" name="Page-1"><mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827"><root><mxCell id="0"/><mxCell id="1" parent="0"/>${cells.join("")}</root></mxGraphModel></diagram></mxfile>`;
   }
 
-  function current_download_url(url, filename) {
+  function persistResponse(response) {
+    state.responses.push(response);
+    localStorage.setItem(state.storageKey, JSON.stringify(state.responses));
+    updateCompletion();
+  }
+
+  function mostRecentResponse(shapeId) {
+    return getResponses()
+      .filter(response => response.shape_id === shapeId)
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0] || null;
+  }
+
+  function validateSchema(schema) {
+    if (!schema || !schema.survey_metadata || !Array.isArray(schema.questions) || schema.questions.length === 0) {
+      throw new Error("The JSON must contain survey_metadata and at least one question.");
+    }
+    const validTypes = new Set(["text", "single_choice", "multiple_choice", "yes_no"]);
+    const names = new Set();
+    schema.questions.forEach((question, index) => {
+      if (!question.short_name || names.has(question.short_name)) {
+        throw new Error(`Question ${index + 1} must have a unique short_name.`);
+      }
+      if (!validTypes.has(question.form_type)) {
+        throw new Error(`Question "${question.short_name}" has an unsupported form_type.`);
+      }
+      if ((question.form_type === "single_choice" || question.form_type === "multiple_choice") &&
+          (!Array.isArray(question.options) || question.options.length === 0)) {
+        throw new Error(`Question "${question.short_name}" must define at least one option.`);
+      }
+      names.add(question.short_name);
+    });
+    return schema;
+  }
+
+  function parseSurveyLink(href) {
+    const value = String(href || "");
+    const marker = value.indexOf("#survey:");
+    if (marker < 0) return null;
+    const [shapeId, ...textParts] = value.slice(marker + 8).split("|");
+    if (!shapeId) return null;
+    return {shapeId, shapeText: textParts.join("|") || shapeId};
+  }
+
+  function parseXml(xmlText, description) {
+    const parsed = new DOMParser().parseFromString(xmlText, "application/xml");
+    if (parsed.querySelector("parsererror")) throw new Error(`Could not parse ${description} XML.`);
+    return parsed;
+  }
+
+  async function decodeEmbeddedDiagram(svgDocument) {
+    const svg = svgDocument.documentElement;
+    const embedded = svg.getAttribute("content") ||
+      svg.querySelector("metadata")?.textContent?.trim();
+    if (!embedded) return null;
+    const mxfile = parseXml(embedded, "embedded flowchart");
+    const diagram = mxfile.querySelector("diagram");
+    if (!diagram) return mxfile;
+    const diagramText = diagram.textContent.trim();
+    if (diagramText.startsWith("<")) return parseXml(diagramText, "embedded diagram");
+    if (typeof DecompressionStream === "undefined") {
+      throw new Error("This browser cannot unpack the compressed diagram XML in this SVG.");
+    }
+    const binary = Uint8Array.from(atob(diagramText), character => character.charCodeAt(0));
+    const stream = new Blob([binary]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    const compressedText = new TextDecoder().decode(await new Response(stream).arrayBuffer());
+    let decodedText;
+    try {
+      decodedText = decodeURIComponent(compressedText);
+    } catch {
+      decodedText = compressedText;
+    }
+    return parseXml(decodedText, "embedded diagram");
+  }
+
+  function collectSurveyShapes(svgDocument, embeddedDocument) {
+    const shapes = new Map();
+    if (embeddedDocument) {
+      embeddedDocument.querySelectorAll("[link]").forEach(cell => {
+        const surveyLink = parseSurveyLink(cell.getAttribute("link"));
+        if (!surveyLink) return;
+        const label = cell.getAttribute("value") || cell.textContent.trim() || surveyLink.shapeText;
+        shapes.set(surveyLink.shapeId, {shapeText: surveyLink.shapeText || label});
+      });
+    }
+    svgDocument.querySelectorAll("a").forEach(anchor => {
+      const href = anchor.getAttribute("href") || anchor.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+      const surveyLink = parseSurveyLink(href);
+      if (!surveyLink) return;
+      shapes.set(surveyLink.shapeId, {shapeText: surveyLink.shapeText});
+    });
+    return shapes;
+  }
+
+  function sanitizeSvg(svg) {
+    svg.querySelectorAll("script, foreignObject").forEach(node => node.remove());
+    svg.querySelectorAll("style").forEach(node => {
+      if (/@import|url\s*\(\s*['"]?\s*(?:https?:|javascript:|data:|\/\/)/i.test(node.textContent)) {
+        node.remove();
+      }
+    });
+    [svg, ...svg.querySelectorAll("*")].forEach(node => {
+      [...node.attributes].forEach(attribute => {
+        const name = attribute.name.toLowerCase();
+        const value = attribute.value.trim();
+        if (name.startsWith("on")) {
+          node.removeAttribute(attribute.name);
+        } else if ((name === "href" || name.endsWith(":href")) &&
+                   !value.includes("#survey:") && !value.startsWith("#")) {
+          node.removeAttribute(attribute.name);
+        } else if (name === "style" && /url\s*\(\s*['"]?\s*(?:https?:|javascript:|data:|\/\/)/i.test(value)) {
+          node.removeAttribute(attribute.name);
+        }
+      });
+    });
+  }
+
+  function renderQuestion(question, index) {
+    const field = document.createElement("section");
+    field.className = "survey-question";
+    field.dataset.questionIndex = String(index);
+    const label = document.createElement("label");
+    label.textContent = question.label || question.short_name;
+    field.append(label);
+    if (question.description) {
+      const description = document.createElement("small");
+      description.textContent = question.description;
+      field.append(description);
+    }
+
+    if (question.form_type === "text") {
+      const textarea = document.createElement("textarea");
+      textarea.rows = 3;
+      textarea.dataset.answer = "text";
+      field.append(textarea);
+    } else {
+      const options = question.form_type === "yes_no"
+        ? [{label: "Yes", value: "yes"}, {label: "No", value: "no"}]
+        : [...question.options];
+      const isMultiple = question.form_type === "multiple_choice";
+      if (question.allow_other && !isMultiple) {
+        options.push({label: "Other", value: "__other__"});
+      }
+      const control = isMultiple ? document.createElement("div") : document.createElement("select");
+      if (!isMultiple) {
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = "-- Select --";
+        control.append(empty);
+      }
+      options.forEach(option => {
+        const optionLabel = typeof option === "string" ? option : option.label;
+        const optionValue = typeof option === "string" ? option : option.value;
+        if (isMultiple) {
+          const choice = document.createElement("div");
+          choice.className = "survey-choice";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.value = optionValue;
+          input.dataset.answer = "choice";
+          const text = document.createElement("label");
+          text.textContent = optionLabel;
+          if (option.description) text.title = option.description;
+          choice.append(input, text);
+          control.append(choice);
+        } else {
+          const optionElement = document.createElement("option");
+          optionElement.value = optionValue;
+          optionElement.textContent = optionLabel;
+          if (option.description) optionElement.title = option.description;
+          control.append(optionElement);
+        }
+      });
+      control.dataset.controlType = isMultiple ? "multiple" : "single";
+      field.append(control);
+    }
+
+    if (question.allow_na) {
+      const naChoice = document.createElement("div");
+      naChoice.className = "survey-choice";
+      const na = document.createElement("input");
+      na.type = "checkbox";
+      na.dataset.na = "true";
+      const naLabel = document.createElement("label");
+      naLabel.textContent = "Not applicable";
+      naChoice.append(na, naLabel);
+      field.append(naChoice);
+    }
+    if (question.allow_other && question.form_type !== "text") {
+      const otherLabel = document.createElement("label");
+      otherLabel.className = "survey-other";
+      const other = document.createElement("input");
+      other.type = question.form_type === "multiple_choice" ? "checkbox" : "text";
+      other.dataset.other = "true";
+      if (other.type === "text") {
+        other.placeholder = "Other (please specify)";
+        other.hidden = true;
+        const select = field.querySelector("select");
+        select.addEventListener("change", () => {
+          other.hidden = select.value !== "__other__";
+        });
+        otherLabel.append(other);
+        field.append(otherLabel);
+      } else {
+        other.value = "__other__";
+        const otherText = document.createElement("span");
+        otherText.textContent = "Other";
+        otherLabel.append(other, otherText);
+        const details = document.createElement("input");
+        details.type = "text";
+        details.dataset.otherText = "true";
+        details.placeholder = "Please specify";
+        details.hidden = true;
+        field.append(otherLabel, details);
+        other.addEventListener("change", () => { details.hidden = !other.checked; });
+        return field;
+      }
+    }
+    return field;
+  }
+
+  function answerFor(question, field) {
+    if (field.querySelector("[data-na]")?.checked) return "N/A";
+    if (question.form_type === "text") {
+      return field.querySelector('[data-answer="text"]').value.trim();
+    }
+    if (question.form_type === "multiple_choice") {
+      const answers = [...field.querySelectorAll('[data-answer="choice"]:checked')].map(input => input.value);
+      const other = field.querySelector("[data-other]");
+      const otherText = field.querySelector("[data-other-text]");
+      if (other?.checked) {
+        if (!otherText?.value.trim()) return [];
+        answers.push(`Other: ${otherText.value.trim()}`);
+      }
+      return answers;
+    }
+    const select = field.querySelector("select");
+    const other = field.querySelector("[data-other]");
+    return select.value === "__other__" ? other.value.trim() : select.value;
+  }
+
+  function fillQuestion(question, field, value) {
+    if (value == null || value === "") return;
+    if (value === "N/A" && field.querySelector("[data-na]")) {
+      field.querySelector("[data-na]").checked = true;
+      return;
+    }
+    if (question.form_type === "text") {
+      field.querySelector('[data-answer="text"]').value = value;
+      return;
+    }
+    let values = value;
+    if (typeof values === "string" && values.startsWith("[")) {
+      try { values = JSON.parse(values); } catch { /* Keep legacy plain-text values. */ }
+    }
+    if (question.form_type === "multiple_choice") {
+      const answers = Array.isArray(values) ? values : String(values).split("; ");
+      answers.forEach(answer => {
+        const choice = [...field.querySelectorAll('[data-answer="choice"]')].find(input => input.value === answer);
+        if (choice) choice.checked = true;
+        else if (String(answer).startsWith("Other: ")) {
+          const other = field.querySelector("[data-other]");
+          const details = field.querySelector("[data-other-text]");
+          other.checked = true;
+          details.hidden = false;
+          details.value = String(answer).slice(7);
+        }
+      });
+    } else if (String(values).startsWith("Other: ")) {
+      const select = field.querySelector("select");
+      select.value = "__other__";
+      const other = field.querySelector("[data-other]");
+      other.hidden = false;
+      other.value = String(values).slice(7);
+    } else {
+      field.querySelector("select").value = values;
+    }
+  }
+
+  function openSurvey(shapeId, shapeText) {
+    state.currentShape = {shapeId, shapeText};
+    elements["survey-sidebar"].classList.add("open");
+    elements["survey-overlay"].classList.add("visible");
+    elements["survey-sidebar"].setAttribute("aria-hidden", "false");
+    elements["survey-title"].textContent = state.schema.survey_metadata.survey_name || "Workflow Survey";
+    elements["shape-info"].textContent = shapeText;
+    elements["dynamic-questions"].replaceChildren(
+      ...state.schema.questions.map(renderQuestion)
+    );
+    const previous = mostRecentResponse(shapeId);
+    elements["previous-entry-display"].textContent = previous
+      ? `Previous response from ${previous.username || "unknown user"} (${new Date(previous.timestamp).toLocaleString()}). Answers are pre-filled; submitting adds a new record.`
+      : "No previous response for this shape.";
+    elements["survey-form"].reset();
+    elements["username"].value = previous?.username || "";
+    state.schema.questions.forEach((question, index) => {
+      const field = elements["dynamic-questions"].querySelector(`[data-question-index="${index}"]`);
+      fillQuestion(question, field, previous?.[question.short_name]);
+    });
+    elements["form-message"].textContent = "";
+    elements["form-message"].className = "survey-message";
+    elements["username"].focus();
+  }
+
+  function closeSurvey() {
+    elements["survey-sidebar"].classList.remove("open");
+    elements["survey-overlay"].classList.remove("visible");
+    elements["survey-sidebar"].setAttribute("aria-hidden", "true");
+    elements["survey-form"].reset();
+    state.currentShape = null;
+  }
+
+  ["click", "focusin", "input", "change", "keypress", "keyup"].forEach(type => {
+    elements["survey-sidebar"].addEventListener(type, event => event.stopPropagation());
+  });
+  elements["survey-sidebar"].addEventListener("keydown", event => {
+    if (event.key !== "Escape") event.stopPropagation();
+  });
+
+  function updateResponseCount() {
+    elements["response-count"].textContent = `Total records: ${getResponses().length}`;
+  }
+
+  function updateCompletion() {
+    const responses = getResponses();
+    const completed = [...state.shapes.keys()].filter(shapeId =>
+      responses.some(response => response.shape_id === shapeId)
+    );
+    elements["completion-count"].textContent = `Completed: ${completed.length} / ${state.shapes.size} shapes`;
+    if (state.svg) {
+      state.svg.querySelectorAll("a").forEach(anchor => {
+        const link = parseSurveyLink(
+          anchor.getAttribute("href") || anchor.getAttributeNS("http://www.w3.org/1999/xlink", "href")
+        );
+        if (!link) return;
+        anchor.classList.toggle("survey-shape-completed", completed.includes(link.shapeId));
+        anchor.classList.toggle("survey-shape-incomplete", !completed.includes(link.shapeId));
+      });
+    }
+    updateResponseCount();
+    if (state.shapes.size > 0 && completed.length === state.shapes.size && !state.completedNotificationShown) {
+      state.completedNotificationShown = true;
+      setBuildStatus("🎉 All flowchart shapes are complete. Download the updated CSV to save your results.");
+    }
+  }
+
+  function updateTransform() {
+    if (!state.svg) return;
+    state.svg.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+    elements["zoom-level"].textContent = `Zoom: ${Math.round(state.scale * 100)}%`;
+  }
+
+  async function buildSurvey() {
+    const flowchartFile = elements["flowchart-upload"].files[0];
+    const schemaFile = elements["schema-upload"].files[0];
+    const responsesFile = elements["responses-upload"].files[0];
+    if (!flowchartFile) throw new Error("Choose a merged flowchart SVG first.");
+    setBuildStatus("Reading flowchart and survey files…");
+
+    const [svgText, schemaText, responsesText] = await Promise.all([
+      flowchartFile.text(),
+      schemaFile ? schemaFile.text() : fetch(defaultSchemaPath).then(response => {
+        if (!response.ok) throw new Error("Could not load the default PAM SI survey schema.");
+        return response.text();
+      }),
+      responsesFile ? responsesFile.text() : Promise.resolve("")
+    ]);
+    const svgDocument = parseXml(svgText, "flowchart SVG");
+    if (svgDocument.documentElement.localName !== "svg") throw new Error("The uploaded flowchart file is not an SVG.");
+    const schema = validateSchema(JSON.parse(schemaText));
+    const embeddedDocument = await decodeEmbeddedDiagram(svgDocument);
+    const shapes = collectSurveyShapes(svgDocument, embeddedDocument);
+    if (shapes.size === 0) throw new Error("No #survey: links were found in the SVG or its embedded diagram XML.");
+
+    const importedResponses = responsesText ? parseCSV(responsesText) : [];
+    const questions = schema.questions.map(question => question.short_name);
+    const chartBase = safeStem(flowchartFile.name);
+    const surveyId = safeStem(schema.survey_metadata.survey_id || "survey");
+    if (!chartBase || !surveyId) throw new Error("Could not determine a valid flowchart filename or survey ID.");
+
+    state.schema = schema;
+    state.flowchartBase = chartBase;
+    state.shapes = shapes;
+    state.importedResponses = importedResponses;
+    state.storageKey = `pam_workflow_survey_${chartBase}_${surveyId}`;
+    state.responses = readStoredResponses();
+    state.completedNotificationShown = false;
+
+    const svg = svgDocument.documentElement;
+    sanitizeSvg(svg);
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+    svg.style.maxWidth = "none";
+    svg.style.maxHeight = "none";
+    elements["svg-viewer"].replaceChildren(document.importNode(svg, true));
+    state.svg = elements["svg-viewer"].querySelector("svg");
+    state.svg.querySelectorAll("a").forEach(anchor => {
+      const href = anchor.getAttribute("href") || anchor.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+      const surveyLink = parseSurveyLink(href);
+      if (surveyLink) anchor.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        openSurvey(surveyLink.shapeId, surveyLink.shapeText);
+      });
+    });
+
+    elements["survey-heading"].textContent = schema.survey_metadata.survey_name || "Workflow Survey";
+    elements["flowchart-location"].textContent = `output/${chartBase}_${surveyId}.svg`;
+    elements["schema-location"].textContent = `supplement/${surveyId}.json`;
+    elements["csv-location"].textContent = `output/${chartBase}_${surveyId}_responses.csv`;
+    elements["survey-app"].hidden = false;
+    state.scale = 1;
+    state.x = 0;
+    state.y = 0;
+    updateTransform();
+    updateCompletion();
+    setBuildStatus(`Survey ready: ${questions.length} questions and ${shapes.size} linked shapes.`);
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     document.body.append(link);
     link.click();
     link.remove();
-  }
-
-  function current_download_blob(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    current_download_url(url, filename);
     URL.revokeObjectURL(url);
   }
 
-  function current_request_next_export() {
-    const format = current_state.export_queue.shift();
-    if (!format) {
-      current_export_all.disabled = false;
-      current_notify("All diagram downloads are ready. Save or move them into output/.");
-      return;
-    }
-    current_state.active_export = format;
-    current_post({
-      action: "export",
-      format,
-      xml: current_state.xml,
-      spinKey: "export"
-    });
+  function surveyId() {
+    return safeStem(state.schema.survey_metadata.survey_id || "survey");
   }
 
-  function current_handle_message(event) {
-    if (
-      event.origin !== current_drawio_origin ||
-      event.source !== current_frame.contentWindow
-    ) return;
-    let message;
-    try {
-      message = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-    } catch {
+  function downloadCSV() {
+    const headers = [...coreHeaders, ...getQuestionHeaders()];
+    const rows = getResponses().map(response => headers.map(header => csvEscape(response[header])));
+    const csv = [headers.map(csvEscape).join(","), ...rows.map(row => row.join(","))].join("\r\n");
+    const blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
+    downloadBlob(blob, `${state.flowchartBase}_${surveyId()}_responses.csv`);
+  }
+
+  function downloadSVG() {
+    const svg = new XMLSerializer().serializeToString(state.svg);
+    const blob = new Blob([svg], {type: "image/svg+xml;charset=utf-8"});
+    downloadBlob(blob, `${state.flowchartBase}_${surveyId()}.svg`);
+  }
+
+  function submitGitHubIssue() {
+    const name = elements["submitter-name"].value.trim();
+    const email = elements["submitter-email"].value.trim();
+    const comments = elements["submitter-comments"].value.trim();
+    if (!elements["submitter-name"].checkValidity() || !elements["submitter-email"].checkValidity()) {
+      elements["submitter-name"].reportValidity();
+      elements["submitter-email"].reportValidity();
       return;
     }
-    if (message.event === "init") {
-      current_post({
-        action: "load",
-        autosave: 1,
-        modified: "unsavedChanges",
-        xml: current_state.xml,
-        title: "Current State Map"
-      });
-      current_notify("Draw.io editor ready.");
-    } else if (message.event === "autosave" || message.event === "save") {
-      if (message.xml) current_state.xml = message.xml;
-    } else if (message.event === "export" && message.data) {
-      const filename =
-        current_state.active_export === "xmlsvg"
-          ? "current_state.drawio.svg"
-          : "current_state.png";
-      current_download_url(message.data, filename);
-      current_request_next_export();
+    if (!state.svg || !state.schema || !state.flowchartBase) {
+      setSubmitStatus("Build the survey to create the flowchart SVG and responses CSV first.", true);
+      return;
     }
-  }
-  window.addEventListener("message", current_handle_message);
 
-  current_create_diagram.addEventListener("click", () => {
+    const baseName = `${state.flowchartBase}_${surveyId()}`;
+    const body = [
+      "## Workflow Submission Summary",
+      "",
+      `**Submitter Name:** ${name}`,
+      `**Email Address:** ${email}`,
+      ...(comments ? ["", `**Comments / Notes:** ${comments}`] : []),
+      "",
+      "---",
+      "### Attached Files Checklist",
+      "> Please drag and drop the downloaded `.svg` and `.csv` files into this issue box below before clicking **Submit new issue**:",
+      `- [ ] \`${baseName}.svg\``,
+      `- [ ] \`${baseName}_responses.csv\``
+    ].join("\n");
+    downloadSVG();
+    downloadCSV();
+    const issueUrl = new URL("https://github.com/nmfs-ost/PAM-workflows-template/issues/new");
+    issueUrl.searchParams.set("title", `Workflow Submission: ${baseName} - ${name}`);
+    issueUrl.searchParams.set("body", body);
+    const issueTab = window.open(issueUrl, "_blank");
+    if (issueTab) issueTab.opener = null;
+    setSubmitStatus('Files downloaded! Please attach the downloaded .svg and .csv files into the newly opened GitHub Issue tab and click "Submit new issue".');
+  }
+
+  elements["build-survey"].addEventListener("click", async () => {
     try {
-      current_state.xml = current_xml_from_script(current_script.value);
-      current_post({
-        action: "load",
-        autosave: 1,
-        modified: "unsavedChanges",
-        xml: current_state.xml,
-        title: "Current State Map"
-      });
-      current_notify("Created a starting diagram from the process script.");
+      await buildSurvey();
     } catch (error) {
-      current_notify(error.message);
+      setBuildStatus(error.message || "Unable to build the survey.", true);
     }
   });
 
-  current_export_all.addEventListener("click", () => {
-    current_export_all.disabled = true;
-    current_download_blob(
-      new Blob([current_state.xml], {type: "application/xml;charset=utf-8"}),
-      "current_state.drawio"
-    );
-    current_state.export_queue = ["xmlsvg", "xmlpng"];
-    current_notify("Preparing editable SVG and PNG exports…");
-    current_request_next_export();
-  });
-
-  function current_key(label) {
-    return label
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "");
-  }
-
-  function current_latest_record(component) {
-    return [...current_state.history].reverse().find(
-      (record) => record.component === component
-    );
-  }
-
-  function current_render_fields(values = {}) {
-    current_field_grid.replaceChildren();
-    current_state.fields.forEach((field, index) => {
-      const row = document.createElement("div");
-      row.className = "current-field-row";
-      const label = document.createElement("label");
-      label.textContent = field.label;
-      const input = document.createElement("input");
-      input.type = ["text", "number", "date"].includes(field.type)
-        ? field.type
-        : "text";
-      input.value = values[field.key] ?? "";
-      input.dataset.fieldKey = field.key;
-      label.append(input);
-      const remove = current_button(`Remove ${field.label}`);
-      remove.addEventListener("click", () => {
-        current_state.fields.splice(index, 1);
-        current_render_fields(current_field_values());
-      });
-      row.append(label, remove);
-      current_field_grid.append(row);
-    });
-  }
-
-  function current_field_values() {
-    return Object.fromEntries(
-      [...current_field_grid.querySelectorAll("[data-field-key]")].map((input) => [
-        input.dataset.fieldKey,
-        input.value
-      ])
-    );
-  }
-
-  async function current_set_template(template_name, values = {}) {
-    if (template_name === "custom") {
-      try {
-        const response = await fetch("./supplement/custom-vsm-schema.json");
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const schema = await response.json();
-        if (!Array.isArray(schema.fields)) throw new Error("Missing fields array");
-        current_state.fields = schema.fields
-          .filter((field) => field && typeof field.label === "string")
-          .map((field) => ({
-            key: current_key(field.key || field.label),
-            label: field.label,
-            type: ["text", "number", "date"].includes(field.type)
-              ? field.type
-              : "text"
-          }))
-          .filter((field) => field.key);
-        current_notify(`Loaded ${schema.title || "custom metadata schema"}.`);
-      } catch {
-        current_state.fields = [];
-        current_notify(
-          "Could not load supplement/custom-vsm-schema.json. Check the schema and render the site again."
-        );
-      }
-    } else {
-      current_state.fields = structuredClone(current_templates[template_name]);
-    }
-    current_render_fields(values);
-  }
-
-  async function current_restore_component() {
-    const component = current_component.value.trim();
-    if (!component) return;
-    current_metadata_details.open = true;
-    const latest = current_latest_record(component);
-    if (!latest) {
-      await current_set_template(current_template.value);
+  elements["survey-form"].addEventListener("submit", event => {
+    event.preventDefault();
+    const username = elements["username"].value.trim();
+    const password = elements["password"].value;
+    if (!username || !password) {
+      elements["form-message"].textContent = "Enter both a username and password before submitting.";
+      elements["form-message"].className = "survey-message error";
       return;
     }
-    current_template.value = latest.template;
-    current_state.fields = structuredClone(
-      current_state.history_fields.get(latest.timestamp) ||
-      current_templates[latest.template] ||
-      []
-    );
-    current_render_fields(latest);
-    current_notify(`Restored the latest metadata for ${component}.`);
-  }
-
-  current_component.addEventListener("change", current_restore_component);
-  current_template.addEventListener("change", () => {
-    current_set_template(current_template.value);
-  });
-
-  current_add_field.addEventListener("click", () => {
-    const label = current_new_label.value.trim();
-    const key = current_key(label);
-    if (!key) {
-      current_notify("Enter a label for the additional field.");
-      return;
-    }
-    if (current_state.fields.some((field) => field.key === key)) {
-      current_notify("That field already exists.");
-      return;
-    }
-    const values = current_field_values();
-    current_state.fields.push({key, label, type: current_new_type.value});
-    current_new_label.value = "";
-    current_render_fields(values);
-    current_notify(`Added ${label}.`);
-  });
-
-  function current_render_history() {
-    if (current_state.history.length === 0) {
-      current_history.textContent = "No metadata records saved yet.";
-      return;
-    }
-    current_history.textContent = current_state.history
-      .map((record) => `${record.timestamp} — ${record.component} (${record.template})`)
-      .join("\n");
-  }
-
-  current_save_metadata.addEventListener("click", () => {
-    const component = current_component.value.trim();
-    if (!component) {
-      current_notify("Enter the selected process block before saving metadata.");
-      current_component.focus();
-      return;
-    }
-    const timestamp = new Date().toISOString();
-    const record = {
-      timestamp,
-      component,
-      template: current_template.value,
-      ...current_field_values()
+    const response = {
+      timestamp: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
+      username,
+      shape_id: state.currentShape.shapeId,
+      shape_text: state.currentShape.shapeText
     };
-    current_state.history.push(record);
-    current_state.history_fields.set(timestamp, structuredClone(current_state.fields));
-    current_render_history();
-    current_workspace.dispatchEvent(new Event("input", {bubbles: true}));
-    current_notify(`Appended metadata for ${component}.`);
-  });
-
-  function current_csv_value(value) {
-    return `"${String(value ?? "").replaceAll('"', '""')}"`;
-  }
-
-  current_export_metadata.addEventListener("click", () => {
-    if (current_state.history.length === 0) {
-      current_notify("Save at least one metadata record before exporting.");
-      return;
+    for (const [index, question] of state.schema.questions.entries()) {
+      const field = elements["dynamic-questions"].querySelector(`[data-question-index="${index}"]`);
+      const answer = answerFor(question, field);
+      if (answer.length === 0 || answer === "") {
+        elements["form-message"].textContent = `Answer "${question.label || question.short_name}" or select Not applicable.`;
+        elements["form-message"].className = "survey-message error";
+        return;
+      }
+      response[question.short_name] = answer;
     }
-    const columns = [
-      "timestamp",
-      "component",
-      "template",
-      ...new Set(current_state.history.flatMap((record) => Object.keys(record)))
-    ].filter((value, index, values) => values.indexOf(value) === index);
-    const lines = [
-      columns.map(current_csv_value).join(","),
-      ...current_state.history.map((record) =>
-        columns.map((column) => current_csv_value(record[column])).join(",")
-      )
-    ];
-    current_download_blob(
-      new Blob([lines.join("\r\n")], {type: "text/csv;charset=utf-8"}),
-      "current_state_metadata.csv"
-    );
-    current_notify("Metadata history CSV ready. Save or move it into output/.");
+    persistResponse(response);
+    elements["password"].value = "";
+    elements["form-message"].textContent = "Response saved in this browser. Submit again to add another response.";
+    elements["form-message"].className = "survey-message success";
+    closeSurvey();
   });
 
-  Object.defineProperty(current_workspace, "value", {
-    get: () => ({
-      xml: current_state.xml,
-      history: structuredClone(current_state.history)
-    })
+  elements["download-csv"].addEventListener("click", downloadCSV);
+  elements["submit-github-issue"].addEventListener("click", submitGitHubIssue);
+  elements["close-survey"].addEventListener("click", closeSurvey);
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && elements["survey-sidebar"].classList.contains("open")) closeSurvey();
+  });
+  document.getElementById("zoom-in").addEventListener("click", () => {
+    state.scale = Math.min(10, state.scale * 1.2);
+    updateTransform();
+  });
+  document.getElementById("zoom-out").addEventListener("click", () => {
+    state.scale = Math.max(.1, state.scale / 1.2);
+    updateTransform();
+  });
+  document.getElementById("reset-view").addEventListener("click", () => {
+    state.scale = 1;
+    state.x = 0;
+    state.y = 0;
+    updateTransform();
   });
 
-  current_render_fields();
-  return current_workspace;
-}
+  elements["svg-viewer"].addEventListener("pointerdown", event => {
+    if (event.target.closest("a")) return;
+    state.dragging = true;
+    state.startX = event.clientX - state.x;
+    state.startY = event.clientY - state.y;
+    elements["svg-viewer"].setPointerCapture(event.pointerId);
+  });
+  elements["svg-viewer"].addEventListener("pointermove", event => {
+    if (!state.dragging) return;
+    state.x = event.clientX - state.startX;
+    state.y = event.clientY - state.startY;
+    updateTransform();
+  });
+  elements["svg-viewer"].addEventListener("pointerup", () => { state.dragging = false; });
+  elements["svg-viewer"].addEventListener("wheel", event => {
+    if (!state.svg) return;
+    event.preventDefault();
+    state.scale = Math.max(.1, Math.min(10, state.scale * (event.deltaY < 0 ? 1.1 : .9)));
+    updateTransform();
+  }, {passive: false});
+})();
+</script>
 ```
