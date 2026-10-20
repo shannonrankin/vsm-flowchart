@@ -8,21 +8,21 @@ format:
 ---
 
 ::: {.callout-note}
-## Learn to prioritize process gaps
+## Learn to prioritize passive acoustic data gaps
 
-1. Choose an industry example to compare Current State baselines with Future State targets.
-2. Review the absolute variance, percentage improvement, and color-coded gap status.
-3. Use the walkthrough to decide which shortfalls need immediate intervention.
+1. Choose a passive acoustic dataset to compare Current State baselines with Future State targets.
+2. Review absolute variance, percentage improvement, and color-coded status for analyst review backlogs, AI pre-screening accuracy, and delivery delays.
+3. Use the walkthrough to decide which shortfalls could delay marine mammal stock assessment delivery timelines.
 4. When you are ready, [open the interactive workspace](./gap-primary.qmd) to analyze your own exports.
 :::
 
-## Explore three gap-analysis scenarios
+## Explore three passive acoustic gap-analysis scenarios
 
-These teaching examples use the same calculation as the workspace for lower-is-better measures:
+These NOAA Fisheries Passive Acoustics Research Program examples compare Current and Future State targets for passive acoustic datasets. They use the same calculation as the workspace for lower-is-better measures such as lead time, process time, and hold rates:
 
 $$\text{Improvement (\%)} = \frac{\text{Baseline} - \text{Target}}{|\text{Baseline}|} \times 100$$
 
-For a higher-is-better measure such as automated testing coverage, the subtraction is reversed. A negative result is a critical warning because the proposed target is worse than the baseline.
+For a higher-is-better measure such as first-pass %C&A accuracy, the subtraction is reversed. A negative result is a critical warning because the proposed target is worse than the baseline.
 
 <style>
 .gap-example-tutorial {
@@ -114,40 +114,40 @@ For a higher-is-better measure such as automated testing coverage, the subtracti
 
 viewof gap_example_tutorial = {
   const gap_example_scenarios = {
-    manufacturing: {
-      label: "Manufacturing",
+    moorings: {
+      label: "Long-Term Bottom-Mounted Moorings (e.g., HARP / PAMGuard)",
       summary:
-        "A production team plans faster flow and less scrap, but its proposed setup target would increase downtime.",
+        "A high-volume continuous recording pipeline where automated cloud ingest and AI pre-screening reduce analyst review backlogs.",
       observation:
-        "Setup time is the immediate intervention: the 50-minute target is worse than the 45-minute baseline. Resolve that target before launching broader experiments.",
+        "Analyst Review Process Time represents the largest operational bottleneck. While First-Pass Accuracy improves significantly with AI pre-screening, hard drive ingest lead time requires immediate infrastructure scheduling to prevent data queuing.",
       rows: [
-        ["Assembly", "Cycle time", 120, 80, "sec", "lower"],
-        ["Inspection", "Scrap rate", 8, 3, "%", "lower"],
-        ["Changeover", "Setup time", 45, 50, "min", "lower"]
+        ["Analyst Validation", "Process time", 6.5, 1.2, "hr / TB", "lower"],
+        ["AI Detection", "First-pass accuracy (%C&A)", 78, 92, "%", "higher"],
+        ["Drive Ingestion", "Ingest lead time", 14, 18, "days", "lower"]
       ]
     },
-    software: {
-      label: "Software / IT",
+    gliders: {
+      label: "Autonomous Mobile Gliders & AUVs",
       summary:
-        "A delivery team proposes a shorter release path, fewer escaped errors, and broader automated test coverage.",
+        "An autonomous glider workflow targeting automated timestamp-telemetry synchronization and streamlined scientific product generation.",
       observation:
-        "Deployment lead time has the largest operational delay, while test coverage is a higher-is-better measure. Validate that the planned automation can support both targets.",
+        "GPS/Telemetry clock drift synchronization causes the primary delay. Automating log parsing eliminates a 5-day lead time bottleneck and dramatically reduces sync errors.",
       rows: [
-        ["Release pipeline", "Deployment lead time", 10, 3, "days", "lower"],
-        ["Production", "Code error rate", 6, 2, "%", "lower"],
-        ["CI pipeline", "Automated testing coverage", 45, 80, "%", "higher"]
+        ["Telemetry Sync", "Sync lead time", 5.0, 0.5, "days", "lower"],
+        ["Clock Alignment", "Sync error rate", 14, 1, "%", "lower"],
+        ["Product Review", "Scientist sign-off time", 3.0, 1.5, "days", "lower"]
       ]
     },
-    administrative: {
-      label: "Admin / Operations",
+    towed_arrays: {
+      label: "Towed Hydrophone Survey Arrays",
       summary:
-        "A shared-services team targets faster approvals and handoffs, but its proposed data-quality result regresses.",
+        "A vessel survey pipeline aiming to accelerate post-cruise 3D call localization and minimize vessel noise QA/QC holds.",
       observation:
-        "The data error target is critical because errors would rise from 4% to 5%. Address validation at entry before speeding up downstream approvals.",
+        "Manual bearing verification is the primary operational constraint. Deploying automated localization algorithms reduces verification time from 3.5 to 0.8 hours per hour of audio, resolving tracking holds before stock report entry.",
       rows: [
-        ["Department review", "Approval delay", 12, 4, "days", "lower"],
-        ["Request intake", "Data error rate", 4, 5, "%", "lower"],
-        ["Shared services", "Handoff wait time", 7, 3, "days", "lower"]
+        ["Bearing Verification", "Process time", 3.5, 0.8, "hr / hr audio", "lower"],
+        ["Track QA/QC", "Tracking hold rate", 15, 2, "%", "lower"],
+        ["Report Entry", "NetCDF export lead time", 4.0, 1.0, "days", "lower"]
       ]
     }
   };
@@ -159,7 +159,7 @@ viewof gap_example_tutorial = {
   gap_example_control.className = "gap-example-control";
   const gap_example_label = document.createElement("label");
   gap_example_label.htmlFor = "gap-example-scenario";
-  gap_example_label.textContent = "Industry example";
+  gap_example_label.textContent = "Passive acoustic dataset";
   const gap_example_select = document.createElement("select");
   gap_example_select.id = "gap-example-scenario";
   for (const [gap_example_key, gap_example_scenario] of Object.entries(
@@ -241,7 +241,7 @@ viewof gap_example_tutorial = {
     gap_example_table.className = "gap-example-table";
     const gap_example_caption = document.createElement("caption");
     gap_example_caption.textContent =
-      `${gap_example_scenario.label} Current and Future State variance breakdown`;
+      `${gap_example_scenario.label} passive acoustic dataset variance breakdown`;
     const gap_example_head = document.createElement("thead");
     const gap_example_head_row = document.createElement("tr");
     [
@@ -325,30 +325,30 @@ viewof gap_example_tutorial = {
 ::: {.callout-tip}
 ## 1. Confirm comparable measures
 
-Check that baseline and target values use the same process boundary, definition, and unit. A convincing percentage is not useful if one value measures hours and the other measures days.
+Check that baseline and target values use the same passive acoustic dataset boundary, definition, and unit. A convincing percentage is not useful if one value measures analyst review hours and the other measures days.
 :::
 
 ::: {.callout-tip}
 ## 2. Check the direction of improvement
 
-Most time and error measures improve when they decrease. Measures such as automated testing coverage improve when they increase. The workspace assumes lower is better, so edit its calculated percentage and status when adding a higher-is-better custom measure.
+For passive acoustic datasets, lead times, process times, and hold rates improve when they decrease. First-pass %C&A accuracy improves when it increases. The workspace assumes lower is better, so edit its calculated percentage and status when adding a higher-is-better custom measure.
 :::
 
 ::: {.callout-warning}
 ## 3. Intervene on critical gaps first
 
-A red row means the proposed Future State is worse than the baseline. Verify the source data and target, then resolve the regression before creating a Kaizen experiment. Next, review yellow rows and large gaps whose success depends on untested assumptions, constrained staff, or unavailable technology.
+A red row means the proposed Future State is worse than the baseline, such as the mooring drive-ingest target. Verify the source data and target, then resolve the regression before creating a Kaizen experiment. Next, review yellow rows and large analyst review backlogs whose success depends on untested assumptions, constrained staff, or unavailable technology.
 :::
 
 ::: {.callout-tip}
 ## 4. Turn a verified gap into an experiment
 
-Choose a gap with a clear owner, measurable baseline, and testable target. Preserve the evidence and export `gap-analysis.csv`; it will seed the later Kaizen Experiments workspace.
+Choose a gap with a clear owner, measurable baseline, and testable target that protects marine mammal stock assessment delivery timelines. Preserve the evidence and export `gap-analysis.csv`; it will seed the later Kaizen Experiments workspace.
 :::
 
 ## Analyze your own process
 
-Import your latest Current and Future State CSV files, review calculated rows, and add any measures that were not captured in the maps. Your browser will prompt you to download `gap-analysis.csv`; save or move it into `output/`.
+Import your latest Current and Future State passive acoustic dataset CSV files, review calculated rows, and add any measures that were not captured in the maps. Your browser will prompt you to download `gap-analysis.csv`; save or move it into `output/`.
 
 <div class="gap-example-actions">
 [Launch the Gap Analysis workspace](./gap-primary.qmd){.btn .btn-primary role="button"}
