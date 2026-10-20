@@ -3,6 +3,328 @@ title: "Gap Analysis"
 subtitle: "Next Steps"
 ---
 
+::: {.callout-note}
+## Rank Gap Analysis experiments
+
+1. Upload `gap-analysis.csv` from the Gap Analysis workspace.
+2. Set the scientific or operational impact and implementation effort for each metric.
+3. Use the matrix to discuss Quick Wins and Strategic Projects with the team.
+4. Export `prioritized-experiments.csv`, then save or move it to `output/` before importing it into Kaizen Experiments.
+:::
+
+<style>
+.priority-workspace { display: grid; gap: 1rem; }
+.priority-card { background: var(--bs-body-bg, #fff); border: 1px solid var(--bs-border-color, #d8dee2); border-radius: .5rem; padding: 1rem; }
+.priority-card h2 { margin-top: 0; }
+.priority-controls { align-items: end; display: flex; flex-wrap: wrap; gap: .75rem; }
+.priority-controls label { display: grid; font-weight: 600; gap: .3rem; }
+.priority-workspace button, .priority-workspace input, .priority-workspace select { background: var(--bs-body-bg, #fff); border: 1px solid #65727a; border-radius: .3rem; color: var(--bs-body-color, #222); padding: .45rem .65rem; }
+.priority-workspace button { min-height: 2.35rem; }
+.priority-workspace button:hover, .priority-workspace button:focus { box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2); }
+.priority-table-wrap, .priority-chart { overflow-x: auto; }
+.priority-table { border-collapse: collapse; min-width: 1050px; width: 100%; }
+.priority-table th, .priority-table td { border: 1px solid var(--bs-border-color, #d8dee2); padding: .45rem; text-align: left; vertical-align: top; }
+.priority-table th { background: var(--bs-secondary-bg, #eef2f5); }
+.priority-badge { border-radius: 1rem; display: inline-block; font-weight: 600; padding: .2rem .5rem; }
+.priority-badge[data-category="Quick Win"] { background: #d1e7dd; color: #0f5132; }
+.priority-badge[data-category="Strategic Project"] { background: #cfe2ff; color: #084298; }
+.priority-badge[data-category="Fill-In Task"] { background: #fff3cd; color: #664d03; }
+.priority-badge[data-category="Re-Evaluate"] { background: #f8d7da; color: #842029; }
+.priority-status { min-height: 1.5rem; }
+</style>
+
+```{ojs}
+//| echo: false
+
+viewof gap_experiment_prioritization = {
+  const priority_state = {rows: []};
+  const priority_root = document.createElement("div");
+  priority_root.className = "priority-workspace";
+
+  const priority_import_card = document.createElement("section");
+  priority_import_card.className = "priority-card";
+  const priority_import_heading = document.createElement("h2");
+  priority_import_heading.textContent = "Experiment Prioritization & Ranking";
+  const priority_import_help = document.createElement("p");
+  priority_import_help.textContent =
+    "Choose gap-analysis.csv exported from the Gap Analysis workspace. It remains only in this browser tab.";
+  const priority_controls = document.createElement("div");
+  priority_controls.className = "priority-controls";
+  const priority_file_label = document.createElement("label");
+  priority_file_label.textContent = "Gap Analysis CSV";
+  const priority_file = document.createElement("input");
+  priority_file.type = "file";
+  priority_file.accept = ".csv,text/csv";
+  priority_file_label.append(priority_file);
+  priority_controls.append(priority_file_label);
+  priority_import_card.append(priority_import_heading, priority_import_help, priority_controls);
+
+  const priority_table_card = document.createElement("section");
+  priority_table_card.className = "priority-card";
+  const priority_table_heading = document.createElement("h2");
+  priority_table_heading.textContent = "Impact vs. Effort scoring";
+  const priority_table_help = document.createElement("p");
+  priority_table_help.textContent =
+    "Impact reflects scientific or operational value; effort reflects feasibility and implementation risk.";
+  const priority_table_wrap = document.createElement("div");
+  priority_table_wrap.className = "priority-table-wrap";
+  const priority_table = document.createElement("table");
+  priority_table.className = "priority-table";
+  const priority_head = document.createElement("thead");
+  const priority_head_row = document.createElement("tr");
+  [
+    "Process node", "Metric", "Baseline", "Target", "Gap status",
+    "Scientific / Operational Impact", "Implementation Effort / Feasibility",
+    "Priority score", "Priority"
+  ].forEach((label) => {
+    const heading = document.createElement("th");
+    heading.scope = "col";
+    heading.textContent = label;
+    priority_head_row.append(heading);
+  });
+  priority_head.append(priority_head_row);
+  const priority_body = document.createElement("tbody");
+  priority_table.append(priority_head, priority_body);
+  priority_table_wrap.append(priority_table);
+  priority_table_card.append(priority_table_heading, priority_table_help, priority_table_wrap);
+
+  const priority_chart_card = document.createElement("section");
+  priority_chart_card.className = "priority-card";
+  const priority_chart_heading = document.createElement("h2");
+  priority_chart_heading.textContent = "Effort vs. Impact matrix";
+  const priority_chart_help = document.createElement("p");
+  priority_chart_help.textContent =
+    "The upper-left quadrant highlights Quick Wins; the upper-right quadrant identifies Strategic Projects.";
+  const priority_chart = document.createElement("div");
+  priority_chart.className = "priority-chart";
+  priority_chart_card.append(priority_chart_heading, priority_chart_help, priority_chart);
+
+  const priority_export_card = document.createElement("section");
+  priority_export_card.className = "priority-card";
+  const priority_export = priority_button("Export Prioritized Experiments CSV");
+  priority_export.disabled = true;
+  const priority_export_help = document.createElement("span");
+  priority_export_help.textContent =
+    "Downloads prioritized-experiments.csv. Save or move it into output/ before importing it into Kaizen.";
+  priority_export_card.append(priority_export, document.createTextNode(" "), priority_export_help);
+
+  const priority_status = document.createElement("p");
+  priority_status.className = "priority-status";
+  priority_status.setAttribute("role", "status");
+  priority_status.setAttribute("aria-live", "polite");
+  priority_root.append(
+    priority_import_card, priority_table_card, priority_chart_card,
+    priority_export_card, priority_status
+  );
+
+  function priority_button(label) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    return button;
+  }
+
+  function priority_parse_csv(text) {
+    const rows = [];
+    let row = [];
+    let field = "";
+    let quoted = false;
+    for (let index = 0; index < text.length; index += 1) {
+      const character = text[index];
+      if (quoted) {
+        if (character === "\"" && text[index + 1] === "\"") {
+          field += "\"";
+          index += 1;
+        } else if (character === "\"") {
+          quoted = false;
+        } else {
+          field += character;
+        }
+      } else if (character === "\"") {
+        quoted = true;
+      } else if (character === ",") {
+        row.push(field);
+        field = "";
+      } else if (character === "\n") {
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = "";
+      } else if (character !== "\r") {
+        field += character;
+      }
+    }
+    if (quoted) throw new Error("The CSV contains an unclosed quoted value.");
+    if (field || row.length) rows.push([...row, field]);
+    const headers = rows[0]?.map((header, index) =>
+      (index === 0 ? header.replace(/^\uFEFF/, "") : header).trim()
+    ) ?? [];
+    const required = ["process_node", "metric", "baseline_value", "target_value", "percentage_improvement", "gap_status"];
+    if (rows.length < 2 || required.some((column) => !headers.includes(column))) {
+      throw new Error("Choose a gap-analysis.csv export containing process_node, metric, baseline_value, target_value, percentage_improvement, and gap_status.");
+    }
+    return rows.slice(1)
+      .filter((values) => values.some((value) => value !== ""))
+      .map((values) => Object.fromEntries(
+        headers.map((header, index) => [header, values[index] ?? ""])
+      ));
+  }
+
+  function priority_select(options, value, on_change) {
+    const select = document.createElement("select");
+    options.forEach(([score, label]) => {
+      const option = document.createElement("option");
+      option.value = score;
+      option.textContent = label;
+      select.append(option);
+    });
+    select.value = String(value);
+    select.addEventListener("change", () => on_change(Number(select.value)));
+    return select;
+  }
+
+  function priority_category(row) {
+    if (row.impact_score >= 3 && row.effort_score <= 2) return "Quick Win";
+    if (row.impact_score >= 3 && row.effort_score >= 3) return "Strategic Project";
+    if (row.impact_score <= 2 && row.effort_score <= 2) return "Fill-In Task";
+    return "Re-Evaluate";
+  }
+
+  function priority_badge(category) {
+    const badge = document.createElement("span");
+    badge.className = "priority-badge";
+    badge.dataset.category = category;
+    badge.textContent = ({
+      "Quick Win": "🚀 Quick Win (High Priority)",
+      "Strategic Project": "🎯 Strategic Project",
+      "Fill-In Task": "🧹 Fill-In Task",
+      "Re-Evaluate": "🛑 Re-Evaluate"
+    })[category];
+    return badge;
+  }
+
+  function priority_render_chart() {
+    priority_chart.replaceChildren();
+    if (!priority_state.rows.length) return;
+    priority_chart.append(Plot.plot({
+      height: 420,
+      marginLeft: 60,
+      marginBottom: 55,
+      x: {domain: [0.5, 4.5], ticks: [1, 2, 3, 4], label: "Implementation Effort / Feasibility →"},
+      y: {domain: [0.5, 4.5], ticks: [1, 2, 3, 4], label: "Scientific / Operational Impact →"},
+      color: {
+        domain: ["Quick Win", "Strategic Project", "Fill-In Task", "Re-Evaluate"],
+        range: ["#198754", "#0d6efd", "#ffc107", "#dc3545"]
+      },
+      marks: [
+        Plot.ruleX([2.5]), Plot.ruleY([2.5]),
+        Plot.dot(priority_state.rows, {
+          x: "effort_score", y: "impact_score", r: 9, fill: "priority_category",
+          stroke: "#212529",
+          title: (row) => `${row.process_node}: ${row.metric}\n${row.priority_category} (${row.priority_score})`
+        }),
+        Plot.text([
+          {x: 1.5, y: 4.3, label: "Quick Wins"}, {x: 3.5, y: 4.3, label: "Strategic Projects"},
+          {x: 1.5, y: 0.7, label: "Fill-In Tasks"}, {x: 3.5, y: 0.7, label: "Low Priority"}
+        ], {x: "x", y: "y", text: "label", fill: "#495057"})
+      ]
+    }));
+  }
+
+  function priority_render() {
+    priority_body.replaceChildren();
+    priority_state.rows.forEach((row) => {
+      row.priority_score = Number((row.impact_score / row.effort_score).toFixed(2));
+      row.priority_category = priority_category(row);
+      const table_row = document.createElement("tr");
+      [
+        row.process_node, row.metric, row.baseline_value, row.target_value, row.gap_status
+      ].forEach((value) => {
+        const cell = document.createElement("td");
+        cell.textContent = value;
+        table_row.append(cell);
+      });
+      const impact = document.createElement("td");
+      impact.append(priority_select([
+        [1, "Low (1)"], [2, "Medium (2)"], [3, "High (3)"], [4, "Critical (4)"]
+      ], row.impact_score, (value) => {
+        row.impact_score = value;
+        priority_render();
+      }));
+      const effort = document.createElement("td");
+      effort.append(priority_select([
+        [1, "Easy / Low Effort (1)"], [2, "Moderate Effort (2)"],
+        [3, "High Effort (3)"], [4, "Complex / High Risk (4)"]
+      ], row.effort_score, (value) => {
+        row.effort_score = value;
+        priority_render();
+      }));
+      const score = document.createElement("td");
+      score.textContent = String(row.priority_score);
+      const category = document.createElement("td");
+      category.append(priority_badge(row.priority_category));
+      table_row.append(impact, effort, score, category);
+      priority_body.append(table_row);
+    });
+    priority_render_chart();
+    priority_export.disabled = priority_state.rows.length === 0;
+    priority_root.dispatchEvent(new Event("input", {bubbles: true}));
+  }
+
+  function priority_csv_value(value) {
+    return `"${String(value ?? "").replace(/"/g, "\"\"")}"`;
+  }
+
+  priority_file.addEventListener("change", async () => {
+    try {
+      const file = priority_file.files?.[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) throw new Error("Choose a gap-analysis.csv file smaller than 5 MB.");
+      priority_state.rows = priority_parse_csv(await file.text()).map((row) => ({
+        process_node: String(row.process_node).trim(),
+        metric: String(row.metric).trim(),
+        baseline_value: String(row.baseline_value).trim(),
+        target_value: String(row.target_value).trim(),
+        percentage_improvement: String(row.percentage_improvement).trim(),
+        gap_status: String(row.gap_status).trim(),
+        impact_score: 2,
+        effort_score: 2,
+        priority_score: 1,
+        priority_category: "Fill-In Task"
+      }));
+      priority_render();
+      priority_status.textContent = `Loaded ${priority_state.rows.length} metric gap${priority_state.rows.length === 1 ? "" : "s"} for prioritization.`;
+    } catch (error) {
+      priority_state.rows = [];
+      priority_render();
+      priority_status.textContent = error.message;
+    }
+  });
+
+  priority_export.addEventListener("click", () => {
+    const columns = [
+      "process_node", "metric", "baseline_value", "target_value", "percentage_improvement",
+      "gap_status", "impact_score", "effort_score", "priority_score", "priority_category", "timestamp"
+    ];
+    const timestamp = new Date().toISOString();
+    const csv = [
+      columns.join(","),
+      ...priority_state.rows.map((row) =>
+        columns.map((column) => priority_csv_value(column === "timestamp" ? timestamp : row[column])).join(",")
+      )
+    ].join("\n");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([csv], {type: "text/csv;charset=utf-8"}));
+    link.download = "prioritized-experiments.csv";
+    link.click();
+    URL.revokeObjectURL(link.href);
+    priority_status.textContent = "Prioritized experiments CSV ready. Save or move prioritized-experiments.csv into output/.";
+  });
+
+  return priority_root;
+}
+```
+
 ## Prioritize the Acoustic Pipeline Gaps
 
 Treat `gap-analysis.csv` as a structured decision guide rather than a rigid ranking list. Review the calculated metric variances with field technicians, acoustic analysts, software developers, and research scientists. Confirm each baseline, target, unit, source timestamp, and direction of improvement (e.g., lower lead times vs. higher %C&A accuracy) before committing development time or budget.
