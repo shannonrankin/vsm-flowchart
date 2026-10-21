@@ -3,42 +3,48 @@ title: "Kaizen Experiments"
 subtitle: "Overview"
 ---
 
-## Turn priority gaps into testable changes
+## Turn Priority Acoustic Gaps into Testable Changes
 
-**Kaizen** means improving a process through small, ongoing changes led by the people who know the work. Instead of committing to an unproven solution, a team runs a limited, measurable experiment, learns from the result, and decides what to do next. In Value Stream Mapping (VSM), this continuous-improvement practice turns the gaps between the Current and Future State maps into evidence-based action.
+**Kaizen** means improving a research workflow through small, incremental, scientist-led changes[cite: 8]. Instead of committing to massive, unproven software overhauls or costly custom hardware builds, passive acoustics research teams run limited, measurable experiments—such as piloting a deep-learning classifier on a single cruise leg or testing automated clock-drift scripts on two glider deployments[cite: 8]. In Value Stream Mapping (VSM), this continuous-improvement practice converts identified gaps between Current and Future States into concrete, scientific action[cite: 8].
 
-Start with critical and high-priority gaps, confirm the underlying data with the people who perform the work, and choose the smallest safe change that can test an assumption.
+Start with high-priority analyst bottlenecks, validate the baseline processing times ($PT$) and accuracy rates (%C&A) with the staff performing the work, and choose the smallest safe pilot test to evaluate your hypothesis[cite: 8].
 
-## Use the PDCA cycle
+---
 
-The **Plan-Do-Check-Act (PDCA)** cycle provides a simple scientific method for each experiment:
+## The PDCA Cycle for Bioacoustic Pipelines
 
-| Stage | What the team does |
+The **Plan-Do-Check-Act (PDCA)** cycle provides a rigorous, scientific framework for testing pipeline improvements[cite: 8]:
+
+| Stage | What the Research Team Does | PAM Pipeline Example |
+|---|---|---|
+| **Plan** | Select a verified gap, describe the change as a testable hypothesis, choose a success metric (e.g., $PT$ in hr/TB or %C&A), and assign an owner and pilot scope[cite: 8]. | Formulate hypothesis: *"Deploying a pre-trained deep learning model for baleen whale detections will cut analyst validation time by 50% without reducing recall below 90%"*[cite: 8]. |
+| **Do** | Run the smallest safe pilot test and record execution logs, compute resources used, and analyst effort[cite: 8]. | Run the new model on 2 bottom-mounted mooring datasets (approx. 2 TB) alongside standard manual review[cite: 8]. |
+| **Check** | Compare measured pilot results against baseline metrics, checking for false positives, processing speed, and metadata integrity[cite: 8]. | Evaluate model precision/recall, compare analyst review hours against the baseline, and audit NCEI schema compliance[cite: 8]. |
+| **Act** | Adopt a successful script/workflow, adapt parameters based on pilot findings, or abandon an ineffective approach[cite: 8]. | If validated, deploy the classifier across the full annual mooring dataset and establish a new Current State baseline[cite: 8]. |
+
+PDCA is a continuous cycle[cite: 8]. Successful pilot results update your Future State target or establish a modernized baseline for future research projects[cite: 8].
+
+---
+
+## Core Inputs and Outputs
+
+| File | Role in the Experiment Cycle |
 |---|---|
-| **Plan** | Select a verified gap, describe the proposed change as a testable hypothesis, choose a success metric, and define the owner, scope, and measurement period. |
-| **Do** | Run the smallest safe test and record the actions completed and evidence collected. |
-| **Check** | Compare the measured result with the baseline and success metric, including effects on downstream work. |
-| **Act** | Adopt a supported change, adapt the experiment using what was learned, or abandon an unsupported approach. |
+| `gap-analysis.csv` / `prioritized-experiments.csv` | Supplies verified process gaps, baselines, targets, priorities, and source timestamps for starting experiment cards[cite: 7, 8]. |
+| `kaizen-experiments.json` | Preserves the complete experiment roadmap, nested action-step checklists, and pilot logs for later workspace reloads[cite: 8]. |
+| `kaizen-experiments.csv` | Provides a structured, flat roadmap for project reporting, team reviews, and executive management updates[cite: 8]. |
 
-PDCA is a cycle rather than a one-time project. A result can support the next experiment, revise a Future State target, or establish a new Current State baseline.
+All files are processed locally inside your web browser[cite: 8]. Save or move downloaded exports into `output/` so the experiment history remains preserved alongside the rest of your VSM project assets[cite: 8].
 
-## Inputs and outputs
+---
 
-| File | Role in the experiment cycle |
-|---|---|
-| `gap-analysis.csv` | Supplies verified process gaps, baselines, targets, priorities, and source timestamps for starting experiment cards. |
-| `kaizen-experiments.json` | Preserves the experiment roadmap and nested action-step checklists for later use. |
-| `kaizen-experiments.csv` | Provides a flat experiment roadmap for review, reporting, and analysis. |
+## From Acoustic Gap to Pilot Experiment
 
-The files are processed entirely in your browser. Save or move downloaded exports into `output/` so the roadmap remains with the rest of the VSM project.
-
-## From gap to experiment
-
-1. Import `gap-analysis.csv` in the [interactive workspace](./kaizen-primary.qmd).
-2. Review the generated experiment cards and clarify each hypothesis.
-3. Assign an owner, action steps, priority, and success metric.
-4. Move work through **Backlog / Proposed**, **In Progress**, **Testing / Verification**, and **Completed**.
-5. Export the roadmap as `kaizen-experiments.json` or `kaizen-experiments.csv`.
+1. Import `gap-analysis.csv` (or `prioritized-experiments.csv`) into the [interactive workspace](./kaizen-primary.qmd)[cite: 7, 8].
+2. Review generated experiment cards and refine each hypothesis for your bioacoustic workflow[cite: 8].
+3. Assign a lead bioacoustician/engineer, action checklist, priority ranking, and target success metrics[cite: 8].
+4. Track progress through **Backlog / Proposed**, **In Progress / Pilot Test**, **Testing / Verification**, and **Completed / Operationalized**[cite: 8].
+5. Export the updated roadmap as `kaizen-experiments.json` or `kaizen-experiments.csv` into `output/`[cite: 8].
 
 [Open the tutorial](./kaizen-example.qmd){.btn .btn-outline-secondary role="button"}
 [Launch the Kaizen Experiments workspace](./kaizen-primary.qmd){.btn .btn-primary role="button"}

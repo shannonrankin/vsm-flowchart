@@ -12,6 +12,8 @@ In order to streamline this workflow, it helps to map out the steps, visualize t
 
 These digital tools were designed to facilitate this process. Each section relates to a component of the Value Stream Management process and are intended to be implemented sequentially, however, each section can provide stand-alone value.
 
+![](content/images/vsm-graphic.jpg)
+
 VSM Steps (sections):
 
 1.  Family Process Matrix
@@ -27,8 +29,8 @@ VSM Steps (sections):
 6.  Rinse and Repeat
 
 ## How to Use this Tool
-Under Construction! 
-When Completed, this will serve as a template that users can readily adopt for their own needs. 
+
+Under Construction! When Completed, this will serve as a template that users can readily adopt for their own needs.
 
 1.  Open [this repository on GitHub](https://github.com/shannonrankin/vsm-flowchart)
 
@@ -83,4 +85,5 @@ When Completed, this will serve as a template that users can readily adopt for t
 8.  Your VSM Flowchart is now created! You can now follow the directions provided on the site.
 
 ## Example VSMs
+
 (none available yet!)
