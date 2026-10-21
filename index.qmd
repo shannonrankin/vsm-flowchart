@@ -12,7 +12,7 @@ In order to streamline this workflow, it helps to map out the steps, visualize t
 
 These digital tools were designed to facilitate this process. Each section relates to a component of the Value Stream Management process and are intended to be implemented sequentially, however, each section can provide stand-alone value.
 
-![](content/images/vsm-graphic.jpg)
+![Overview of Value Stream Mapping processes.](content/images/vsm-overview.png)
 
 VSM Steps (sections):
 
@@ -30,7 +30,7 @@ VSM Steps (sections):
 
 ## How to Use this Tool
 
-Under Construction! When Completed, this will serve as a template that users can readily adopt for their own needs.
+Use this template to create and modify a Value Stream Mapping process for your research team.
 
 1.  Open [this repository on GitHub](https://github.com/shannonrankin/vsm-flowchart)
 
