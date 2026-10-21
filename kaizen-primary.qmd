@@ -96,6 +96,38 @@ format:
 .kaizen-card[data-priority="Medium"] {
   border-left-color: #ffc107;
 }
+.kaizen-card[data-priority="Low"] {
+  border-left-color: #198754;
+}
+.kaizen-badge {
+  border-radius: .75rem;
+  display: inline-block;
+  font-size: .8rem;
+  font-weight: 600;
+  margin-right: .3rem;
+  padding: .15rem .45rem;
+}
+.kaizen-priority-badge[data-priority="High"],
+.kaizen-priority-badge[data-priority="Critical"] {
+  background: #dc3545;
+  color: #fff;
+}
+.kaizen-priority-badge[data-priority="Medium"] {
+  background: #ffc107;
+  color: #212529;
+}
+.kaizen-priority-badge[data-priority="Low"] {
+  background: #198754;
+  color: #fff;
+}
+.kaizen-pdca-badge {
+  background: #0d6efd;
+  color: #fff;
+}
+.kaizen-status-badge {
+  background: #6c757d;
+  color: #fff;
+}
 .kaizen-card p {
   margin: 0;
 }
@@ -161,6 +193,14 @@ format:
 ```{ojs}
 //| echo: false
 
+const pam_kaizen_fields = [
+  {key: "process_time_hr_tb", label: "Process Time (hr / TB)"},
+  {key: "lead_time_days", label: "Lead Time (calendar days)"},
+  {key: "first_pass_accuracy_pct", label: "First-Pass Accuracy (%C&A)"},
+  {key: "sync_error_rate_pct", label: "Sync Error Rate (%)"},
+  {key: "analyst_effort_fte", label: "Analyst Effort (FTE)"}
+];
+
 viewof kaizen_experiment_workspace = {
   const kaizen_statuses = [
     "Backlog / Proposed",
@@ -169,6 +209,13 @@ viewof kaizen_experiment_workspace = {
     "Completed"
   ];
   const kaizen_priorities = ["High", "Medium", "Low"];
+  const kaizen_pdca_stages = ["Plan", "Do", "Check", "Act"];
+  const kaizen_pipeline_families = [
+    "Moorings",
+    "Gliders",
+    "Towed Arrays",
+    "Telemetered Buoys"
+  ];
   const kaizen_state = {
     experiments: [],
     selected_id: null,
@@ -184,11 +231,11 @@ viewof kaizen_experiment_workspace = {
   kaizen_import_heading.textContent = "Import priority gaps";
   const kaizen_import_help = document.createElement("p");
   kaizen_import_help.textContent =
-    "Choose gap-analysis.csv. The file stays in this browser tab and replaces the current roadmap after confirmation.";
+    "Choose gap-analysis.csv or prioritized-experiments.csv. The file stays in this browser tab and replaces the current roadmap after confirmation.";
   const kaizen_import_controls = document.createElement("div");
   kaizen_import_controls.className = "kaizen-controls";
   const kaizen_file_label = document.createElement("label");
-  kaizen_file_label.textContent = "Gap Analysis CSV";
+  kaizen_file_label.textContent = "Gap Analysis or prioritized experiments CSV";
   const kaizen_file = document.createElement("input");
   kaizen_file.type = "file";
   kaizen_file.accept = ".csv,text/csv";
@@ -228,14 +275,28 @@ viewof kaizen_experiment_workspace = {
   const kaizen_editor = document.createElement("div");
   kaizen_editor.className = "kaizen-editor";
   const kaizen_title = kaizen_labeled_control("Experiment title", "input");
-  const kaizen_gap = kaizen_labeled_control("Target gap", "input");
+  const kaizen_pipeline = kaizen_labeled_control(
+    "Data stream / pipeline component",
+    "select",
+    kaizen_pipeline_families
+  );
+  const kaizen_gap = kaizen_labeled_control(
+    "Target gap & baseline metric",
+    "input"
+  );
   const kaizen_hypothesis = kaizen_labeled_control("Hypothesis", "textarea");
   const kaizen_steps = kaizen_labeled_control(
-    "Action steps (one step per line)",
+    "Action checklist (one step per line)",
     "textarea"
   );
-  const kaizen_owner = kaizen_labeled_control("Owner / assignee", "input");
-  const kaizen_success = kaizen_labeled_control("Success metric", "input");
+  const kaizen_owner = kaizen_labeled_control(
+    "Lead bioacoustician / owner",
+    "input"
+  );
+  const kaizen_success = kaizen_labeled_control(
+    "Success metric & target criteria",
+    "input"
+  );
   const kaizen_priority = kaizen_labeled_control(
     "Priority level",
     "select",
@@ -246,8 +307,15 @@ viewof kaizen_experiment_workspace = {
     "select",
     kaizen_statuses
   );
+  const kaizen_pdca = kaizen_labeled_control(
+    "PDCA stage",
+    "select",
+    kaizen_pdca_stages
+  );
   kaizen_hypothesis.label.classList.add("kaizen-wide");
   kaizen_steps.label.classList.add("kaizen-wide");
+  kaizen_hypothesis.control.placeholder =
+    "If we [action], then [metric] will improve from [baseline] to [target] during [pilot period].";
   const kaizen_editor_controls = document.createElement("div");
   kaizen_editor_controls.className = "kaizen-controls kaizen-wide";
   const kaizen_save = kaizen_button("Save changes");
@@ -256,12 +324,14 @@ viewof kaizen_experiment_workspace = {
   kaizen_editor_controls.append(kaizen_save, kaizen_delete, kaizen_cancel);
   kaizen_editor.append(
     kaizen_title.label,
+    kaizen_pipeline.label,
     kaizen_gap.label,
     kaizen_hypothesis.label,
     kaizen_steps.label,
     kaizen_owner.label,
     kaizen_success.label,
     kaizen_priority.label,
+    kaizen_pdca.label,
     kaizen_status_control.label,
     kaizen_editor_controls
   );
@@ -367,23 +437,34 @@ viewof kaizen_experiment_workspace = {
     const headers = rows[0].map((header, index) =>
       (index === 0 ? header.replace(/^\uFEFF/, "") : header).trim()
     );
-    const required = [
+    const gap_columns = [
       "process_node",
       "metric",
       "baseline_value",
       "target_value",
       "gap_status"
     ];
-    if (required.some((header) => !headers.includes(header))) {
+    if (gap_columns.some((header) => !headers.includes(header))) {
       throw new Error(
-        `The CSV must contain ${required.join(", ")} columns.`
+        `The CSV must contain ${gap_columns.join(", ")} columns.`
       );
     }
-    return rows.slice(1)
+    const records = rows.slice(1)
       .filter((values) => values.some((value) => value !== ""))
       .map((values) => Object.fromEntries(
         headers.map((header, index) => [header, values[index] ?? ""])
       ));
+    const prioritized_columns = [
+      "priority_category",
+      "impact_score",
+      "effort_score"
+    ];
+    return {
+      type: prioritized_columns.every((header) => headers.includes(header))
+        ? "prioritized"
+        : "gap",
+      records
+    };
   }
 
   function kaizen_from_gap(record) {
@@ -391,31 +472,57 @@ viewof kaizen_experiment_workspace = {
     const metric = String(record.metric).trim();
     const baseline = String(record.baseline_value).trim();
     const target = String(record.target_value).trim();
+    const metric_label = pam_kaizen_fields.find(
+      (field) => field.key === metric
+    )?.label ?? metric;
     return {
       id: kaizen_id(),
-      title: `${process_node}: improve ${metric}`,
-      target_gap: `${metric}: ${baseline} baseline → ${target} target`,
+      pipeline_family: "",
+      title: `${process_node}: improve ${metric_label}`,
+      target_gap: `${metric_label}: ${baseline} baseline → ${target} target`,
       hypothesis:
-        `If we [action], then ${metric} will improve by [amount].`,
+        `If we [action], then ${metric_label} will improve from ${baseline} to ${target} during [pilot period].`,
       action_steps: [],
       owner: "",
-      success_metric: `${metric} reaches ${target}`,
+      success_metric: `${metric_label} reaches ${target}`,
       priority: "High",
+      pdca_stage: "Plan",
       status: "Backlog / Proposed",
       source_gap_status: String(record.gap_status).trim()
+    };
+  }
+
+  function kaizen_priority_from_category(category) {
+    if (/quick win|strategic/i.test(category)) return "High";
+    if (/fill-in/i.test(category)) return "Medium";
+    return "Low";
+  }
+
+  function kaizen_from_prioritized(record) {
+    const experiment = kaizen_from_gap(record);
+    const category = String(record.priority_category).trim();
+    return {
+      ...experiment,
+      priority: kaizen_priority_from_category(category),
+      priority_category: category,
+      impact_score: String(record.impact_score).trim(),
+      effort_score: String(record.effort_score).trim()
     };
   }
 
   function kaizen_blank() {
     return {
       id: kaizen_id(),
+      pipeline_family: "",
       title: "New Kaizen experiment",
       target_gap: "",
-      hypothesis: "If we [action], then [metric] will improve by [amount].",
+      hypothesis:
+        "If we [action], then [metric] will improve from [baseline] to [target] during [pilot period].",
       action_steps: [],
       owner: "",
       success_metric: "",
       priority: "Medium",
+      pdca_stage: "Plan",
       status: "Backlog / Proposed",
       source_gap_status: ""
     };
@@ -428,6 +535,7 @@ viewof kaizen_experiment_workspace = {
   function kaizen_select(experiment) {
     kaizen_state.selected_id = experiment.id;
     kaizen_title.control.value = experiment.title;
+    kaizen_pipeline.control.value = experiment.pipeline_family;
     kaizen_gap.control.value = experiment.target_gap;
     kaizen_hypothesis.control.value = experiment.hypothesis;
     kaizen_steps.control.value =
@@ -435,6 +543,7 @@ viewof kaizen_experiment_workspace = {
     kaizen_owner.control.value = experiment.owner;
     kaizen_success.control.value = experiment.success_metric;
     kaizen_priority.control.value = experiment.priority;
+    kaizen_pdca.control.value = experiment.pdca_stage;
     kaizen_status_control.control.value = experiment.status;
     kaizen_editor_panel.hidden = false;
     kaizen_editor_heading.focus?.();
@@ -462,9 +571,24 @@ viewof kaizen_experiment_workspace = {
     gap.append(gap_label, experiment.target_gap || "Not set");
     const hypothesis = document.createElement("p");
     hypothesis.textContent = experiment.hypothesis;
+    const badges = document.createElement("p");
+    const priority_badge = document.createElement("span");
+    priority_badge.className = "kaizen-badge kaizen-priority-badge";
+    priority_badge.dataset.priority = experiment.priority;
+    priority_badge.textContent = [
+      `${experiment.priority} priority`,
+      experiment.priority_category
+    ].filter(Boolean).join(" · ");
+    const pdca_badge = document.createElement("span");
+    pdca_badge.className = "kaizen-badge kaizen-pdca-badge";
+    pdca_badge.textContent = `${experiment.pdca_stage} · PDCA`;
+    const status_badge = document.createElement("span");
+    status_badge.className = "kaizen-badge kaizen-status-badge";
+    status_badge.textContent = experiment.status;
+    badges.append(priority_badge, pdca_badge, status_badge);
     const details = document.createElement("p");
     details.textContent =
-      `Owner: ${experiment.owner || "Unassigned"} · Priority: ${experiment.priority}`;
+      `Pipeline: ${experiment.pipeline_family || "Not set"} · Owner: ${experiment.owner || "Unassigned"}${experiment.impact_score ? ` · Impact: ${experiment.impact_score}` : ""}${experiment.effort_score ? ` · Effort: ${experiment.effort_score}` : ""}`;
     const checklist = document.createElement("div");
     checklist.className = "kaizen-checklist";
     experiment.action_steps.forEach((step) => {
@@ -495,7 +619,7 @@ viewof kaizen_experiment_workspace = {
     const edit = kaizen_button("Edit");
     edit.addEventListener("click", () => kaizen_select(experiment));
     controls.append(status, edit);
-    card.append(title, gap, hypothesis, details, checklist, controls);
+    card.append(title, badges, gap, hypothesis, details, checklist, controls);
     return card;
   }
 
@@ -555,12 +679,14 @@ viewof kaizen_experiment_workspace = {
     const head_row = document.createElement("tr");
     [
       "Title",
+      "Pipeline",
       "Target gap",
       "Hypothesis",
       "Action steps",
       "Owner",
       "Success metric",
       "Priority",
+      "PDCA stage",
       "Status",
       "Actions"
     ].forEach((label) => {
@@ -575,6 +701,7 @@ viewof kaizen_experiment_workspace = {
       const row = document.createElement("tr");
       [
         ["title", "input"],
+        ["pipeline_family", "input"],
         ["target_gap", "input"],
         ["hypothesis", "textarea"],
         ["action_steps", "textarea"],
@@ -593,6 +720,14 @@ viewof kaizen_experiment_workspace = {
         kaizen_dispatch();
       });
       priority_cell.append(priority);
+      const pdca_cell = document.createElement("td");
+      const pdca = document.createElement("select");
+      kaizen_options(pdca, kaizen_pdca_stages, experiment.pdca_stage);
+      pdca.addEventListener("change", () => {
+        experiment.pdca_stage = pdca.value;
+        kaizen_dispatch();
+      });
+      pdca_cell.append(pdca);
       const status_cell = document.createElement("td");
       const status = document.createElement("select");
       kaizen_options(status, kaizen_statuses, experiment.status);
@@ -605,7 +740,7 @@ viewof kaizen_experiment_workspace = {
       const edit = kaizen_button("Edit");
       edit.addEventListener("click", () => kaizen_select(experiment));
       actions.append(edit);
-      row.append(priority_cell, status_cell, actions);
+      row.append(priority_cell, pdca_cell, status_cell, actions);
       body.append(row);
     });
     table.append(head, body);
@@ -626,7 +761,7 @@ viewof kaizen_experiment_workspace = {
       const empty = document.createElement("p");
       empty.className = "kaizen-empty";
       empty.textContent =
-        "Import gap-analysis.csv or add a blank experiment to begin.";
+        "Import gap-analysis.csv or prioritized-experiments.csv, or add a blank experiment to begin.";
       kaizen_view.replaceChildren(empty);
     } else if (kaizen_state.view === "board") {
       kaizen_render_board();
@@ -654,15 +789,19 @@ viewof kaizen_experiment_workspace = {
       const file = kaizen_file.files?.[0];
       if (!file) return;
       if (file.size > 5 * 1024 * 1024) {
-        throw new Error("Choose a gap-analysis.csv file smaller than 5 MB.");
+        throw new Error("Choose a gap-analysis.csv or prioritized-experiments.csv file smaller than 5 MB.");
       }
-      const records = kaizen_parse_csv(await file.text());
-      const priority_records = records.filter((record) =>
+      const imported = kaizen_parse_csv(await file.text());
+      const priority_records = imported.type === "prioritized"
+        ? imported.records
+        : imported.records.filter((record) =>
         /critical|high/i.test(String(record.gap_status))
       );
       if (priority_records.length === 0) {
         throw new Error(
-          "No critical or high gaps were found. Review gap_status values or add an experiment manually."
+         imported.type === "prioritized"
+           ? "No prioritized experiment records were found."
+           : "No critical or high gaps were found. Review gap_status values or add an experiment manually."
         );
       }
       if (
@@ -674,13 +813,17 @@ viewof kaizen_experiment_workspace = {
         kaizen_file.value = "";
         return;
       }
-      kaizen_state.experiments = priority_records.map(kaizen_from_gap);
+      kaizen_state.experiments = priority_records.map(
+        imported.type === "prioritized" ? kaizen_from_prioritized : kaizen_from_gap
+      );
       kaizen_state.selected_id = null;
       kaizen_editor_panel.hidden = true;
       kaizen_render();
       kaizen_dispatch();
       kaizen_notify(
-        `Created ${priority_records.length} experiment card(s) from priority gaps.`
+        imported.type === "prioritized"
+          ? `Loaded ${priority_records.length} prioritized experiment card(s).`
+          : `Created ${priority_records.length} experiment card(s) from priority gaps.`
       );
     } catch (error) {
       kaizen_notify(error.message);
@@ -710,6 +853,7 @@ viewof kaizen_experiment_workspace = {
       experiment.action_steps.map((step) => [step.text, step.done])
     );
     experiment.title = title;
+    experiment.pipeline_family = kaizen_pipeline.control.value;
     experiment.target_gap = kaizen_gap.control.value.trim();
     experiment.hypothesis = kaizen_hypothesis.control.value.trim();
     experiment.action_steps = kaizen_steps.control.value
@@ -720,6 +864,7 @@ viewof kaizen_experiment_workspace = {
     experiment.owner = kaizen_owner.control.value.trim();
     experiment.success_metric = kaizen_success.control.value.trim();
     experiment.priority = kaizen_priority.control.value;
+    experiment.pdca_stage = kaizen_pdca.control.value;
     experiment.status = kaizen_status_control.control.value;
     kaizen_editor_panel.hidden = true;
     kaizen_render();
@@ -797,6 +942,7 @@ viewof kaizen_experiment_workspace = {
     const columns = [
       "export_timestamp",
       "id",
+      "pipeline_family",
       "title",
       "target_gap",
       "hypothesis",
@@ -804,6 +950,7 @@ viewof kaizen_experiment_workspace = {
       "owner",
       "success_metric",
       "priority",
+      "pdca_stage",
       "status",
       "source_gap_status"
     ];
